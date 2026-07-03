@@ -10,6 +10,7 @@ var tree_id: String = ""
 var _tree: Dictionary = {}
 var _npc: Dictionary = {}
 var _node_id: String = ""
+var _full_text: String = ""
 var _text_label: Label
 var _options_box: VBoxContainer
 var _portrait: Panel
@@ -38,15 +39,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not _scrolling:
 		return
-	var full: String = _current_node().get("text", "")
 	var rate: float = TEXT_SPEED * float(_npc.get("voice", {}).get("syllable_rate", 4.5)) / 4.5
 	var prev := int(_chars_shown)
-	_chars_shown = minf(_chars_shown + rate * delta, full.length())
-	_text_label.text = full.substr(0, int(_chars_shown))
+	_chars_shown = minf(_chars_shown + rate * delta, _full_text.length())
+	_text_label.text = _full_text.substr(0, int(_chars_shown))
 	_jaw.visible = int(_chars_shown / 4.0) % 2 == 0  # 2-frame jaw flap
 	if int(_chars_shown) != prev and prev % 3 == 0:
 		_play_blip()
-	if int(_chars_shown) >= full.length():
+	if int(_chars_shown) >= _full_text.length():
 		_scrolling = false
 		_jaw.visible = false
 		_show_options()
@@ -127,11 +127,24 @@ func _enter_node(node_id: String) -> void:
 		_finish()
 		return
 	ReputationLedger.apply_effects(node.get("on_enter_effects", []))
+	_full_text = _resolve_text(node)
 	for c in _options_box.get_children():
 		c.queue_free()
 	_chars_shown = 0.0
 	_text_label.text = ""
 	_scrolling = true
+
+
+func _resolve_text(node: Dictionary) -> String:
+	# Gossip nodes pull from the county-memory banks (data/gossip.json).
+	if node.get("gossip_source", false):
+		var line := DataLoader.pick_gossip()
+		if line != "":
+			return line
+	# Director-provided variants rotate randomly so replays don't loop.
+	var texts: Array = [node.get("text", "")]
+	texts.append_array(node.get("variants", []))
+	return texts[_rng.randi_range(0, texts.size() - 1)]
 
 
 func _show_options() -> void:
@@ -197,4 +210,4 @@ func _finish() -> void:
 func _gui_input(event: InputEvent) -> void:
 	# Click to skip text scroll
 	if event is InputEventMouseButton and event.pressed and _scrolling:
-		_chars_shown = float(_current_node().get("text", "").length())
+		_chars_shown = float(_full_text.length())

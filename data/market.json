@@ -7,8 +7,9 @@
     { "id": "eggs", "base_price": 0.40, "walk_step_max": 0.02, "floor": 0.15, "ceiling": 0.6 }
   ],
   "gossip_lines": {
-    "rising": ["Elevator's been busy all week.", "Trucks lined up past the scale this morning."],
-    "falling": ["Sandy says nobody's hauling.", "Awful quiet down at the elevator."],
-    "flat": ["Same as it ever was down there.", "No news from the elevator."]
+    "_status": "director_approved",
+    "rising": ["Corn's moving."],
+    "falling": ["Beans are soft."],
+    "flat": ["Might be worth waiting a few days.", "Might not."]
   }
 }

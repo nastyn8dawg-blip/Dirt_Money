@@ -42,8 +42,13 @@ func forecast(days: int) -> Array[String]:
 func intuition_cue() -> String:
 	# Old School flavor: qualitative hint about tomorrow (Read The Land).
 	# Lines live in data/strings.json — Director-authored per CLAUDE.md law 6.
+	# Picked by day, NOT by _rng: consuming the seeded stream here would let
+	# UI refreshes desync seeded runs.
 	var next: String = forecast(1)[0]
-	return DataLoader.strings.get("weather_cues", {}).get(next, "[Cue missing for %s]" % next)
+	var cues: Array = DataLoader.strings.get("weather_cues", {}).get(next, [])
+	if cues.is_empty():
+		return "[Cue missing for %s]" % next
+	return cues[CalendarManager.day % cues.size()]
 
 
 func _ensure_future(n: int) -> void:

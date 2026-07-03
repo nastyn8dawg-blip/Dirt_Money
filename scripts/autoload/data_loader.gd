@@ -14,6 +14,29 @@ var reputation_tiers: Dictionary = {}
 var backgrounds: Dictionary = {}
 var dialogue_trees: Dictionary = {}
 var strings: Dictionary = {}
+var gossip_banks: Array = []
+
+
+func pick_gossip() -> String:
+	# The county remembers: banks gated on a flag the player earned outrank
+	# general county talk. Director-authored lines only (law 6).
+	var eligible: Array = []
+	var flagged := false
+	for bank in gossip_banks:
+		var flag: String = bank.get("requires_flag", "")
+		if flag != "":
+			if GameState.has_flag(flag):
+				if not flagged:
+					eligible.clear()
+					flagged = true
+				eligible.append(bank)
+		elif not flagged:
+			eligible.append(bank)
+	if eligible.is_empty():
+		return ""
+	var bank: Dictionary = eligible[randi() % eligible.size()]
+	var lines: Array = bank.get("lines", [])
+	return "" if lines.is_empty() else lines[randi() % lines.size()]
 
 var load_errors: Array[String] = []
 
@@ -50,6 +73,7 @@ func load_all() -> void:
 	for b in d.get("backgrounds", []):
 		backgrounds[b.id] = b
 	strings = _read_json("res://data/strings.json")
+	gossip_banks = _read_json("res://data/gossip.json").get("banks", [])
 	_load_dialogue_dir("res://data/dialogue")
 
 

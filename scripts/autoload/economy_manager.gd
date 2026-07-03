@@ -50,7 +50,9 @@ func trend(commodity: String) -> String:
 
 func gossip_line(commodity: String = "corn") -> String:
 	# Old School's market data: a line at the diner, not a chart.
+	# Picked by day, NOT by _rng: consuming the seeded stream on UI refresh
+	# would desync the market walk between seeded runs.
 	var lines: Array = DataLoader.market.get("gossip_lines", {}).get(trend(commodity), [])
 	if lines.is_empty():
-		return "Nobody's saying much."
-	return lines[_rng.randi_range(0, lines.size() - 1)]
+		return "[Gossip missing]"
+	return lines[CalendarManager.day % lines.size()]

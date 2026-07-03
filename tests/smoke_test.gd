@@ -35,6 +35,16 @@ func test_data_loads() -> void:
 	check(DataLoader.dialogue_trees.has("hollis_baler"), "sample dialogue tree loaded")
 	check(DataLoader.dialogue_trees.size() >= 8, "every county NPC has a tree")
 	check(DataLoader.strings.get("weather_cues", {}).size() == 7, "weather cue per state")
+	check(DataLoader.gossip_banks.size() >= 7, "gossip banks loaded")
+	# County memory: flagged banks outrank general talk
+	GameState.new_run("mechanic", 777)
+	GameState.set_flag("baler_botched")
+	var line := DataLoader.pick_gossip()
+	var botched: Array = []
+	for bank in DataLoader.gossip_banks:
+		if bank.get("id", "") == "baler_botched":
+			botched = bank.get("lines", [])
+	check(line in botched, "flagged gossip outranks general county talk")
 	# Every check option must have both success and failure branches (design law)
 	for tree_id in DataLoader.dialogue_trees.keys():
 		var tree: Dictionary = DataLoader.dialogue_trees[tree_id]

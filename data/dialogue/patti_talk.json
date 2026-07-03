@@ -1,6 +1,6 @@
 {
-  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6). Patti is the gossip surface: her chat node is where reputation echoes will appear (conditional text lands in sprint 2 engine work).",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "Patti — the gossip surface. Director-authored text (2026-07-03), verbatim. The gossip node pulls from data/gossip.json: flagged banks (things YOU did) outrank general county talk.",
+  "_status": "director_approved",
   "id": "patti_talk",
   "npc": "patti",
   "start": "intro",
@@ -8,16 +8,21 @@
     "intro": {
       "speaker": "patti",
       "emotion": "excited",
-      "text": "[Situation — Patti pours coffee you didn't order and starts the county news mid-sentence.]",
+      "text": "County's been talking. Question is whether they're talking good or talking interesting.",
+      "variants": [
+        "You keep giving people stories and I'll keep serving pie.",
+        "Ash Creek runs on coffee and speculation."
+      ],
       "options": [
-        { "text": "[Ask what people are saying lately.]", "goto": "gossip" },
-        { "text": "[Just the coffee, thanks.]", "goto": "_end" }
+        { "text": "\"What are people saying?\"", "goto": "gossip" },
+        { "text": "\"Just the coffee, thanks.\"", "goto": "_end" }
       ]
     },
     "gossip": {
       "speaker": "patti",
       "emotion": "excited",
-      "text": "[Gossip surface — this line will later be swapped by flags: the baler story, the spreadsheet farmer joke, who helped who in the storm. For now: one juicy neutral county rumor.]",
+      "gossip_source": true,
+      "text": "Word travels quicker than trucks around here.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [{ "op": "flag_set", "flag": "heard_diner_gossip" }]
     }

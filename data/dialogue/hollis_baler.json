@@ -1,5 +1,6 @@
 {
-  "_schema": "Dialogue tree. Nodes: speaker line + options. Option fields: text, requires {background|perk|min_reputation}, check {skill, odds}, goto | success/failure gotos, effects [ops]. Both check branches MUST exist and both must be content. DRAFT text pending director voice approval (gate #1).",
+  "_schema": "Dialogue tree. Director-authored text (2026-07-03) — verbatim, do not edit. `variants` = alternate lines chosen at random on node entry. Option `_alts` are Director-provided alternate player lines kept for future rotation.",
+  "_status": "director_approved",
   "id": "hollis_baler",
   "npc": "hollis",
   "start": "intro",
@@ -7,10 +8,17 @@
     "intro": {
       "speaker": "hollis",
       "emotion": "sad",
-      "text": "Baler quit on me mid-field. Second cutting's lying out there and rain's due. Dealer says Thursday. Hay don't wait for Thursday.",
+      "text": "Baler quit on me halfway through the back forty. Hay's cut, rain's coming, and the dealer says maybe Thursday. Hay don't wait till Thursday.",
+      "variants": [
+        "Second cutting's laying out there getting older by the minute. Baler decided it'd had enough. Dealer's backed up three counties deep."
+      ],
       "options": [
         {
-          "text": "\"Let me look at that baler myself.\"",
+          "text": "\"Mind if I take a look? Might be something simple.\"",
+          "_alts": [
+            "\"Could be nothing more than a hose or fitting. Let's see what we're dealing with.\"",
+            "\"No promises, but I've kept worse running.\""
+          ],
           "label": "[Mechanic 40]",
           "requires": { "background": "mechanic" },
           "check": { "skill": "mechanic", "difficulty": 40, "odds": 0.65 },
@@ -18,12 +26,16 @@
           "failure": "fix_failure"
         },
         {
-          "text": "\"I can lend you my time. Show me what to do.\"",
+          "text": "\"Can't fix it, but I can help however you need me.\"",
+          "_alts": [
+            "\"Point me where you want me and I'll work.\"",
+            "\"I can at least help get the hay under cover.\""
+          ],
           "goto": "lend_hand",
           "effects": [{ "op": "time_block", "value": -1 }]
         },
         {
-          "text": "\"Rough luck, Hollis. Hope Thursday comes quick.\"",
+          "text": "\"Sorry, Hollis. Hope the dealer gets here sooner than they think.\"",
           "goto": "walk_away"
         }
       ]
@@ -31,7 +43,10 @@
     "fix_success": {
       "speaker": "hollis",
       "emotion": "excited",
-      "text": "Well I'll be. She sounds better than the day Roy sold her to me. You've got a gift, and I've got a big mouth — Marge is gonna hear about this.",
+      "text": "Well I'll be damned. Sounds better now than when Roy sold it to me. You've got a gift, and I've got a mouth that'll tell everybody about it. Marge is fixing to hear your name before supper.",
+      "variants": [
+        "Didn't think we'd beat the rain this week. Guess I owe you one."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "hollis", "value": 10 },
@@ -43,7 +58,11 @@
     "fix_failure": {
       "speaker": "hollis",
       "emotion": "angry",
-      "text": "...That was the good hydraulic line. Thursday just got a lot more expensive, son. Don't take it hard — but don't take it to the diner neither, 'cause it's already there.",
+      "text": "Well...that wasn't the bad hose. Thursday just got a whole lot more expensive. Don't beat yourself up too much. Everybody around here learns the hard way eventually.",
+      "variants": [
+        "Looks like we found the expensive problem first.",
+        "It ain't personal. Equipment's got a mean streak."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "hollis", "value": -8 },
@@ -56,7 +75,11 @@
     "lend_hand": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "Appreciate the hands. Won't save the cutting, but it saves the week. I remember who shows up.",
+      "text": "Appreciate the hands. Might not save the cutting, but it saves the week. People remember who shows up.",
+      "variants": [
+        "County's built on favors more than money.",
+        "I keep score on these things. In a good way."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": 4 }]
     },
@@ -64,6 +87,10 @@
       "speaker": "hollis",
       "emotion": "neutral",
       "text": "Yep. Hope so too.",
+      "variants": [
+        "Rain don't much care what we're hoping.",
+        "Dealer'll get here eventually. Weather's the one I'm worried about."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": -2 }]
     }

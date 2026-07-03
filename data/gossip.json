@@ -1,0 +1,64 @@
+{
+  "_schema": "County gossip banks — Director-authored (2026-07-03), verbatim. A bank with requires_flag only surfaces after that flag is set (this is the county remembering what you did). Flagged banks outrank general ones. Surfaced at the diner (Patti) and anywhere gossip_source nodes appear.",
+  "_status": "director_approved",
+  "banks": [
+    {
+      "id": "baler_fixed",
+      "requires_flag": "baler_fixed",
+      "lines": [
+        "Heard somebody got Hollis baler going again.",
+        "Some folks fix equipment. Some folks fix reputations.",
+        "Word travels quicker than trucks around here.",
+        "You can keep a secret in Ash Creek about as long as a milkshake lasts."
+      ]
+    },
+    {
+      "id": "baler_botched",
+      "requires_flag": "baler_botched",
+      "lines": [
+        "Word is somebody tried fixing Hollis baler and managed to make Thursday more expensive.",
+        "Diner's already heard it.",
+        "Didn't take long for that story to get legs."
+      ]
+    },
+    {
+      "id": "auction",
+      "lines": [
+        "Saturday auction's got a couple tractors worth looking at.",
+        "Depends if you like projects.",
+        "Depends if you like surprises."
+      ]
+    },
+    {
+      "id": "banker",
+      "lines": [
+        "Bank loves good years. Bank remembers bad ones.",
+        "Interest don't sleep.",
+        "Payments don't care if it rained."
+      ]
+    },
+    {
+      "id": "dealer",
+      "lines": [
+        "Nothing costs more than cheap equipment.",
+        "Except maybe brand new equipment."
+      ]
+    },
+    {
+      "id": "neighbor",
+      "lines": [
+        "People around here don't expect perfection. They just expect you to show up.",
+        "Help somebody once and they'll remember.",
+        "Help them twice and they'll call."
+      ]
+    },
+    {
+      "id": "wisdom",
+      "lines": [
+        "Everybody farms different. Weather humbles all of us the same.",
+        "Nobody's smarter than a drought.",
+        "Nobody outruns mud."
+      ]
+    }
+  ]
+}
