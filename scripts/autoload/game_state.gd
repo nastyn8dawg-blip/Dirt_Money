@@ -10,7 +10,7 @@ var inventory: Dictionary = {}   # commodity_id -> units
 var flags: Dictionary = {}       # flag name -> true
 var field_orders: Array = []     # {field, crop, kind, days_left, cost}
 var fields: Dictionary = {}      # field_id -> {state, crop}
-var chickens: int = 4
+var chickens: int = 12
 var contracts_active: Array = []
 var contracts_completed: int = 0
 var perks: Array = []
@@ -32,7 +32,7 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	fields = {}
 	for f in FIELD_IDS:
 		fields[f] = {"state": "fallow", "crop": ""}
-	chickens = 4
+	chickens = 12
 	contracts_active = []
 	contracts_completed = 0
 	perks = []

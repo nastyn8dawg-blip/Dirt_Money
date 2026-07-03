@@ -42,3 +42,6 @@
 
 ## Log
 - **2026-07-02** — Document created; seeded from roadmap v1.1 rulings and risk register.
+- **2026-07-03** — Economy model v1 locked. First tuning: IT timing edge 1.12→1.15 (fairness band
+  was 1.252, over the 1.25 cap). Watch: Old School still richest; if playtests read legacy contracts
+  as strictly better, cut legacy units (450) before touching the premium multiplier.

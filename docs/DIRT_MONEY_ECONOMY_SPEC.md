@@ -52,6 +52,15 @@ Fuel/seed per order, repairs/parts, feed, loan interest, travel (fuel/time), con
 
 ## 9. Balancing workflow
 
-1. Spreadsheet 30-day cash-flow model per background (next session deliverable) — three solvent-but-different curves.
+1. Spreadsheet 30-day cash-flow model per background — three solvent-but-different curves.
 2. Numbers transcribed into `/data/*.json` (never into code).
 3. Sprint-10 balance pass replays spreadsheet scenarios in-game and reconciles drift.
+
+## 10. Model v1 — LOCKED (2026-07-03)
+
+`design/economy_model.xlsx` (rebuild: `tools/build_economy_model.py`; verify: `tools/verify_economy_model.py`).
+Results: Old School $4,670 end cash (top source: negotiated/rep), IT Nephew $3,832 (timed/info),
+Mechanic $4,012 (repair & flip). All four checks PASS: solvent, net worth improved, top income
+sources all distinct, end-cash spread within 1.25×. Demo win condition = cash positive + net worth
+trending up; full loan payoff is multi-season (Phase 3) scope. Locked into JSON: corn/soy/hay yields
+300/200/100, egg price $0.40, 12 chickens, IT timing edge 1.15×, legacy premium 1.35× on 450 units.
