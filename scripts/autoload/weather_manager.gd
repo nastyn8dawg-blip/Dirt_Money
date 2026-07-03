@@ -4,6 +4,10 @@ extends Node
 
 const STATES := ["clear", "overcast", "rain_light", "storm", "drought", "wind", "fog"]
 const WEIGHTS := [30, 20, 18, 8, 8, 10, 6]
+const DISPLAY := {
+	"clear": "Clear", "overcast": "Overcast", "rain_light": "Light rain",
+	"storm": "Storm", "drought": "Dry heat", "wind": "Windy", "fog": "Fog",
+}
 
 var current: String = "clear"
 var _rng := RandomNumberGenerator.new()
@@ -21,6 +25,10 @@ func roll_next() -> void:
 	_ensure_future(6)
 	current = _future.pop_front()
 	EventBus.weather_changed.emit(current)
+
+
+func display_name(state: String) -> String:
+	return DISPLAY.get(state, state)
 
 
 func forecast(days: int) -> Array[String]:

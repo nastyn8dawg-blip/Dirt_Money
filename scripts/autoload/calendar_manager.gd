@@ -32,7 +32,9 @@ func spend_block() -> void:
 
 
 func advance_day() -> void:
-	# 1. Field orders progress (weather-modified; modifier TODO with balance pass)
+	# 1. Crops in the ground grow, then field orders progress
+	# (growth first so a plant completing today doesn't also grow today)
+	GameState.tick_growth()
 	GameState.progress_field_orders()
 	# 2. Market tick
 	EconomyManager.tick()

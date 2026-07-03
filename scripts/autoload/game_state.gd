@@ -73,6 +73,10 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
 	if crop.is_empty() or not fields.has(field):
 		return false
+	if kind == "plant" and fields[field].state != "fallow":
+		return false
+	if kind == "harvest" and fields[field].state != "ready":
+		return false
 	var order_info: Dictionary = crop.get(kind + "_order", {})
 	var cost := int(order_info.get("cost", 0))
 	if cash < cost:
@@ -98,12 +102,25 @@ func progress_field_orders() -> void:
 	for order in done:
 		field_orders.erase(order)
 		if order.kind == "plant":
-			fields[order.field] = {"state": "growing", "crop": order.crop}
+			var planted: Dictionary = DataLoader.crops.get(order.crop, {})
+			fields[order.field] = {
+				"state": "growing", "crop": order.crop,
+				"days_to_ready": int(planted.get("grow_days", 1)),
+			}
 		elif order.kind == "harvest":
 			var crop: Dictionary = DataLoader.crops.get(order.crop, {})
 			add_inventory(order.crop, int(crop.get("base_yield_units", 0)))
 			fields[order.field] = {"state": "fallow", "crop": ""}
 		EventBus.field_order_completed.emit(order)
+
+
+func tick_growth() -> void:
+	for field_id in fields.keys():
+		var f: Dictionary = fields[field_id]
+		if f.state == "growing":
+			f.days_to_ready = int(f.get("days_to_ready", 1)) - 1
+			if f.days_to_ready <= 0:
+				f.state = "ready"
 
 
 func tick_debt() -> void:

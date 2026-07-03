@@ -77,6 +77,12 @@ func test_field_order_lifecycle() -> void:
 	check(GameState.fields["north"].state == "working", "field goes to working")
 	CalendarManager.advance_day()
 	check(GameState.fields["north"].state == "growing", "1-day hay plant completes")
+	check(int(GameState.fields["north"].days_to_ready) == 6, "grow time starts at crop grow_days")
+	check(not GameState.issue_field_order("north", "hay", "harvest"), "cannot harvest before ready")
+	for i in range(6):
+		CalendarManager.advance_day()
+	check(GameState.fields["north"].state == "ready", "crop matures after grow_days")
+	check(GameState.issue_field_order("north", "hay", "harvest"), "harvest allowed when ready")
 
 
 func test_save_roundtrip() -> void:

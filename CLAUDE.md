@@ -8,10 +8,16 @@ Source of truth: `docs/DIRT_MONEY_MASTER_SPEC.md`. Scope contract: `docs/DIRT_MO
 2. **Scope guardrail.** Nothing enters the vertical slice that is not in the Phase 1 sprint table in `DIRT_MONEY_VERTICAL_SLICE.md`. New ideas go to `DIRT_MONEY_CRITIQUE.md`, not into code.
 3. **No input requires a tutorial.** Complexity lives in outcomes, never in controls. Field work = one-tap orders.
 4. **Approval gates (human sign-off required, never auto-generate in bulk):**
-   - Dialogue text: voice/personality samples per NPC approved before bulk writing.
    - Portrait/visual style: 2–3 art direction options approved before batch asset production.
    - Gibberish voice profiles: audio samples per NPC approved before wiring in.
    - Capsule art, UI theme, report card design.
+5. **The Director writes ALL player-facing prose. (Director ruling, 2026-07-03.)**
+   Dialogue lines, flavor cues, gossip, event text — every word the player reads is authored by
+   the Director, not the AI. Claude delivers *structure only*: dialogue trees as flowcharts with
+   checks, odds, branches, and effects, where every line of prose is a numbered [BLANK] with a
+   context note ("Hollis, angry, just watched the repair fail"). Claude then asks the Director to
+   fill every blank. Any Claude-drafted text in the build is a tagged placeholder awaiting
+   replacement — it is never final content.
 5. **Interface-exclusive backgrounds.** If a screen looks identical across Old School Farmer / IT Nephew / Mechanic, the design has failed. Every screen must check `GameState.background`.
 
 ## Architecture
