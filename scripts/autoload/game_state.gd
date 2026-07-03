@@ -18,6 +18,12 @@ var perks: Array = []
 var pending_breakdown: Dictionary = {}   # {order} — one open breakdown at a time
 var _breakdown_rng := RandomNumberGenerator.new()
 
+# Diagnostic ledger: every cash movement is categorized at the source so the
+# balance harness can separate bad balance from incomplete identity.
+var ledger: Dictionary = {}
+var harvest_log: Dictionary = {}         # crop -> total units harvested
+var downtime_days: int = 0               # working days lost to breakdowns
+
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
 const DEBT_DAILY_INTEREST := 0.004
@@ -44,6 +50,9 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	perks = []
 	pending_breakdown = {}
 	_breakdown_rng.seed = run_seed + 7
+	ledger = {}
+	harvest_log = {}
+	downtime_days = 0
 	ReputationLedger.init_from_background(bg_id)
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
@@ -60,8 +69,9 @@ func interface_flag(key: String, default_value = false):
 	return background().get("interface", {}).get(key, default_value)
 
 
-func add_cash(amount: int) -> void:
+func add_cash(amount: int, category: String = "misc") -> void:
 	cash += amount
+	ledger[category] = int(ledger.get(category, 0)) + amount
 	EventBus.money_changed.emit(cash, debt)
 
 
@@ -90,7 +100,12 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 	var cost := int(round(float(order_info.get("cost", 0)) * float(background().get("labor_cost_mult", 1.0))))
 	if cash < cost:
 		return false
+	# Ledger split: base = seed+fuel at data cost; the rest is hired labor
+	var base_cost := int(order_info.get("cost", 0))
 	cash -= cost
+	ledger["order_seed_fuel"] = int(ledger.get("order_seed_fuel", 0)) - base_cost
+	if cost > base_cost:
+		ledger["labor_premium"] = int(ledger.get("labor_premium", 0)) - (cost - base_cost)
 	var order := {
 		"field": field, "crop": crop_id, "kind": kind,
 		"days_left": int(order_info.get("days", 1)), "cost": cost,
@@ -106,6 +121,7 @@ func progress_field_orders() -> void:
 	var done: Array = []
 	for order in field_orders:
 		if order.get("paused", false):
+			downtime_days += 1
 			continue
 		# Breakdown roll: the old tractor working in bad weather is how the
 		# interruption-as-conversation design earns its keep.
@@ -131,7 +147,9 @@ func progress_field_orders() -> void:
 			}
 		elif order.kind == "harvest":
 			var crop: Dictionary = DataLoader.crops.get(order.crop, {})
-			add_inventory(order.crop, int(crop.get("base_yield_units", 0)))
+			var units := int(crop.get("base_yield_units", 0))
+			add_inventory(order.crop, units)
+			harvest_log[order.crop] = int(harvest_log.get(order.crop, 0)) + units
 			fields[order.field] = {"state": "fallow", "crop": ""}
 		EventBus.field_order_completed.emit(order)
 
@@ -155,7 +173,9 @@ func tick_debt() -> void:
 		var rate := DEBT_DAILY_INTEREST
 		if credit_tight():
 			rate *= CREDIT_TIGHT_MULT
-		debt += int(ceil(debt * rate))
+		var accrued := int(ceil(debt * rate))
+		debt += accrued
+		ledger["interest_accrued"] = int(ledger.get("interest_accrued", 0)) - accrued
 		EventBus.money_changed.emit(cash, debt)
 
 
@@ -170,6 +190,7 @@ func resolve_breakdown(mode: String) -> void:
 				# loses two days, and the weather keeps its opinions.
 				order.paused = false
 				order.days_left = int(order.days_left) + 2
+				downtime_days += 2
 	pending_breakdown = {}
 
 
@@ -219,7 +240,7 @@ func deliver_contract(contract_id: String) -> bool:
 		return false
 	inventory[c.commodity] -= c.units
 	var payout := int(round(c.units * EconomyManager.prices.get(c.commodity, 0.0) * c.rate_mult))
-	add_cash(payout)
+	add_cash(payout, "contract_revenue")
 	contracts_completed += 1
 	contracts_active.erase(c)
 	ReputationLedger.apply_effects([
@@ -241,6 +262,7 @@ func check_contract_deadlines() -> void:
 		contracts_active.erase(c)
 		contracts_missed += 1
 		cash -= int(c.penalty)
+		ledger["penalties"] = int(ledger.get("penalties", 0)) - int(c.penalty)
 		ReputationLedger.apply_effects([
 			{"op": "rep_delta", "npc": c.offered_by, "value": -6},
 			{"op": "county_delta", "value": -2},

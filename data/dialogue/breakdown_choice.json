@@ -21,7 +21,7 @@
         {
           "text": "\"Send your guy. I need it moving today.\"  ($150)",
           "goto": "shop_fix",
-          "effects": [{ "op": "cash_delta", "value": -150 }]
+          "effects": [{ "op": "cash_delta", "value": -150, "category": "repair_costs" }]
         },
         {
           "text": "\"Leave it for now. I can't spend on it today.\"  (order loses 2 days)",
@@ -47,7 +47,7 @@
       "text": "Forty minutes ain't nothing.\n\nMeans you were close.\n\nParts'll be eighty.",
       "options": [{ "text": "(Pay for the parts and get back to it)", "goto": "_end" }],
       "on_enter_effects": [
-        { "op": "cash_delta", "value": -80 },
+        { "op": "cash_delta", "value": -80, "category": "repair_costs" },
         { "op": "flag_set", "flag": "breakdown_bodged" },
         { "op": "breakdown_resolve", "value": "resume" }
       ]

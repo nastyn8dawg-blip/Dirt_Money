@@ -10,6 +10,12 @@ Each background has a **viable but different** path to Day-30 solvency:
 
 If the spreadsheet shows two backgrounds converging on the same strategy, the design has failed before code is written.
 
+**Director principle (2026-07-03, binding):** do not smooth the backgrounds into the same economy.
+The point is not equal cash — it is different paths that feel fair and replayable. Old School =
+trust + steady farming. IT = information, automation, timing — paying early for low practical
+competence and low county trust. Mechanic = repairs, salvage, equipment advantage, never crop
+superiority. Balance numbers are DIAGNOSTIC ONLY until each identity's income systems exist.
+
 ## 2. Starting state (all backgrounds)
 
 - Inherited struggling farm: fields (north/south/east), aging equipment set, coop with a few chickens.

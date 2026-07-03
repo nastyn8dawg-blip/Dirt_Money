@@ -11,6 +11,13 @@ const SPREADSHEET_TARGETS := {
 	"it_nephew": 3832,
 	"mechanic": 4012,
 }
+const MISSING_SYSTEMS := {
+	"old_school": "legacy contract premium rarely reachable by bot (Marge >= 40); weather intuition has no mechanical value yet",
+	"it_nephew": "market-timing edge (model prices 1.15x), automation perks, trust questline, incompetence costs beyond labor mult",
+	"mechanic": "repair contracts, salvage/auction flip, cheaper self-repair, restoration income - his ENTIRE income identity",
+}
+const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
+const COST_KEYS := ["order_seed_fuel", "labor_premium", "repair_costs", "penalties", "travel_fuel"]
 
 var _current_bg := ""
 
@@ -19,18 +26,35 @@ func _ready() -> void:
 	EventBus.event_triggered.connect(_bot_handle_event)
 	var failures := 0
 	print("")
-	print("DIRT MONEY BALANCE HARNESS — seed %d" % SEED)
-	print("%-12s %10s %10s %10s %10s %8s %s" % ["background", "end cash", "model", "drift", "debt", "kept", "verdict"])
+	print("DIRT MONEY BALANCE HARNESS — seed %d — DIAGNOSTIC ONLY (Director: do not balance yet)" % SEED)
+	print("Old School is the reference run. Equal cash is NOT the goal; distinct fair paths are.")
 	for bg in ["old_school", "it_nephew", "mechanic"]:
 		var r := _run_sim(bg)
 		if r.day < 31:
 			failures += 1
 		var target: int = SPREADSHEET_TARGETS[bg]
-		print("%-12s %10d %10d %9d%% %10d %8s %s" % [
-			bg, r.cash, target,
-			int(round(100.0 * (r.cash - target) / target)),
-			r.debt, "%d/%d" % [r.kept, r.kept + r.missed], r.verdict,
+		print("")
+		print("=== %-12s  end cash %d | model %d | drift %d%% | debt %d | handshakes %d/%d | \"%s\"" % [
+			bg, r.cash, target, int(round(100.0 * (r.cash - target) / target)),
+			r.debt, r.kept, r.kept + r.missed, r.verdict,
 		])
+		var led: Dictionary = r.ledger
+		var income_bits: Array[String] = []
+		for k in INCOME_KEYS:
+			if int(led.get(k, 0)) != 0:
+				income_bits.append("%s $%d" % [k, led[k]])
+		var cost_bits: Array[String] = []
+		for k in COST_KEYS:
+			if int(led.get(k, 0)) != 0:
+				cost_bits.append("%s $%d" % [k, -int(led[k])])
+		print("  income:   " + (" | ".join(income_bits) if not income_bits.is_empty() else "none"))
+		print("  costs:    " + (" | ".join(cost_bits) if not cost_bits.is_empty() else "none"))
+		print("  interest accrued (debt, not cash): $%d | downtime days: %d" % [-int(led.get("interest_accrued", 0)), r.downtime])
+		var harvest_bits: Array[String] = []
+		for crop in r.harvests.keys():
+			harvest_bits.append("%s %d" % [crop, r.harvests[crop]])
+		print("  harvested: " + (" | ".join(harvest_bits) if not harvest_bits.is_empty() else "nothing") + "  (untracked: missed-opportunity cost)")
+		print("  MISSING SYSTEMS: " + MISSING_SYSTEMS.get(bg, ""))
 	print("")
 	get_tree().quit(failures)
 
@@ -48,6 +72,9 @@ func _run_sim(bg: String) -> Dictionary:
 		"kept": GameState.contracts_completed,
 		"missed": GameState.contracts_missed,
 		"verdict": DataLoader.pick_ending().get("title", "?"),
+		"ledger": GameState.ledger.duplicate(),
+		"harvests": GameState.harvest_log.duplicate(),
+		"downtime": GameState.downtime_days,
 	}
 
 

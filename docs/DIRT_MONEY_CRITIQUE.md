@@ -44,6 +44,26 @@
   with the sandbag choice's "protect your own planting" branch. Sprint 4 (crop/weather sprint).
 
 ## Balance drift log (harness: tests/autoplay.tscn vs design/economy_model.xlsx)
+**STATUS: DIAGNOSTIC ONLY (Director order, 2026-07-03). Do not balance backgrounds yet. Do not
+smooth them into the same economy — the point is not equal cash, it is different paths that feel
+fair and replayable.** Identity principle: Old School earns through trust and steady farming; IT
+earns through information, automation, and timing but suffers early from low practical competence
+and low county trust; Mechanic earns through repairs, salvage, and equipment advantage — never
+crop superiority (do not patch him with generic crop income).
+
+**Post-harness build priority (Director):** 1) Mechanic repair contracts → 2) salvage/auction flip
+loop → 3) IT practical-incompetence cost or starting-debt pressure → 4) IT market-timing mechanic
+→ 5) re-run all three.
+
+- **2026-07-03 (ledger run) — ROOT CAUSE of IT drift: DOUBLE-CROPPING.** Ledger breakdown shows IT
+  harvested 2 full cycles per field (600 corn + 400 soy); the model priced ONE cycle. The second
+  12-day soy cycle (~$2,100 revenue) is the entire overshoot. **Old School's −7% is two errors
+  canceling:** he also double-cropped (1,200 corn) which happens to offset his missing legacy
+  premium — he is a valid PACING reference but not yet an ECONOMIC one. **Open Director ruling:
+  is the 30-day month a one-cycle season or a two-cycle season?** Options: (a) planting windows
+  ("nobody plants corn past Day X") — rural-authentic, enforces one cycle, STRENGTHENS the
+  downtime law by protecting the mid-month county-work gap; (b) accept two cycles and re-derive
+  the spreadsheet. Recommendation: (a).
 - **2026-07-03 (first run)** — OS −40% / IT +43% / ME −47%. Diagnosed: (1) corn contract deadline
   12d < corn cycle 14d — impossible contract, FIXED to 18d; (2) IT labor_cost_mult never applied to
   order costs — FIXED; (3) OS gap is mostly the legacy contract (needs Marge ≥40, hard to reach in

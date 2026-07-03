@@ -41,7 +41,7 @@ func apply_effects(effects: Array) -> void:
 			"flag_set":
 				GameState.set_flag(e.get("flag", ""))
 			"cash_delta":
-				GameState.add_cash(int(e.get("value", 0)))
+				GameState.add_cash(int(e.get("value", 0)), str(e.get("category", "misc")))
 			"chickens_delta":
 				GameState.chickens = maxi(0, GameState.chickens + int(e.get("value", 0)))
 			"time_block":

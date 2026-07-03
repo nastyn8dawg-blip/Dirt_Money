@@ -58,7 +58,7 @@ func _ready() -> void:
 
 func _travel_to(node: Dictionary) -> void:
 	if node.id != "home":
-		GameState.add_cash(-TRAVEL_FUEL_COST)
+		GameState.add_cash(-TRAVEL_FUEL_COST, "travel_fuel")
 		CalendarManager.spend_block()
 	if node.has("screen"):
 		go(node.screen)

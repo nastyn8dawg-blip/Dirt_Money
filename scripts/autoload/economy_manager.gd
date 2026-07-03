@@ -32,7 +32,7 @@ func sell(commodity: String, units: int) -> int:
 		return 0
 	var revenue := int(round(prices.get(commodity, 0.0) * units))
 	GameState.inventory[commodity] = have - units
-	GameState.add_cash(revenue)
+	GameState.add_cash(revenue, "livestock_revenue" if commodity == "eggs" else "crop_revenue")
 	return revenue
 
 
