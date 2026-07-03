@@ -13,6 +13,7 @@ var fields: Dictionary = {}      # field_id -> {state, crop}
 var chickens: int = 12
 var contracts_active: Array = []
 var contracts_completed: int = 0
+var contracts_missed: int = 0
 var perks: Array = []
 var pending_breakdown: Dictionary = {}   # {order} — one open breakdown at a time
 var _breakdown_rng := RandomNumberGenerator.new()
@@ -39,6 +40,7 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	chickens = 12
 	contracts_active = []
 	contracts_completed = 0
+	contracts_missed = 0
 	perks = []
 	pending_breakdown = {}
 	_breakdown_rng.seed = run_seed + 7
@@ -236,6 +238,7 @@ func check_contract_deadlines() -> void:
 			missed.append(c)
 	for c in missed:
 		contracts_active.erase(c)
+		contracts_missed += 1
 		cash -= int(c.penalty)
 		ReputationLedger.apply_effects([
 			{"op": "rep_delta", "npc": c.offered_by, "value": -6},
@@ -253,6 +256,7 @@ func run_summary() -> Dictionary:
 		"cash": cash,
 		"debt": debt,
 		"contracts_completed": contracts_completed,
+		"contracts_missed": contracts_missed,
 		"reputation": ReputationLedger.snapshot(),
 		"flags": flags.keys(),
 	}

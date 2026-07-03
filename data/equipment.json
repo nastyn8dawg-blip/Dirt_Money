@@ -4,7 +4,7 @@
   "summary_thresholds": { "fine": 60, "worn": 35, "rough": 15 },
   "equipment": [
     {
-      "id": "tractor_old", "name": "Harvestall 900 (inherited)",
+      "id": "tractor_old", "name": "The 2010 (inherited Harvestall)",
       "condition": { "engine": 55, "hydraulics": 40, "transmission": 62, "tires": 30, "electrical": 48, "attachments": 50 },
       "breakdown_base_chance": 0.08,
       "fuel_per_order_day": 45

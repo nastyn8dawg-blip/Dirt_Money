@@ -15,6 +15,26 @@ var backgrounds: Dictionary = {}
 var dialogue_trees: Dictionary = {}
 var strings: Dictionary = {}
 var gossip_banks: Array = []
+var endings: Array = []
+
+
+func pick_ending() -> Dictionary:
+	# The run's verdict, measured in dependability. First match wins.
+	for e in endings:
+		if e.has("if_flag") and not GameState.has_flag(e.if_flag):
+			continue
+		if e.has("if_not_flag") and GameState.has_flag(e.if_not_flag):
+			continue
+		if e.has("if_county_at_least") and ReputationLedger.county < int(e.if_county_at_least):
+			continue
+		if e.has("if_county_below") and ReputationLedger.county >= int(e.if_county_below):
+			continue
+		if e.has("if_cash_at_least") and GameState.cash < int(e.if_cash_at_least):
+			continue
+		if e.has("if_contracts_at_least") and GameState.contracts_completed < int(e.if_contracts_at_least):
+			continue
+		return e
+	return {}
 
 
 func pick_gossip() -> String:
@@ -76,6 +96,7 @@ func load_all() -> void:
 		backgrounds[b.id] = b
 	strings = _read_json("res://data/strings.json")
 	gossip_banks = _read_json("res://data/gossip.json").get("banks", [])
+	endings = _read_json("res://data/endings.json").get("endings", [])
 	_load_dialogue_dir("res://data/dialogue")
 
 

@@ -27,6 +27,10 @@ Voice profile params: `base_pitch` (0.5–2.0), `syllable_rate` (syl/sec), `volu
 | **Patti Lund**, diner waitress | Diner | Bright, chatty, hub of gossip | 1.5 high | 7.0 | All: rumor access; reputation echoes ("heard about the baler…") |
 | **Gus Weaver**, salvage owner | Salvage yard | Gravelly, few words | 0.55 | 2.5 | Mechanic: haggle/spot-value checks · scripted auction events |
 
+## 2b. Minor names (canon)
+- **Caleb** — Roy's shop hand; "I'll send Caleb." (Director, 2026-07-03). Off-screen for the slice.
+- **The 2010** — the inherited Harvestall tractor; Roy knows its sound over the phone.
+
 ## 3. Reputation ripple chains (one per background, written before code — Phase 0 exit criterion)
 
 ### Mechanic — the baler chain (canonical)

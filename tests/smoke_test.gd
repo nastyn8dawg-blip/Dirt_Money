@@ -16,6 +16,7 @@ func _ready() -> void:
 	test_contracts()
 	test_storm_event()
 	test_breakdown()
+	test_endings()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -214,3 +215,27 @@ func test_breakdown() -> void:
 	check(GameState.pending_breakdown.is_empty(), "resolution clears the breakdown")
 	check(not order.get("paused", false), "waiting unpauses the order")
 	check(int(order.days_left) == days_before + 2, "letting it sit costs two days")
+
+
+func test_endings() -> void:
+	GameState.new_run("mechanic", 111)
+	check(DataLoader.endings.size() >= 5, "ending table loaded")
+	# Fallback when nothing's proven (mechanic starts at county 0;
+	# old_school starts at 10 - inherited goodwill must not trigger verdicts)
+	check(DataLoader.pick_ending().get("id", "") == "still_standing", "fresh run gets the fallback verdict")
+	GameState.new_run("old_school", 115)
+	check(DataLoader.pick_ending().get("id", "") == "still_standing", "inherited goodwill alone earns no verdict")
+	# Missed handshakes + sour county = the county stopped calling
+	GameState.set_flag("contract_missed")
+	ReputationLedger.county = -4
+	check(DataLoader.pick_ending().get("id", "") == "word_is_no_good", "broken word ending wins")
+	# Dependable: delivered handshakes + county respect
+	GameState.new_run("old_school", 112)
+	GameState.contracts_completed = 3
+	ReputationLedger.county = 6
+	check(DataLoader.pick_ending().get("id", "") == "dependable", "dependable ending wins")
+	# Rich but cold: the resentment thread's first surface
+	GameState.new_run("mechanic", 113)
+	GameState.cash = 5000
+	ReputationLedger.county = 0
+	check(DataLoader.pick_ending().get("id", "") == "solvent_stranger", "solvent stranger ending wins")

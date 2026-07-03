@@ -19,6 +19,8 @@ func save_game(slot: int = 0) -> bool:
 		"fields": GameState.fields,
 		"chickens": GameState.chickens,
 		"contracts_completed": GameState.contracts_completed,
+		"contracts_missed": GameState.contracts_missed,
+		"contracts_active": GameState.contracts_active,
 		"perks": GameState.perks,
 		"day": CalendarManager.day,
 		"block": CalendarManager.block,
@@ -55,6 +57,8 @@ func load_game(slot: int = 0) -> bool:
 	GameState.fields = parsed.get("fields", {})
 	GameState.chickens = int(parsed.get("chickens", 0))
 	GameState.contracts_completed = int(parsed.get("contracts_completed", 0))
+	GameState.contracts_missed = int(parsed.get("contracts_missed", 0))
+	GameState.contracts_active = parsed.get("contracts_active", [])
 	GameState.perks = parsed.get("perks", [])
 	CalendarManager.day = int(parsed.get("day", 1))
 	CalendarManager.block = int(parsed.get("block", 0))
