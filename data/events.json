@@ -4,16 +4,17 @@
     {
       "id": "baler_breakdown_hollis",
       "title": "Hollis's Baler Dies",
-      "trigger": { "min_day": 3, "weight": 10, "once": true },
+      "trigger": { "min_day": 3, "weight": 10, "once": true, "not_flags": ["baler_fixed", "baler_botched"] },
       "dialogue_tree": "hollis_baler",
-      "notes": "Canonical Mechanic ripple chain (CHARACTERS_SPEC §3)."
+      "notes": "Canonical Mechanic ripple chain (CHARACTERS_SPEC §3). not_flags: skip if the player already resolved it by visiting."
     },
     {
       "id": "storm_warning",
       "title": "Storm Front Coming",
+      "priority": 10,
       "trigger": { "min_day": 5, "weather_next": "storm", "weight": 20, "once": true },
       "dialogue_tree": "storm_choice",
-      "notes": "Old School ripple chain: protect own planting vs help Hollis sandbag."
+      "notes": "Old School ripple chain: protect own planting vs help Hollis sandbag. High priority: weather won't wait."
     },
     {
       "id": "chicken_hawk",

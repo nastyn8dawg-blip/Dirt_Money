@@ -27,14 +27,18 @@
       "id": "contract_delivered",
       "requires_flag": "contract_delivered",
       "lines": [
-        "[BLANK G1 — county notes you deliver what you shake on. Awaiting Director.]"
+        "Funny thing about this county.\n\nDo what you say you'll do long enough and people stop checking.",
+        "Folks around here notice consistency more than talent.",
+        "People trust calendars more than promises.\n\nYou've been managing both."
       ]
     },
     {
       "id": "contract_missed",
       "requires_flag": "contract_missed",
       "lines": [
-        "[BLANK G2 — a missed handshake travels fast. Awaiting Director.]"
+        "Miss one handshake and folks call it bad luck.\n\nMiss two and they start calling it a habit.",
+        "County doesn't expect perfection.\n\nIt expects a phone call.",
+        "Deadlines don't stay on paper around here."
       ]
     },
     {

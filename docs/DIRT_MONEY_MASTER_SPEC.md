@@ -20,6 +20,17 @@ We are **not** building: a Farming Simulator clone, a Stardew clone, or a spread
 
 Replayability is the core KPI. Not content quantity. Not map size. Not crop count.
 
+### The thesis (Director, 2026-07-03)
+Not "farming is hard." Not "farming is profitable." **Life in Ash Creek is built on accumulated
+trust.** Debt, contracts, equipment deals, neighbor favors, credit, gossip, weather help,
+emergency labor, handshakes — every system is measuring the same hidden variable: **can people
+depend on you?** A contract isn't money; a contract is a promise. Ash Creek doesn't care about
+transactions — it cares whether you do what you said you would do.
+
+Corollary: **dependability is not likability.** You don't have to be liked to be successful, and
+plenty of people resent success ("this guy's buying up all the land"). Trust and warmth are
+different ledgers — a design axis reserved for Phase 3 (see CRITIQUE).
+
 ## 3. Genre & audience
 
 - Genre: farm/life-sim × CRPG (management loop with consequential dialogue).

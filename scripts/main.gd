@@ -19,6 +19,7 @@ var _dialogue_layer: Control = null
 func _ready() -> void:
 	EventBus.screen_change_requested.connect(_on_screen_change)
 	EventBus.dialogue_started.connect(_on_dialogue_started)
+	EventBus.event_triggered.connect(func(ev): EventBus.dialogue_started.emit(ev.dialogue_tree))
 	EventBus.run_ended.connect(func(_summary): _on_screen_change("report_card", {}))
 	if not DataLoader.load_errors.is_empty():
 		push_warning("Data load errors: %s" % str(DataLoader.load_errors))

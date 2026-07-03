@@ -46,7 +46,10 @@ func advance_day() -> void:
 	WeatherManager.roll_next()
 	# 4. Loan/debt interest tick
 	GameState.tick_debt()
-	# 5. Event scheduler (stub: sprint 9 wires the full interrupt picker)
+	# 5. Event scheduler: at most one interrupt per day, surfaced as a
+	# conversation (design law: interruptions arrive as people, not popups).
+	# v1 is deterministic priority order; weighted rolls land in sprint 9.
+	_schedule_event()
 	# 6. Chicken output
 	GameState.add_inventory("eggs", GameState.chickens)
 	day += 1
@@ -57,3 +60,34 @@ func advance_day() -> void:
 	EventBus.time_block_changed.emit(block)
 	if day > RUN_LENGTH_DAYS:
 		EventBus.run_ended.emit(GameState.run_summary())
+
+
+func _schedule_event() -> void:
+	# Higher priority wins the day's single interrupt slot (a storm arriving
+	# tomorrow outranks a baler that can wait).
+	var events := DataLoader.events.duplicate()
+	events.sort_custom(func(a, b): return int(a.get("priority", 0)) > int(b.get("priority", 0)))
+	for ev in events:
+		var t: Dictionary = ev.get("trigger", {})
+		if t.get("once", false) and GameState.has_flag("event_fired_" + ev.get("id", "")):
+			continue
+		if day < int(t.get("min_day", 1)):
+			continue
+		if t.has("background") and t.background != GameState.background_id:
+			continue
+		if t.has("weather_next") and WeatherManager.forecast(1)[0] != t.weather_next:
+			continue
+		var blocked := false
+		for f in t.get("not_flags", []):
+			if GameState.has_flag(f):
+				blocked = true
+		if blocked:
+			continue
+		# Inline-choice events (no dialogue tree) wait for sprint 9
+		var tree: String = ev.get("dialogue_tree", "")
+		if tree == "" or not DataLoader.dialogue_trees.has(tree):
+			continue
+		if t.get("once", false):
+			GameState.set_flag("event_fired_" + ev.get("id", ""))
+		EventBus.event_triggered.emit(ev)
+		return

@@ -13,7 +13,8 @@
     "intro_cold": {
       "speaker": "marge",
       "emotion": "neutral",
-      "text": "[BLANK M1 — DISTRUSTED Marge, grammar budget 1-2 sentences MAX: answers the door, volunteers nothing, no humor. The board behind her does the talking. Awaiting Director.]",
+      "text": "Board's over there.\n\nIf you take something, finish it.",
+      "variants": ["Contracts haven't changed.\n\nOnly expectations have."],
       "options": [
         { "text": "(Check the board and leave)", "goto": "_end" }
       ]
@@ -21,9 +22,14 @@
     "intro_trusted": {
       "speaker": "marge",
       "emotion": "excited",
-      "text": "[BLANK M2 — TRUSTED Marge, grammar budget 4-7 sentences: volunteers a rumor or a heads-up about the board, and asks the player a question back. Awaiting Director.]",
+      "text": "Hollis finally quit pretending he wasn't impressed with you.\n\nGot a hay haul coming up next week if the weather cooperates.\n\nYou thinking about staying small, or are you planning to grow this thing?",
+      "variants": ["People are starting to put your name beside jobs instead of behind them.\n\nWhat's the plan from here?"],
       "options": [
-        { "text": "[BLANK M3 — the player's answer to her question. Awaiting Director.]", "goto": "chat" },
+        {
+          "text": "\"Trying not to outrun myself.\"",
+          "_alts": ["\"Depends what the county gives me room to become.\"", "\"Ask me after harvest.\""],
+          "goto": "chat"
+        },
         { "text": "(Leave)", "goto": "_end" }
       ]
     },

@@ -35,6 +35,14 @@
 | Motivation cliff ~month 3 | Sprint without a playable build | Playable-every-sprint rule; public devlog |
 | Feature creep | Anything not in the sprint table appearing in a branch | This document is the only landing zone for ideas |
 
+## Design threads (logged, not built — pacing law applies)
+- **Dependability ≠ likability (Director, 2026-07-03).** Resentment of success is real: a player
+  who buys up land and never misses a handshake should be *trusted* and *resented* at once. Would
+  need a second social axis (warmth vs. reliability) or resentment events keyed to wealth/land
+  flags. Phase 3 candidate — do not build until county memory v1 is proven in playtests.
+- Storm damage to unprotected fields (weather_sensitivity data exists, no mechanic yet) — pairs
+  with the sandbag choice's "protect your own planting" branch. Sprint 4 (crop/weather sprint).
+
 ## Open questions (unresolved, need director ruling)
 - Telemetry implementation for demo (local opt-in file vs none) — decide in Phase 2 planning.
 - gdUnit4 vs lightweight custom test runner — start custom, adopt gdUnit4 when test count justifies (tech spec §6); revisit at sprint 3.

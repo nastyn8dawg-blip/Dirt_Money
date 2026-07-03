@@ -16,8 +16,16 @@
       "Could do nothing.",
       "That's half of farming right there."
     ],
-    "rain_light": [],
-    "storm": [],
+    "rain_light": [
+      "Rain's got manners today. Enough to settle the dust without changing anybody's plans.",
+      "Good rain. The kind folks quit talking about after ten minutes.",
+      "Fields'll appreciate it more than people will."
+    ],
+    "storm": [
+      "Sky's serious today. Best make sure you've tied down what matters.",
+      "Storm's coming with purpose. County's about to get busy.",
+      "Some weather asks politely. This kind just shows up."
+    ],
     "drought": [
       "Heat's got teeth today.",
       "Even the shade feels tired.",

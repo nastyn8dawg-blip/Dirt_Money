@@ -14,6 +14,7 @@ func _ready() -> void:
 	test_save_roundtrip()
 	test_county_memory()
 	test_contracts()
+	test_storm_event()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -168,3 +169,24 @@ func test_contracts() -> void:
 	ReputationLedger.rep["marge"] = 50
 	check(runner.resolve_rules(tree.get("entry", []), tree.start) == "intro_trusted", "trusted Marge volunteers")
 	runner.free()
+
+
+func test_storm_event() -> void:
+	GameState.new_run("old_school", 88)
+	var fired: Array = []
+	var handler := func(ev): fired.append(ev)
+	EventBus.event_triggered.connect(handler)
+	# Force tomorrow's weather to storm and advance past min_day
+	CalendarManager.day = 5
+	WeatherManager._future.clear()
+	for i in range(8):
+		WeatherManager._future.append("storm")
+	CalendarManager.advance_day()
+	EventBus.event_triggered.disconnect(handler)
+	check(not fired.is_empty(), "storm warning event fires when storm is coming")
+	if not fired.is_empty():
+		check(fired[0].get("dialogue_tree", "") == "storm_choice", "storm event opens the sandbag conversation")
+	check(GameState.has_flag("event_fired_storm_warning"), "once-events do not refire")
+	# The choice feeds the legacy contract gate
+	ReputationLedger.apply_effects([{ "op": "flag_set", "flag": "storm_helped_hollis" }])
+	check(GameState.has_flag("storm_helped_hollis"), "sandbag flag gates the legacy contract")

@@ -1,0 +1,50 @@
+{
+  "_schema": "The Old School ripple chain's spine (CHARACTERS_SPEC ripple 2). Fires the evening before a storm. Helping costs real time blocks and sets storm_helped_hollis - the flag the legacy contract requires. Text is scratch placeholder awaiting Director wording (law 6). Blanks S1-S3.",
+  "_status": "placeholder_awaiting_director",
+  "id": "storm_choice",
+  "npc": "hollis",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "[BLANK S1 — Hollis at your door, storm coming tonight, his low field will flood without sandbags and he can't do it alone. He asks plain — no drama, no begging. Grammar note: he's asking a FAVOR, which costs him something to ask. Awaiting Director.]",
+      "options": [
+        {
+          "text": "[BLANK S2a — the player drops their plans and goes. Awaiting Director.]",
+          "goto": "helped",
+          "effects": [
+            { "op": "time_block", "value": -1 },
+            { "op": "time_block", "value": -1 }
+          ]
+        },
+        {
+          "text": "[BLANK S2b — the player says no; their own place needs them tonight. Honest, not cruel. Awaiting Director.]",
+          "goto": "declined"
+        }
+      ]
+    },
+    "helped": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "[BLANK S3a — after the sandbagging, soaked and tired. He won't make a speech about it. One line that makes the lost day feel worth it. Awaiting Director.]",
+      "options": [{ "text": "(Head home)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "hollis", "value": 8 },
+        { "op": "county_delta", "value": 3 },
+        { "op": "flag_set", "flag": "storm_helped_hollis" }
+      ]
+    },
+    "declined": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "[BLANK S3b — he takes the no like a county man: no argument, no guilt trip. But it's noted. Short. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "hollis", "value": -4 },
+        { "op": "county_delta", "value": -2 },
+        { "op": "flag_set", "flag": "storm_ignored_hollis" }
+      ]
+    }
+  }
+}
