@@ -48,6 +48,8 @@ func apply_effects(effects: Array) -> void:
 				CalendarManager.spend_block()
 			"unlock":
 				GameState.set_flag("unlock_" + str(e.get("value", "")))
+			"breakdown_resolve":
+				GameState.resolve_breakdown(str(e.get("value", "resume")))
 			_:
 				push_warning("Unknown effect op: %s" % str(e))
 

@@ -14,6 +14,8 @@ var chickens: int = 12
 var contracts_active: Array = []
 var contracts_completed: int = 0
 var perks: Array = []
+var pending_breakdown: Dictionary = {}   # {order} — one open breakdown at a time
+var _breakdown_rng := RandomNumberGenerator.new()
 
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
@@ -38,6 +40,8 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	contracts_active = []
 	contracts_completed = 0
 	perks = []
+	pending_breakdown = {}
+	_breakdown_rng.seed = run_seed + 7
 	ReputationLedger.init_from_background(bg_id)
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
@@ -98,6 +102,19 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 func progress_field_orders() -> void:
 	var done: Array = []
 	for order in field_orders:
+		if order.get("paused", false):
+			continue
+		# Breakdown roll: the old tractor working in bad weather is how the
+		# interruption-as-conversation design earns its keep.
+		if pending_breakdown.is_empty():
+			var eq: Dictionary = DataLoader.equipment.get("tractor_old", {})
+			var chance := float(eq.get("breakdown_base_chance", 0.0))
+			if WeatherManager.current in ["storm", "rain_light"]:
+				chance *= 2.0
+			if _breakdown_rng.randf() < chance:
+				order.paused = true
+				pending_breakdown = {"order": order}
+				continue
 		order.days_left -= 1
 		if order.days_left <= 0:
 			done.append(order)
@@ -137,6 +154,20 @@ func tick_debt() -> void:
 			rate *= CREDIT_TIGHT_MULT
 		debt += int(ceil(debt * rate))
 		EventBus.money_changed.emit(cash, debt)
+
+
+func resolve_breakdown(mode: String) -> void:
+	var order: Dictionary = pending_breakdown.get("order", {})
+	if not order.is_empty():
+		match mode:
+			"resume":
+				order.paused = false
+			"wait":
+				# It sits: the machine gets looked at eventually, the work
+				# loses two days, and the weather keeps its opinions.
+				order.paused = false
+				order.days_left = int(order.days_left) + 2
+	pending_breakdown = {}
 
 
 func find_contract_template(contract_id: String) -> Dictionary:

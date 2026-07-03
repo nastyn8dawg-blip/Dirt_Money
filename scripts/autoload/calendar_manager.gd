@@ -63,6 +63,10 @@ func advance_day() -> void:
 
 
 func _schedule_event() -> void:
+	# A machine down in your own field outranks everything.
+	if not GameState.pending_breakdown.is_empty() and DataLoader.dialogue_trees.has("breakdown_choice"):
+		EventBus.event_triggered.emit({"id": "breakdown", "dialogue_tree": "breakdown_choice"})
+		return
 	# Higher priority wins the day's single interrupt slot (a storm arriving
 	# tomorrow outranks a baler that can wait).
 	var events := DataLoader.events.duplicate()

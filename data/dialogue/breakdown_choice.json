@@ -1,0 +1,77 @@
+{
+  "_schema": "Breakdown interruption: your machine died mid-order, this is the call to Roy's shop. 6-beat structure; Mechanic self-fix check with both branches as content; all outcomes feed county memory flags. Text is scratch placeholder awaiting Director wording (law 6). Blanks B1-B3d.",
+  "_status": "placeholder_awaiting_director",
+  "id": "breakdown_choice",
+  "npc": "roy",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[BLANK B1 — Roy answering the shop phone. He already knows which machine it is before you finish the sentence. Awaiting Director.]",
+      "options": [
+        {
+          "text": "[BLANK B2a — Mechanic: you'll fix it yourself, you just need the part held. Awaiting Director.]",
+          "label": "[Mechanic 40]",
+          "requires": { "background": "mechanic" },
+          "check": { "skill": "mechanic", "difficulty": 40, "odds": 0.6 },
+          "success": "fixed_self",
+          "failure": "bodged_it"
+        },
+        {
+          "text": "[BLANK B2b — send somebody out ($150). Awaiting Director.]",
+          "goto": "shop_fix",
+          "effects": [{ "op": "cash_delta", "value": -150 }]
+        },
+        {
+          "text": "[BLANK B2c — it sits till you can deal with it (order loses 2 days, weather keeps rolling). Awaiting Director.]",
+          "goto": "it_sits"
+        }
+      ]
+    },
+    "fixed_self": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[BLANK B3a — Roy hears it running over the phone. Professional respect, grudging: he just lost a service call. Awaiting Director.]",
+      "options": [{ "text": "(Back to work)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "flag_set", "flag": "breakdown_fixed_self" },
+        { "op": "rep_delta", "npc": "roy", "value": 2 },
+        { "op": "rep_delta", "npc": "gus", "value": 2 },
+        { "op": "breakdown_resolve", "value": "resume" }
+      ]
+    },
+    "bodged_it": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[BLANK B3b — good failure: your fix held forty minutes, now it needs the part AND the labor. Roy is professionally sympathetic and privately delighted. Parts run $80. Awaiting Director.]",
+      "options": [{ "text": "(Pay for the parts and get back to it)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "cash_delta", "value": -80 },
+        { "op": "flag_set", "flag": "breakdown_bodged" },
+        { "op": "breakdown_resolve", "value": "resume" }
+      ]
+    },
+    "shop_fix": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[BLANK B3c — Roy confirms he'll send his guy out; friendly, efficient, and you can hear him writing the invoice. Awaiting Director.]",
+      "options": [{ "text": "(Hang up)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "flag_set", "flag": "breakdown_paid_shop" },
+        { "op": "rep_delta", "npc": "roy", "value": 2 },
+        { "op": "breakdown_resolve", "value": "resume" }
+      ]
+    },
+    "it_sits": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[BLANK B3d — Roy's dry warning about machines that sit in a field with weather coming. No sale, no hard feelings, one needle. Awaiting Director.]",
+      "options": [{ "text": "(Hang up)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "flag_set", "flag": "breakdown_waited" },
+        { "op": "breakdown_resolve", "value": "wait" }
+      ]
+    }
+  }
+}

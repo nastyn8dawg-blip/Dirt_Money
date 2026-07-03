@@ -15,6 +15,7 @@ func _ready() -> void:
 	test_county_memory()
 	test_contracts()
 	test_storm_event()
+	test_breakdown()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -190,3 +191,26 @@ func test_storm_event() -> void:
 	# The choice feeds the legacy contract gate
 	ReputationLedger.apply_effects([{ "op": "flag_set", "flag": "storm_helped_hollis" }])
 	check(GameState.has_flag("storm_helped_hollis"), "sandbag flag gates the legacy contract")
+
+
+func test_breakdown() -> void:
+	GameState.new_run("mechanic", 99)
+	GameState.issue_field_order("north", "corn", "plant")
+	var eq: Dictionary = DataLoader.equipment.get("tractor_old", {})
+	var original_chance = eq.get("breakdown_base_chance", 0.08)
+	eq["breakdown_base_chance"] = 1.0
+	var fired: Array = []
+	var handler := func(ev): fired.append(ev)
+	EventBus.event_triggered.connect(handler)
+	CalendarManager.advance_day()
+	EventBus.event_triggered.disconnect(handler)
+	eq["breakdown_base_chance"] = original_chance
+	check(not GameState.pending_breakdown.is_empty(), "guaranteed breakdown pauses the order")
+	var order: Dictionary = GameState.pending_breakdown.get("order", {})
+	check(order.get("paused", false), "order is paused while broken")
+	check(not fired.is_empty() and fired[0].get("dialogue_tree", "") == "breakdown_choice", "breakdown interrupts as a call to Roy")
+	var days_before := int(order.days_left)
+	ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "wait" }])
+	check(GameState.pending_breakdown.is_empty(), "resolution clears the breakdown")
+	check(not order.get("paused", false), "waiting unpauses the order")
+	check(int(order.days_left) == days_before + 2, "letting it sit costs two days")

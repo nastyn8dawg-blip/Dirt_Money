@@ -1,6 +1,6 @@
 {
-  "_schema": "The Old School ripple chain's spine (CHARACTERS_SPEC ripple 2). Fires the evening before a storm. Helping costs real time blocks and sets storm_helped_hollis - the flag the legacy contract requires. Text is scratch placeholder awaiting Director wording (law 6). Blanks S1-S3.",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "The Old School ripple chain's spine (CHARACTERS_SPEC ripple 2). Fires the evening before a storm. Helping costs real time blocks and sets storm_helped_hollis - the flag the legacy contract requires.",
+  "_status": "director_approved (2026-07-03)",
   "id": "storm_choice",
   "npc": "hollis",
   "start": "intro",
@@ -8,10 +8,10 @@
     "intro": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "[BLANK S1 — Hollis at your door, storm coming tonight, his low field will flood without sandbags and he can't do it alone. He asks plain — no drama, no begging. Grammar note: he's asking a FAVOR, which costs him something to ask. Awaiting Director.]",
+      "text": "Storm's coming hard tonight. Low field'll flood if I don't get bags down before dark. I wouldn't be standing here if I had enough hands.",
       "options": [
         {
-          "text": "[BLANK S2a — the player drops their plans and goes. Awaiting Director.]",
+          "text": "\"I'll come. My place can wait a night.\"",
           "goto": "helped",
           "effects": [
             { "op": "time_block", "value": -1 },
@@ -19,7 +19,7 @@
           ]
         },
         {
-          "text": "[BLANK S2b — the player says no; their own place needs them tonight. Honest, not cruel. Awaiting Director.]",
+          "text": "\"I can't leave my own place exposed tonight. I hate saying it, but I can't.\"",
           "goto": "declined"
         }
       ]
@@ -27,7 +27,7 @@
     "helped": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "[BLANK S3a — after the sandbagging, soaked and tired. He won't make a speech about it. One line that makes the lost day feel worth it. Awaiting Director.]",
+      "text": "Water came up mean, but it didn't come through.",
       "options": [{ "text": "(Head home)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "hollis", "value": 8 },
@@ -38,7 +38,7 @@
     "declined": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "[BLANK S3b — he takes the no like a county man: no argument, no guilt trip. But it's noted. Short. Awaiting Director.]",
+      "text": "Then tend your place.\n\nI'll tend mine.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "hollis", "value": -4 },

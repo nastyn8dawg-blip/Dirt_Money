@@ -82,6 +82,8 @@ func _refresh() -> void:
 
 
 func _suggestion() -> String:
+	if not GameState.pending_breakdown.is_empty():
+		return "Machine's down in the field. Roy's shop is on the line — deal with it."
 	for c in GameState.contracts_active:
 		if GameState.inventory.get(c.commodity, 0) >= int(c.units):
 			return "You can fill Marge's contract — deliver at the Co-op before %s (Day %d)." % [
@@ -142,7 +144,10 @@ func _rebuild_fields() -> void:
 		elif f.state == "working":
 			for o in GameState.field_orders:
 				if o.field == field_id:
-					make_label(row, "→ %s, %d day(s) left" % [o.kind, o.days_left], 13, Color(0.6, 0.8, 1.0))
+					if o.get("paused", false):
+						make_label(row, "→ BROKEN DOWN — %s stalled" % o.kind, 13, Color(0.95, 0.45, 0.35))
+					else:
+						make_label(row, "→ %s, %d day(s) left" % [o.kind, o.days_left], 13, Color(0.6, 0.8, 1.0))
 
 
 func _rebuild_info() -> void:

@@ -48,6 +48,10 @@ func load_game(slot: int = 0) -> bool:
 	GameState.inventory = parsed.get("inventory", {})
 	GameState.flags = parsed.get("flags", {})
 	GameState.field_orders = parsed.get("field_orders", [])
+	GameState.pending_breakdown = {}
+	for order in GameState.field_orders:
+		if order.get("paused", false):
+			GameState.pending_breakdown = {"order": order}
 	GameState.fields = parsed.get("fields", {})
 	GameState.chickens = int(parsed.get("chickens", 0))
 	GameState.contracts_completed = int(parsed.get("contracts_completed", 0))
