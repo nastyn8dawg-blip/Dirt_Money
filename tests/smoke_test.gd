@@ -33,6 +33,8 @@ func test_data_loads() -> void:
 	check(DataLoader.npcs.size() == 8, "8 NPCs loaded")
 	check(DataLoader.crops.size() == 3, "3 crops loaded")
 	check(DataLoader.dialogue_trees.has("hollis_baler"), "sample dialogue tree loaded")
+	check(DataLoader.dialogue_trees.size() >= 8, "every county NPC has a tree")
+	check(DataLoader.strings.get("weather_cues", {}).size() == 7, "weather cue per state")
 	# Every check option must have both success and failure branches (design law)
 	for tree_id in DataLoader.dialogue_trees.keys():
 		var tree: Dictionary = DataLoader.dialogue_trees[tree_id]

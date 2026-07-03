@@ -22,7 +22,11 @@ func _ready() -> void:
 	_list = VBoxContainer.new()
 	_list.add_theme_constant_override("separation", 8)
 	panel.add_child(_list)
-	make_button(root, "Back to Map", func(): go("world_map"))
+	var nav := HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 10)
+	root.add_child(nav)
+	make_button(nav, "Talk to Sandy", func(): EventBus.dialogue_started.emit("sandy_talk"))
+	make_button(nav, "Back to Map", func(): go("world_map"))
 	_refresh()
 
 

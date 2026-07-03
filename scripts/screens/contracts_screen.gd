@@ -48,9 +48,14 @@ func _ready() -> void:
 		var color := Color.WHITE if available else Color(0.45, 0.45, 0.45)
 		make_label(row, "[%s] %s" % [contract.type, contract.title], 15, color)
 		if available:
+			var tree_id: String = "hollis_baler" if offered_by == "hollis" else offered_by + "_talk"
 			make_button(row, "Discuss with %s" % DataLoader.get_npc(offered_by).get("name", "..."),
-				func(): EventBus.dialogue_started.emit("hollis_baler"))  # conversation delivery: sprint 6
+				func(): EventBus.dialogue_started.emit(tree_id))  # full negotiation flow: sprint 6
 		else:
 			make_label(row, "— " + reason, 13, Color(0.6, 0.45, 0.4))
 
-	make_button(root, "Back to Map", func(): go("world_map"))
+	var nav := HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 10)
+	root.add_child(nav)
+	make_button(nav, "Talk to Marge", func(): EventBus.dialogue_started.emit("marge_talk"))
+	make_button(nav, "Back to Map", func(): go("world_map"))

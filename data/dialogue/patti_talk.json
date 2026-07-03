@@ -1,0 +1,25 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6). Patti is the gossip surface: her chat node is where reputation echoes will appear (conditional text lands in sprint 2 engine work).",
+  "_status": "placeholder_awaiting_director",
+  "id": "patti_talk",
+  "npc": "patti",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "patti",
+      "emotion": "excited",
+      "text": "[Situation — Patti pours coffee you didn't order and starts the county news mid-sentence.]",
+      "options": [
+        { "text": "[Ask what people are saying lately.]", "goto": "gossip" },
+        { "text": "[Just the coffee, thanks.]", "goto": "_end" }
+      ]
+    },
+    "gossip": {
+      "speaker": "patti",
+      "emotion": "excited",
+      "text": "[Gossip surface — this line will later be swapped by flags: the baler story, the spreadsheet farmer joke, who helped who in the storm. For now: one juicy neutral county rumor.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "flag_set", "flag": "heard_diner_gossip" }]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
+  "_status": "placeholder_awaiting_director",
+  "id": "roy_talk",
+  "npc": "roy",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[Situation — Big Roy, loud and friendly, steering you toward a 'one-owner' baler out front before you've said a word.]",
+      "options": [
+        {
+          "text": "[Mechanic option — look past the fresh paint and read the machine's real condition.]",
+          "label": "[Mechanic]",
+          "requires": { "background": "mechanic" },
+          "check": { "skill": "mechanic", "difficulty": 35, "odds": 0.65 },
+          "success": "lemon_spotted",
+          "failure": "lemon_missed"
+        },
+        { "text": "[Ask prices, keep your hands in your pockets.]", "goto": "browse" },
+        { "text": "[Leave before he starts a sentence with 'friend'.]", "goto": "_end" }
+      ]
+    },
+    "lemon_spotted": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[Result — you name the cracked block from ten feet. Roy drops the act; wrench respect. Better machines come out next visit.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "roy", "value": 4 },
+        { "op": "flag_set", "flag": "roy_shows_real_stock" }
+      ]
+    },
+    "lemon_missed": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[Good failure — you nodded along at the wrong part. Roy files you under 'retail'. Prices quietly firm up for you.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "roy", "value": -2 },
+        { "op": "flag_set", "flag": "roy_marks_you_retail" }
+      ]
+    },
+    "browse": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[Flavor — one machine, one price, one line of salesmanship you can walk away from.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    }
+  }
+}

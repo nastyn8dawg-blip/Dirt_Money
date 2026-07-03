@@ -41,12 +41,9 @@ func forecast(days: int) -> Array[String]:
 
 func intuition_cue() -> String:
 	# Old School flavor: qualitative hint about tomorrow (Read The Land).
+	# Lines live in data/strings.json — Director-authored per CLAUDE.md law 6.
 	var next: String = forecast(1)[0]
-	match next:
-		"storm": return "Knee's acting up something fierce. Weather's coming."
-		"rain_light": return "Swallows are flying low over the south field."
-		"drought": return "Air's been dry as paper all evening."
-		_: return "Sky looks honest enough for tomorrow."
+	return DataLoader.strings.get("weather_cues", {}).get(next, "[Cue missing for %s]" % next)
 
 
 func _ensure_future(n: int) -> void:

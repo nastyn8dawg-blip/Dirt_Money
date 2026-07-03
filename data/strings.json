@@ -1,0 +1,13 @@
+{
+  "_schema": "Player-facing UI strings. Every entry is scratch placeholder awaiting Director wording (CLAUDE.md law 6). weather_cues = Old School's gut feeling about TOMORROW, one per weather state.",
+  "_status": "placeholder_awaiting_director",
+  "weather_cues": {
+    "clear": "[Cue — tomorrow is clear.]",
+    "overcast": "[Cue — tomorrow is overcast.]",
+    "rain_light": "[Cue — light rain tomorrow. (Replacing the swallows line.)]",
+    "storm": "[Cue — storm tomorrow. This one should raise the hair on your arms.]",
+    "drought": "[Cue — dry heat tomorrow.]",
+    "wind": "[Cue — wind tomorrow.]",
+    "fog": "[Cue — fog tomorrow.]"
+  }
+}

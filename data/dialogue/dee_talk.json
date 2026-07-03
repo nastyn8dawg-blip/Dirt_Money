@@ -1,0 +1,32 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
+  "_status": "placeholder_awaiting_director",
+  "id": "dee_talk",
+  "npc": "dee",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "[Situation — Dee restocking shelves, practical as ever. She clocks your boots and guesses your problem before you speak.]",
+      "options": [
+        { "text": "[Ask her to look over your flock.]", "goto": "checkup" },
+        { "text": "[Buy feed and chat.]", "goto": "chat" },
+        { "text": "[Leave.]", "goto": "_end" }
+      ]
+    },
+    "checkup": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "[Result — honest read on your chickens: kind delivery, no sugarcoating. Sets up the egg-contract relationship.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "rep_delta", "npc": "dee", "value": 2 }]
+    },
+    "chat": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "[Flavor — one working line about the season's animal troubles around the county.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    }
+  }
+}

@@ -45,3 +45,7 @@
 - **2026-07-03** — Economy model v1 locked. First tuning: IT timing edge 1.12→1.15 (fairness band
   was 1.252, over the 1.25 cap). Watch: Old School still richest; if playtests read legacy contracts
   as strictly better, cut legacy units (450) before touching the premium multiplier.
+- **2026-07-03 (playtest 1)** — Director rulings codified as CLAUDE.md law #5: downtime, grounded
+  voice, 6-beat conversation structure, good failures, calendar-feel. Grow-time bug fixed (crops
+  matured instantly). Open: calendar-feel needs mechanics, not just display — contract deadlines on
+  named days, weekend county rhythm, equipment wear over time. Schedule into sprints 4–7.

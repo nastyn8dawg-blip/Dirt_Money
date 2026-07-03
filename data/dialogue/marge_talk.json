@@ -1,0 +1,55 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
+  "_status": "placeholder_awaiting_director",
+  "id": "marge_talk",
+  "npc": "marge",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "marge",
+      "emotion": "neutral",
+      "text": "[Situation — Marge at the contract board, quick and clipped, sizing you up between clipboard checks.]",
+      "options": [
+        {
+          "text": "[IT option — pitch her: the co-op's posted rates are off, you ran the numbers.]",
+          "label": "[IT Nephew]",
+          "requires": { "background": "it_nephew" },
+          "check": { "skill": "analysis", "difficulty": 45, "odds": 0.45 },
+          "success": "audit_success",
+          "failure": "audit_failure"
+        },
+        { "text": "[Small talk — ask what's moving through the co-op this week.]", "goto": "chat" },
+        { "text": "[Leave politely.]", "goto": "_end" }
+      ]
+    },
+    "audit_success": {
+      "speaker": "marge",
+      "emotion": "neutral",
+      "text": "[Result — she rechecks your math, finds you're right, respects it. Sandy will hear the co-op got shown up.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "marge", "value": 6 },
+        { "op": "rep_delta", "npc": "sandy", "value": -3 },
+        { "op": "flag_set", "flag": "gossip_marge_audit_won" }
+      ]
+    },
+    "audit_failure": {
+      "speaker": "marge",
+      "emotion": "angry",
+      "text": "[Good failure — your math missed the fuel surcharge, publicly. The diner will call you the spreadsheet farmer by supper.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "marge", "value": -5 },
+        { "op": "county_delta", "value": -2 },
+        { "op": "rep_delta", "npc": "earl", "value": 2 },
+        { "op": "flag_set", "flag": "gossip_spreadsheet_farmer" }
+      ]
+    },
+    "chat": {
+      "speaker": "marge",
+      "emotion": "neutral",
+      "text": "[Flavor — one working detail about co-op traffic this week; should reference the season/day rhythm.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    }
+  }
+}

@@ -13,6 +13,7 @@ var npcs: Dictionary = {}
 var reputation_tiers: Dictionary = {}
 var backgrounds: Dictionary = {}
 var dialogue_trees: Dictionary = {}
+var strings: Dictionary = {}
 
 var load_errors: Array[String] = []
 
@@ -48,6 +49,7 @@ func load_all() -> void:
 	d = _read_json("res://data/backgrounds.json")
 	for b in d.get("backgrounds", []):
 		backgrounds[b.id] = b
+	strings = _read_json("res://data/strings.json")
 	_load_dialogue_dir("res://data/dialogue")
 
 

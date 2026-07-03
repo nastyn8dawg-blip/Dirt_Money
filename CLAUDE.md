@@ -11,7 +11,20 @@ Source of truth: `docs/DIRT_MONEY_MASTER_SPEC.md`. Scope contract: `docs/DIRT_MO
    - Portrait/visual style: 2–3 art direction options approved before batch asset production.
    - Gibberish voice profiles: audio samples per NPC approved before wiring in.
    - Capsule art, UI theme, report card design.
-5. **The Director writes ALL player-facing prose. (Director ruling, 2026-07-03.)**
+5. **Design laws (Director rulings, 2026-07-03):**
+   - **Downtime is the point.** Crop growth must create a middle-of-the-month gap that pushes the
+     player into the county: contracts, people, repairs, choices. Never let plant→harvest collapse.
+   - **Grounded voice.** Rural, plainspoken, character-specific. No RPG-fantasy tone, no
+     "quest giver" speak. People sound like they live in Ash Creek.
+   - **Conversation structure (every county conversation):** situation → player choice →
+     skill/background check if relevant → result → reputation consequence → future memory/gossip
+     consequence.
+   - **Good failures.** A botched check or refused favor is never just "minus points" — it becomes
+     gossip, tighter credit, lost trust, colder future dialogue.
+   - **Feel the calendar.** Day 8 must feel different from Day 22. Weather, crop timers, contract
+     deadlines, gossip, debt, and equipment wear all anchor to the date. Any system that ignores
+     the calendar is suspect.
+6. **The Director writes ALL player-facing prose. (Director ruling, 2026-07-03.)**
    Dialogue lines, flavor cues, gossip, event text — every word the player reads is authored by
    the Director, not the AI. Claude delivers *structure only*: dialogue trees as flowcharts with
    checks, odds, branches, and effects, where every line of prose is a numbered [BLANK] with a

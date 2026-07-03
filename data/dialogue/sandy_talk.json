@@ -1,0 +1,53 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
+  "_status": "placeholder_awaiting_director",
+  "id": "sandy_talk",
+  "npc": "sandy",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "[Situation — Sandy at the scale window, tired, logbook open. Trucks idle behind you.]",
+      "options": [
+        {
+          "text": "[IT option — offer her your delivery-timing model in exchange for dock priority.]",
+          "label": "[IT Nephew]",
+          "requires": { "background": "it_nephew" },
+          "check": { "skill": "analysis", "difficulty": 40, "odds": 0.55 },
+          "success": "timing_success",
+          "failure": "timing_failure"
+        },
+        { "text": "[Ask how the line's been running.]", "goto": "chat" },
+        { "text": "[Leave.]", "goto": "_end" }
+      ]
+    },
+    "timing_success": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "[Result — she tries your schedule for a week and it works. You unload first from now on. She won't say thank you twice.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "sandy", "value": 3 },
+        { "op": "flag_set", "flag": "dock_priority" }
+      ]
+    },
+    "timing_failure": {
+      "speaker": "sandy",
+      "emotion": "angry",
+      "text": "[Good failure — your model jammed her Tuesday line for two hours. Every farmer in that line knows whose idea it was.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "sandy", "value": -3 },
+        { "op": "county_delta", "value": -2 },
+        { "op": "flag_set", "flag": "gossip_jammed_the_scale" }
+      ]
+    },
+    "chat": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "[Flavor — one dry observation about who's hauling what. This is Old School's market signal, so it should hint at price direction.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    }
+  }
+}

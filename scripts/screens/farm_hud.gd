@@ -53,7 +53,7 @@ func _ready() -> void:
 	nav.add_theme_constant_override("separation", 10)
 	root.add_child(nav)
 	make_button(nav, "County Map", func(): go("world_map"))
-	make_button(nav, "Talk to Hollis (dialogue test)", func(): EventBus.dialogue_started.emit("hollis_baler"))
+	make_button(nav, "Visit Hollis next door", func(): EventBus.dialogue_started.emit("hollis_baler"))
 	make_button(nav, "Save", func(): SaveManager.save_game())
 	make_button(nav, "Sleep → Next Day", func(): CalendarManager.advance_day())
 	make_button(nav, "End Run", func(): go("report_card"))

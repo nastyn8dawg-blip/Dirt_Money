@@ -6,13 +6,13 @@ const NODES := [
 	{"id": "home", "name": "Home Farm", "screen": "farm_hud"},
 	{"id": "elevator", "name": "Grain Elevator", "screen": "market"},
 	{"id": "coop", "name": "Co-op / Feed Store", "screen": "contracts"},
-	{"id": "bank", "name": "Ash Creek Savings", "npc": "earl"},
-	{"id": "dealer", "name": "Carver Equipment", "npc": "roy"},
-	{"id": "diner", "name": "The Diner", "npc": "patti"},
-	{"id": "neighbor_farm", "name": "Hollis's Place", "npc": "hollis"},
-	{"id": "vet", "name": "Vet / Livestock Supply", "npc": "dee"},
-	{"id": "salvage", "name": "Weaver Salvage Yard", "npc": "gus"},
-	{"id": "grange", "name": "Grange Hall", "npc": ""},
+	{"id": "bank", "name": "Ash Creek Savings", "tree": "earl_talk"},
+	{"id": "dealer", "name": "Carver Equipment", "tree": "roy_talk"},
+	{"id": "diner", "name": "The Diner", "tree": "patti_talk"},
+	{"id": "neighbor_farm", "name": "Hollis's Place", "tree": "hollis_baler"},
+	{"id": "vet", "name": "Vet / Livestock Supply", "tree": "dee_talk"},
+	{"id": "salvage", "name": "Weaver Salvage Yard", "tree": "gus_talk"},
+	{"id": "grange", "name": "Grange Hall"},
 ]
 const TRAVEL_FUEL_COST := 8
 
@@ -62,6 +62,5 @@ func _travel_to(node: Dictionary) -> void:
 		CalendarManager.spend_block()
 	if node.has("screen"):
 		go(node.screen)
-	elif node.get("npc", "") != "":
-		# Location NPC stub: reuse the sample tree so every node is explorable.
-		EventBus.dialogue_started.emit("hollis_baler")
+	elif node.has("tree"):
+		EventBus.dialogue_started.emit(node.tree)

@@ -1,0 +1,81 @@
+{
+  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
+  "_status": "placeholder_awaiting_director",
+  "id": "earl_talk",
+  "npc": "earl",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[Situation — Earl behind the desk, dry and deliberate. Your family's debt file is already open in front of him.]",
+      "options": [
+        {
+          "text": "[IT option — argue the rate with amortization math.]",
+          "label": "[IT Nephew]",
+          "requires": { "background": "it_nephew" },
+          "check": { "skill": "analysis", "difficulty": 50, "odds": 0.5 },
+          "success": "rate_success",
+          "failure": "rate_failure"
+        },
+        {
+          "text": "[Old School option — invoke the family history with this bank.]",
+          "label": "[Old School]",
+          "requires": { "background": "old_school" },
+          "check": { "skill": "reputation", "difficulty": 40, "odds": 0.6 },
+          "success": "history_success",
+          "failure": "history_failure"
+        },
+        { "text": "[Ask about your loan standing, straight.]", "goto": "status" },
+        { "text": "[Leave.]", "goto": "_end" }
+      ]
+    },
+    "rate_success": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[Result — he can't fault the math and shaves the rate. Doesn't mean he likes you.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "earl", "value": 4 },
+        { "op": "flag_set", "flag": "loan_rate_shaved" }
+      ]
+    },
+    "rate_failure": {
+      "speaker": "earl",
+      "emotion": "angry",
+      "text": "[Good failure — you lectured a banker on banking and got a term wrong. He's colder now; word reaches the dealer.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "earl", "value": -4 },
+        { "op": "rep_delta", "npc": "roy", "value": -2 },
+        { "op": "flag_set", "flag": "gossip_insulted_banker" }
+      ]
+    },
+    "history_success": {
+      "speaker": "earl",
+      "emotion": "sad",
+      "text": "[Result — your father's name still means something in this office. A small mercy on terms, quietly done.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "earl", "value": 5 },
+        { "op": "flag_set", "flag": "loan_family_grace" }
+      ]
+    },
+    "history_failure": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[Good failure — he remembers the family debt differently than you tell it. Awkward. The diner hears you traded on a dead man's name.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "earl", "value": -3 },
+        { "op": "flag_set", "flag": "gossip_name_dropper" }
+      ]
+    },
+    "status": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[Flavor — states the debt, the daily interest, and the day of the month, plainly. The calendar should sting a little.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    }
+  }
+}
