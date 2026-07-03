@@ -34,7 +34,8 @@ func test_data_loads() -> void:
 	check(DataLoader.crops.size() == 3, "3 crops loaded")
 	check(DataLoader.dialogue_trees.has("hollis_baler"), "sample dialogue tree loaded")
 	check(DataLoader.dialogue_trees.size() >= 8, "every county NPC has a tree")
-	check(DataLoader.strings.get("weather_cues", {}).size() == 7, "weather cue per state")
+	check(DataLoader.strings.get("weather_today", {}).size() == 7, "today-line slot per weather state")
+	check(DataLoader.strings.get("weather_cues", {}).has("storm"), "storm tomorrow-cue exists (gates sandbag event)")
 	check(DataLoader.gossip_banks.size() >= 7, "gossip banks loaded")
 	# County memory: flagged banks outrank general talk
 	GameState.new_run("mechanic", 777)

@@ -143,7 +143,12 @@ func _rebuild_info() -> void:
 	match GameState.background_id:
 		"old_school":
 			make_label(_info_col, "THE LAND", 16, ACCENT)
-			make_label(_info_col, "Your gut about tomorrow: " + WeatherManager.intuition_cue(), 14)
+			var today := WeatherManager.today_line()
+			if today != "":
+				make_label(_info_col, today, 14)
+			var cue := WeatherManager.intuition_cue()
+			if cue != "":
+				make_label(_info_col, "Something in your bones: " + cue, 14, Color(0.85, 0.75, 0.5))
 			make_label(_info_col, "At the diner: \"%s\"" % EconomyManager.gossip_line(), 14)
 			make_label(_info_col, "(No charts. No dashboards. You read people and sky.)", 12, Color(0.5, 0.5, 0.5))
 		"it_nephew":

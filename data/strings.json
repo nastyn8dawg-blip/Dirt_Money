@@ -1,12 +1,47 @@
 {
-  "_schema": "Player-facing UI strings. weather_cues = Old School's gut feeling about TOMORROW, one list per weather state, line picked by day. Director-authored entries are verbatim; bracketed entries still await Director wording (CLAUDE.md law 6).",
+  "_schema": "Player-facing UI strings. Director-authored, verbatim (CLAUDE.md law 6). weather_today = Old School's observation of the CURRENT weather, picked by day. weather_cues = his gut about TOMORROW — only exists for weather worth sensing; empty means the gut is quiet, which is information too.",
+  "_status": "director_approved",
+  "weather_today": {
+    "clear": [
+      "Sky's wide open today.",
+      "Days like this make you think you've got farming figured out.",
+      "Sun's out and everybody's suddenly brave.",
+      "Good weather makes optimists out of all of us.",
+      "Wouldn't waste a day like this sitting inside."
+    ],
+    "overcast": [
+      "Clouds are hanging around but don't seem committed.",
+      "Feels like weather that's still making up its mind.",
+      "Could rain.",
+      "Could do nothing.",
+      "That's half of farming right there."
+    ],
+    "rain_light": [],
+    "storm": [],
+    "drought": [
+      "Heat's got teeth today.",
+      "Even the shade feels tired.",
+      "Ground's thirsty.",
+      "Crops can handle a lot, but they still notice days like this.",
+      "By supper you'll know exactly how much water you've got."
+    ],
+    "wind": [
+      "Wind's got somewhere to be.",
+      "Makes a man wonder what he forgot to tie down.",
+      "Flag's been standing straight out since breakfast.",
+      "Some days you hear the county before you see it.",
+      "Hay likes a breeze. Tin roofs don't."
+    ],
+    "fog": [
+      "Fog settled in thick this morning.",
+      "County feels smaller when you can't see past the next field.",
+      "Road'll still be there once the sun burns through.",
+      "Good day to take things slower.",
+      "Everything looks borrowed until the fog gives it back."
+    ]
+  },
   "weather_cues": {
-    "clear": ["[Cue — tomorrow is clear.]"],
-    "overcast": ["[Cue — tomorrow is overcast.]"],
     "rain_light": ["Sky's got that look.", "Swallows are flying low.", "Wind shifted south."],
-    "storm": ["Feels like rain that'll stay awhile.", "Old folks would already be moving equipment inside."],
-    "drought": ["[Cue — dry heat tomorrow.]"],
-    "wind": ["[Cue — wind tomorrow.]"],
-    "fog": ["[Cue — fog tomorrow.]"]
+    "storm": ["Feels like rain that'll stay awhile.", "Old folks would already be moving equipment inside."]
   }
 }

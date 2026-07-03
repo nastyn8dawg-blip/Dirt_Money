@@ -39,15 +39,22 @@ func forecast(days: int) -> Array[String]:
 	return out
 
 
+func today_line() -> String:
+	# Old School's observation of today's weather (Director canon v1).
+	# Picked by day, NOT by _rng — seeded-run safety.
+	var lines: Array = DataLoader.strings.get("weather_today", {}).get(current, [])
+	if lines.is_empty():
+		return ""
+	return lines[CalendarManager.day % lines.size()]
+
+
 func intuition_cue() -> String:
-	# Old School flavor: qualitative hint about tomorrow (Read The Land).
-	# Lines live in data/strings.json — Director-authored per CLAUDE.md law 6.
-	# Picked by day, NOT by _rng: consuming the seeded stream here would let
-	# UI refreshes desync seeded runs.
+	# Old School's gut about TOMORROW (Read The Land). Empty string = the gut
+	# is quiet; only weather worth sensing has cues. Picked by day, NOT _rng.
 	var next: String = forecast(1)[0]
 	var cues: Array = DataLoader.strings.get("weather_cues", {}).get(next, [])
 	if cues.is_empty():
-		return "[Cue missing for %s]" % next
+		return ""
 	return cues[CalendarManager.day % cues.size()]
 
 

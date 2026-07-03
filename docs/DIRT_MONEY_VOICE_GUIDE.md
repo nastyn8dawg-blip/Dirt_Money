@@ -56,6 +56,25 @@ coffee are the social currency of the county.**
    quick, delighted by information. Gus = three words. Earl = complete sentences, zero warmth.
    Marge = clipped efficiency. Roy = friendly words, predatory arithmetic. Sandy = tired precision.
 
+## Environmental writing rules (Director, 2026-07-03)
+
+Weather cues and ambient lines must:
+- Describe **observations** — never poetic metaphor, fantasy language, or exposition.
+- Never tell the player what to do.
+- Speak like county residents.
+
+| Good | Bad |
+|---|---|
+| "Wind's got somewhere to be." | "A tempest whispers through the valley." |
+| "Heat's got teeth today." | "The relentless sun scorches the earth." |
+| "Clouds are hanging around but don't seem committed." | "Gray skies threaten the weary farmer." |
+
+> Ash Creek people do not narrate. They **notice. compare. remember. speculate. complain. tease.**
+> They rarely lecture.
+
+Structural corollary (locked in code): the gut-about-tomorrow cue is SILENT unless weather worth
+sensing is coming. Absence of a line is a line.
+
 ## Workflow
 Structure-first stays: flowchart + numbered blanks per conversation, Director fills them. With this
 guide in hand, Claude may additionally attach *clearly marked draft suggestions* under a blank when

@@ -53,6 +53,15 @@ Crops: corn, soybeans, hay. Map: Ash Creek County.
 
 ## 7. Signature mechanics (locked)
 
+- **COUNTY MEMORY — "Ash Creek remembers." (HEADLINE FEATURE — Director ruling, 2026-07-03.)**
+  Not "a dynamic reputation system" — the county *remembers what you did* and says so. Flagged
+  events surface as gossip, colder dialogue, tighter credit, distrustful sellers, and callbacks
+  months later ("Maybe let Hollis work on that one."). The canonical chain: Mechanic fails baler
+  repair → Hollis disappointed → Patti mentions it at the diner → bank credit slightly tighter →
+  auction seller distrusts you → neighbor: "Heard you've been wrenching on things." Players tell
+  stories about embarrassment, favors, gossip, and weather — not yield percentages. This is what
+  they'll tell each other. **Pacing law: do not expand mechanics faster than county memory** —
+  every new system must feed flags into the memory, or it waits.
 - **Conversation-as-gameplay (§2.6 roadmap):** dialogue-driven skill checks with visible odds, Fallout-style background gating. Failed checks are content, not punishment — both branches produce consequences. Reputation ripples: one value per key NPC + county-wide standing; outcomes propagate across NPCs and shape tomorrow's options.
 - **Field work abstraction (§2.7):** one-tap orders (*Plant corn, north field — 2 days, $340*), ambient animation, tap-to-zoom progress, interruptions arrive only as choices/conversations.
 - **Talking portraits + gibberish audio (§2.8):** Punch-Out-style busts, 2–3 frame jaw-flap, Animalese-style synthesized speech from per-NPC pitch/tempo profiles. Zero voice acting cost, infinite rewrites.

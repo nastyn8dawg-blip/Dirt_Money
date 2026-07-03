@@ -49,3 +49,7 @@
   voice, 6-beat conversation structure, good failures, calendar-feel. Grow-time bug fixed (crops
   matured instantly). Open: calendar-feel needs mechanics, not just display — contract deadlines on
   named days, weekend county rhythm, equipment wear over time. Schedule into sprints 4–7.
+- **2026-07-03 (canon v1)** — County Memory elevated to HEADLINE feature ("Ash Creek remembers").
+  New pacing law: no mechanic expands faster than county memory — every system must emit flags the
+  county can talk about, or it waits. This is now the first question this document asks of any
+  proposal: *what will the diner say about it?*
