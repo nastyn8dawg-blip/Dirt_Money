@@ -1,0 +1,36 @@
+{
+  "_schema": "Crop definitions. Costs/yields are PLACEHOLDERS until the Phase 0 economy spreadsheet locks numbers. grow_days = duration of a planting order through harvest-ready; order costs are per-field.",
+  "crops": [
+    {
+      "id": "corn",
+      "name": "Corn",
+      "grow_days": 10,
+      "plant_order": { "days": 2, "cost": 340 },
+      "harvest_order": { "days": 2, "cost": 180 },
+      "base_yield_units": 120,
+      "weather_sensitivity": { "drought": -0.35, "storm": -0.2, "rain_light": 0.1 },
+      "role": "volume play: high input, high value"
+    },
+    {
+      "id": "soybeans",
+      "name": "Soybeans",
+      "grow_days": 9,
+      "plant_order": { "days": 2, "cost": 220 },
+      "harvest_order": { "days": 1, "cost": 140 },
+      "base_yield_units": 90,
+      "weather_sensitivity": { "drought": -0.25, "storm": -0.15, "rain_light": 0.1 },
+      "role": "flexible rotation play: lower input"
+    },
+    {
+      "id": "hay",
+      "name": "Hay",
+      "grow_days": 6,
+      "plant_order": { "days": 1, "cost": 90 },
+      "harvest_order": { "days": 1, "cost": 80 },
+      "base_yield_units": 60,
+      "multi_cut": true,
+      "weather_sensitivity": { "drought": -0.2, "rain_heavy": -0.3 },
+      "role": "steady trickle + livestock tie-in"
+    }
+  ]
+}

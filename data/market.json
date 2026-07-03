@@ -1,0 +1,14 @@
+{
+  "_schema": "Market model. Bounded random walk per commodity + event shocks. base_price is Day-1 anchor (PLACEHOLDER until spreadsheet). Visibility of charts/forecast is a background interface flag, not data here.",
+  "commodities": [
+    { "id": "corn", "base_price": 4.2, "walk_step_max": 0.12, "floor": 2.8, "ceiling": 6.5 },
+    { "id": "soybeans", "base_price": 10.5, "walk_step_max": 0.3, "floor": 7.5, "ceiling": 15.0 },
+    { "id": "hay", "base_price": 5.0, "walk_step_max": 0.15, "floor": 3.0, "ceiling": 8.0 },
+    { "id": "eggs", "base_price": 0.25, "walk_step_max": 0.02, "floor": 0.1, "ceiling": 0.5 }
+  ],
+  "gossip_lines": {
+    "rising": ["Elevator's been busy all week.", "Trucks lined up past the scale this morning."],
+    "falling": ["Sandy says nobody's hauling.", "Awful quiet down at the elevator."],
+    "flat": ["Same as it ever was down there.", "No news from the elevator."]
+  }
+}

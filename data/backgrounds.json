@@ -1,0 +1,59 @@
+{
+  "_schema": "Background definitions. `interface` keys drive per-screen exclusivity; screens query these flags, never the background id directly where a flag exists. PLACEHOLDER numbers until Phase 0 spreadsheet locks economy.",
+  "backgrounds": [
+    {
+      "id": "old_school",
+      "name": "Old School Farmer",
+      "blurb": "You grew up on this land. You read soil and sky, not spreadsheets.",
+      "interface": {
+        "market_charts": false,
+        "market_gossip": true,
+        "weather_forecast_days": 0,
+        "weather_intuition": true,
+        "farm_dashboard": false,
+        "equipment_subsystems": false,
+        "qualitative_field_cues": true
+      },
+      "exclusive_systems": ["read_the_land", "legacy_contracts", "weather_intuition"],
+      "starting_reputation": { "hollis": 20, "marge": 15, "patti": 15, "earl": 5, "roy": 5, "sandy": 10, "dee": 10, "gus": 0, "county": 10 },
+      "labor_cost_mult": 1.0,
+      "perk_tree": "old_school_tree"
+    },
+    {
+      "id": "it_nephew",
+      "name": "IT Nephew",
+      "blurb": "You inherited a farm and brought a laptop. The data is on your side. The county isn't.",
+      "interface": {
+        "market_charts": true,
+        "market_gossip": false,
+        "weather_forecast_days": 3,
+        "weather_intuition": false,
+        "farm_dashboard": true,
+        "equipment_subsystems": false,
+        "qualitative_field_cues": false
+      },
+      "exclusive_systems": ["farm_dashboard", "arbitrage_checks", "automation", "trust_questline"],
+      "starting_reputation": { "hollis": -10, "marge": 0, "patti": 0, "earl": 5, "roy": 0, "sandy": 0, "dee": 5, "gus": -5, "county": -5 },
+      "labor_cost_mult": 1.5,
+      "perk_tree": "it_nephew_tree"
+    },
+    {
+      "id": "mechanic",
+      "name": "Mechanic",
+      "blurb": "You took the farm for the shop space. Machines talk to you. Crops... look fine?",
+      "interface": {
+        "market_charts": false,
+        "market_gossip": false,
+        "weather_forecast_days": 0,
+        "weather_intuition": false,
+        "farm_dashboard": false,
+        "equipment_subsystems": true,
+        "qualitative_field_cues": false
+      },
+      "exclusive_systems": ["salvage_events", "restoration_flipping", "repair_contracts"],
+      "starting_reputation": { "hollis": 5, "marge": 5, "patti": 5, "earl": 0, "roy": 10, "sandy": 5, "dee": 0, "gus": 15, "county": 0 },
+      "labor_cost_mult": 1.0,
+      "perk_tree": "mechanic_tree"
+    }
+  ]
+}

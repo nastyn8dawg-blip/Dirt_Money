@@ -1,0 +1,70 @@
+extends Node
+## JSON save/load, one file per slot in user://saves/. Versioned.
+
+const SAVE_VERSION := 1
+const SAVE_DIR := "user://saves"
+
+
+func save_game(slot: int = 0) -> bool:
+	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	var data := {
+		"save_version": SAVE_VERSION,
+		"background_id": GameState.background_id,
+		"cash": GameState.cash,
+		"debt": GameState.debt,
+		"run_seed": GameState.run_seed,
+		"inventory": GameState.inventory,
+		"flags": GameState.flags,
+		"field_orders": GameState.field_orders,
+		"fields": GameState.fields,
+		"chickens": GameState.chickens,
+		"contracts_completed": GameState.contracts_completed,
+		"perks": GameState.perks,
+		"day": CalendarManager.day,
+		"block": CalendarManager.block,
+		"reputation": ReputationLedger.rep,
+		"county": ReputationLedger.county,
+	}
+	var f := FileAccess.open(_slot_path(slot), FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(JSON.stringify(data, "  "))
+	return true
+
+
+func load_game(slot: int = 0) -> bool:
+	var path := _slot_path(slot)
+	if not FileAccess.file_exists(path):
+		return false
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if parsed == null or not (parsed is Dictionary):
+		return false
+	if int(parsed.get("save_version", 0)) > SAVE_VERSION:
+		return false
+	GameState.background_id = parsed.get("background_id", "")
+	GameState.cash = int(parsed.get("cash", 0))
+	GameState.debt = int(parsed.get("debt", 0))
+	GameState.run_seed = int(parsed.get("run_seed", 0))
+	GameState.inventory = parsed.get("inventory", {})
+	GameState.flags = parsed.get("flags", {})
+	GameState.field_orders = parsed.get("field_orders", [])
+	GameState.fields = parsed.get("fields", {})
+	GameState.chickens = int(parsed.get("chickens", 0))
+	GameState.contracts_completed = int(parsed.get("contracts_completed", 0))
+	GameState.perks = parsed.get("perks", [])
+	CalendarManager.day = int(parsed.get("day", 1))
+	CalendarManager.block = int(parsed.get("block", 0))
+	ReputationLedger.rep = parsed.get("reputation", {})
+	ReputationLedger.county = int(parsed.get("county", 0))
+	WeatherManager.reset(GameState.run_seed)
+	EconomyManager.reset(GameState.run_seed)
+	EventBus.money_changed.emit(GameState.cash, GameState.debt)
+	return true
+
+
+func has_save(slot: int = 0) -> bool:
+	return FileAccess.file_exists(_slot_path(slot))
+
+
+func _slot_path(slot: int) -> String:
+	return "%s/slot_%d.json" % [SAVE_DIR, slot]

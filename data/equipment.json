@@ -1,0 +1,25 @@
+{
+  "_schema": "Equipment. 6 condition subsystems (0-100). Mechanic sees all six; other backgrounds see summary_state derived from the worst subsystem (fine >60, worn >35, rough >15, failing <=15). Numbers PLACEHOLDER.",
+  "subsystems": ["engine", "hydraulics", "transmission", "tires", "electrical", "attachments"],
+  "summary_thresholds": { "fine": 60, "worn": 35, "rough": 15 },
+  "equipment": [
+    {
+      "id": "tractor_old", "name": "Harvestall 900 (inherited)",
+      "condition": { "engine": 55, "hydraulics": 40, "transmission": 62, "tires": 30, "electrical": 48, "attachments": 50 },
+      "breakdown_base_chance": 0.08,
+      "fuel_per_order_day": 45
+    },
+    {
+      "id": "baler_rusty", "name": "Rust-Belt Baler",
+      "condition": { "engine": 0, "hydraulics": 35, "transmission": 40, "tires": 55, "electrical": 20, "attachments": 45 },
+      "breakdown_base_chance": 0.15,
+      "fuel_per_order_day": 15
+    },
+    {
+      "id": "truck_farm", "name": "Farm Truck",
+      "condition": { "engine": 70, "hydraulics": 0, "transmission": 65, "tires": 50, "electrical": 60, "attachments": 0 },
+      "breakdown_base_chance": 0.04,
+      "fuel_per_order_day": 20
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+
+config_version=5
+
+[application]
+
+config/name="Dirt Money"
+config/description="Choose your farming background — traditionalist, technologist, or wrench-turner — inherit a struggling farm, and survive 30 days your way."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+EventBus="*res://scripts/autoload/event_bus.gd"
+DataLoader="*res://scripts/autoload/data_loader.gd"
+GameState="*res://scripts/autoload/game_state.gd"
+CalendarManager="*res://scripts/autoload/calendar_manager.gd"
+WeatherManager="*res://scripts/autoload/weather_manager.gd"
+EconomyManager="*res://scripts/autoload/economy_manager.gd"
+ReputationLedger="*res://scripts/autoload/reputation_ledger.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

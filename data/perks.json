@@ -1,0 +1,29 @@
+{
+  "_schema": "Perk trees: one mini tree per background, ~8 perks each. LAW: perks unlock systems and dialogue options, never bare percentages. Sample 3 per tree; full trees authored in sprint 8.",
+  "trees": [
+    {
+      "id": "old_school_tree", "background": "old_school",
+      "perks": [
+        { "id": "read_the_land_2", "name": "Read the Land II", "unlocks": "soil moisture cues per field before ordering" },
+        { "id": "weather_knee", "name": "The Knee Knows", "unlocks": "storm intuition arrives one day earlier" },
+        { "id": "old_names", "name": "Old Names", "unlocks": "legacy dialogue options with Earl and Marge" }
+      ]
+    },
+    {
+      "id": "it_nephew_tree", "background": "it_nephew",
+      "perks": [
+        { "id": "forecast_5d", "name": "Better Models", "unlocks": "weather forecast extends to 5 days" },
+        { "id": "price_alerts", "name": "Price Alerts", "unlocks": "notification when a commodity crosses a set threshold" },
+        { "id": "auto_feeder", "name": "Coop Automation", "unlocks": "chicken feeding no longer costs a time block" }
+      ]
+    },
+    {
+      "id": "mechanic_tree", "background": "mechanic",
+      "perks": [
+        { "id": "diagnostics_1", "name": "Stethoscope Ear", "unlocks": "see breakdown probability on any NPC's equipment in dialogue" },
+        { "id": "flip_eye", "name": "Flipper's Eye", "unlocks": "restoration value estimate at the salvage yard" },
+        { "id": "shop_rate", "name": "Shop Rate", "unlocks": "repair contract tier 2 dialogue with Marge" }
+      ]
+    }
+  ]
+}

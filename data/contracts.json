@@ -1,0 +1,40 @@
+{
+  "_schema": "Contract templates. 5 slice types: delivery, supply, repair, favor, legacy. offered_by = NPC id; delivered through conversation, never a bare menu. min_reputation gates tier visibility. Numbers PLACEHOLDER until spreadsheet.",
+  "contracts": [
+    {
+      "id": "corn_delivery_t1", "type": "delivery", "offered_by": "marge",
+      "title": "Co-op Corn Delivery",
+      "requires": { "min_reputation": 0 },
+      "terms": { "commodity": "corn", "units": 100, "rate_mult": 1.1, "deadline_days": 12, "penalty": 200 },
+      "negotiable": ["rate_mult", "deadline_days"]
+    },
+    {
+      "id": "egg_supply_t1", "type": "supply", "offered_by": "dee",
+      "title": "Clinic Egg Standing Order",
+      "requires": { "min_reputation": 0 },
+      "terms": { "commodity": "eggs", "units_per_day": 6, "rate_mult": 1.2, "duration_days": 10, "penalty": 50 },
+      "negotiable": ["rate_mult"]
+    },
+    {
+      "id": "baler_repair", "type": "repair", "offered_by": "marge",
+      "title": "Co-op Members' Baler Repairs",
+      "requires": { "background": "mechanic", "min_reputation": 20 },
+      "terms": { "jobs": 3, "pay_per_job": 250, "deadline_days": 8, "penalty": 100 },
+      "negotiable": ["pay_per_job"]
+    },
+    {
+      "id": "hollis_hauling", "type": "favor", "offered_by": "hollis",
+      "title": "Haul Hollis's Hay",
+      "requires": { "min_reputation": 10 },
+      "terms": { "days": 1, "pay": 120, "rep_bonus": { "hollis": 5, "county": 2 } },
+      "negotiable": []
+    },
+    {
+      "id": "legacy_grain_t1", "type": "legacy", "offered_by": "marge",
+      "title": "The Vann Family Rate",
+      "requires": { "background": "old_school", "min_reputation": 40, "flag": "storm_helped_hollis" },
+      "terms": { "commodity": "corn", "units": 150, "rate_mult": 1.35, "deadline_days": 15, "penalty": 300 },
+      "negotiable": ["deadline_days"]
+    }
+  ]
+}

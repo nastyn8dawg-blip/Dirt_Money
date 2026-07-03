@@ -1,0 +1,46 @@
+{
+  "_schema": "Key NPCs. voice = gibberish audio profile (base_pitch 0.5-2.0, syllable_rate syl/sec, volume_db offset). emotion_mods multiply pitch/rate. Reputation tiers: hostile<-20, cold<0, neutral<20, warm<40, trusted>=40. DRAFT personalities pending director voice-sample approval (gate #1/#3).",
+  "reputation_tiers": { "hostile": -20, "cold": 0, "neutral": 20, "warm": 40, "trusted": 999 },
+  "npcs": [
+    {
+      "id": "earl", "name": "Earl Dunphy", "role": "Loan Officer", "node": "bank",
+      "personality": "Dry, deliberate, unimpressed. Speaks in complete paragraphs about incomplete collateral.",
+      "voice": { "base_pitch": 0.7, "syllable_rate": 3.0, "volume_db": 0, "emotion_mods": { "excited": [1.1, 1.2], "angry": [0.85, 1.1], "sad": [0.9, 0.7] } }
+    },
+    {
+      "id": "marge", "name": "Marge Kowalski", "role": "Co-op Manager", "node": "coop",
+      "personality": "Quick, clipped, fair but sharp. Runs the contract board like a courtroom.",
+      "voice": { "base_pitch": 1.3, "syllable_rate": 6.5, "volume_db": 0, "emotion_mods": { "excited": [1.15, 1.2], "angry": [0.9, 1.3], "sad": [0.95, 0.8] } }
+    },
+    {
+      "id": "hollis", "name": "Hollis Vann", "role": "Neighbor", "node": "neighbor_farm",
+      "personality": "Warm, slow drawl, long memory. Favors are currency and he keeps the books.",
+      "voice": { "base_pitch": 0.85, "syllable_rate": 3.5, "volume_db": 0, "emotion_mods": { "excited": [1.1, 1.15], "angry": [0.8, 1.05], "sad": [0.85, 0.7] } }
+    },
+    {
+      "id": "dee", "name": "Dee Tran", "role": "Veterinarian", "node": "vet",
+      "personality": "Warm, mid-register, relentlessly practical. Bad news delivered kindly.",
+      "voice": { "base_pitch": 1.2, "syllable_rate": 5.0, "volume_db": 0, "emotion_mods": { "excited": [1.1, 1.15], "angry": [0.95, 1.15], "sad": [0.95, 0.8] } }
+    },
+    {
+      "id": "roy", "name": "Roy \"Big Roy\" Carver", "role": "Equipment Dealer", "node": "dealer",
+      "personality": "Booming salesman, friendly-predatory. Every handshake costs money.",
+      "voice": { "base_pitch": 0.6, "syllable_rate": 5.5, "volume_db": 4, "emotion_mods": { "excited": [1.2, 1.25], "angry": [0.8, 1.15], "sad": [0.9, 0.75] } }
+    },
+    {
+      "id": "sandy", "name": "Sandy Alvarez", "role": "Elevator Operator", "node": "elevator",
+      "personality": "Matter-of-fact, tired, secretly keeps everyone's secrets in the scale logbook.",
+      "voice": { "base_pitch": 1.0, "syllable_rate": 4.5, "volume_db": -2, "emotion_mods": { "excited": [1.1, 1.15], "angry": [0.9, 1.2], "sad": [0.92, 0.8] } }
+    },
+    {
+      "id": "patti", "name": "Patti Lund", "role": "Diner Waitress", "node": "diner",
+      "personality": "Bright, chatty, hub of the county rumor mill. Reputation echoes surface here first.",
+      "voice": { "base_pitch": 1.5, "syllable_rate": 7.0, "volume_db": 2, "emotion_mods": { "excited": [1.2, 1.3], "angry": [1.05, 1.25], "sad": [0.9, 0.75] } }
+    },
+    {
+      "id": "gus", "name": "Gus Weaver", "role": "Salvage Yard Owner", "node": "salvage",
+      "personality": "Gravelly, few words, prices everything by squint. Respects wrenches, not talk.",
+      "voice": { "base_pitch": 0.55, "syllable_rate": 2.5, "volume_db": -1, "emotion_mods": { "excited": [1.05, 1.2], "angry": [0.8, 1.1], "sad": [0.9, 0.7] } }
+    }
+  ]
+}

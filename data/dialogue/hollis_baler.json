@@ -1,0 +1,71 @@
+{
+  "_schema": "Dialogue tree. Nodes: speaker line + options. Option fields: text, requires {background|perk|min_reputation}, check {skill, odds}, goto | success/failure gotos, effects [ops]. Both check branches MUST exist and both must be content. DRAFT text pending director voice approval (gate #1).",
+  "id": "hollis_baler",
+  "npc": "hollis",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "hollis",
+      "emotion": "sad",
+      "text": "Baler quit on me mid-field. Second cutting's lying out there and rain's due. Dealer says Thursday. Hay don't wait for Thursday.",
+      "options": [
+        {
+          "text": "\"Let me look at that baler myself.\"",
+          "label": "[Mechanic 40]",
+          "requires": { "background": "mechanic" },
+          "check": { "skill": "mechanic", "difficulty": 40, "odds": 0.65 },
+          "success": "fix_success",
+          "failure": "fix_failure"
+        },
+        {
+          "text": "\"I can lend you my time. Show me what to do.\"",
+          "goto": "lend_hand",
+          "effects": [{ "op": "time_block", "value": -1 }]
+        },
+        {
+          "text": "\"Rough luck, Hollis. Hope Thursday comes quick.\"",
+          "goto": "walk_away"
+        }
+      ]
+    },
+    "fix_success": {
+      "speaker": "hollis",
+      "emotion": "excited",
+      "text": "Well I'll be. She sounds better than the day Roy sold her to me. You've got a gift, and I've got a big mouth — Marge is gonna hear about this.",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "hollis", "value": 10 },
+        { "op": "rep_delta", "npc": "marge", "value": 5 },
+        { "op": "county_delta", "value": 3 },
+        { "op": "flag_set", "flag": "baler_fixed" }
+      ]
+    },
+    "fix_failure": {
+      "speaker": "hollis",
+      "emotion": "angry",
+      "text": "...That was the good hydraulic line. Thursday just got a lot more expensive, son. Don't take it hard — but don't take it to the diner neither, 'cause it's already there.",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "rep_delta", "npc": "hollis", "value": -8 },
+        { "op": "rep_delta", "npc": "marge", "value": -5 },
+        { "op": "rep_delta", "npc": "roy", "value": -5 },
+        { "op": "county_delta", "value": -3 },
+        { "op": "flag_set", "flag": "baler_botched" }
+      ]
+    },
+    "lend_hand": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "Appreciate the hands. Won't save the cutting, but it saves the week. I remember who shows up.",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": 4 }]
+    },
+    "walk_away": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "Yep. Hope so too.",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": -2 }]
+    }
+  }
+}
