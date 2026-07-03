@@ -1,10 +1,37 @@
 {
   "_schema": "Dialogue tree. Director-authored text (2026-07-03) — verbatim, do not edit. `variants` = alternate lines chosen at random on node entry. Option `_alts` are Director-provided alternate player lines kept for future rotation.",
-  "_status": "director_approved",
+  "_status": "director_approved; entry-routing blanks C1-C3, W1 pending",
   "id": "hollis_baler",
   "npc": "hollis",
   "start": "intro",
+  "entry": [
+    { "if_flag": "baler_botched", "goto": "intro_cold" },
+    { "if_flag": "baler_fixed", "goto": "intro_warm" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_cold": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "[BLANK C1 — Hollis after the botched repair: civil, cooler, keeps it short. He's not cruel — but the warmth is gone and he mentions the dealer handled it. Awaiting Director.]",
+      "options": [
+        { "text": "[BLANK C2 — the player's apology / owning it. Awaiting Director.]", "goto": "cold_thaw" },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
+    "cold_thaw": {
+      "speaker": "hollis",
+      "emotion": "neutral",
+      "text": "[BLANK C3 — Hollis takes the apology the county way: noted, not forgotten, door not closed. Small rep back. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": 2 }]
+    },
+    "intro_warm": {
+      "speaker": "hollis",
+      "emotion": "excited",
+      "text": "[BLANK W1 — Hollis after the successful fix: greets you like proof of a good decision. Maybe the baler's still running better than it should. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    },
     "intro": {
       "speaker": "hollis",
       "emotion": "sad",

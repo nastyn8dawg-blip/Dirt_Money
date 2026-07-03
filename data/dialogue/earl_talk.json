@@ -26,7 +26,13 @@
           "success": "history_success",
           "failure": "history_failure"
         },
-        { "text": "[Ask about your loan standing, straight.]", "goto": "status" },
+        {
+          "text": "[Ask about your loan standing, straight.]",
+          "goto_rules": [
+            { "if_county_below": -2, "goto": "status_tight" },
+            { "goto": "status" }
+          ]
+        },
         { "text": "[Leave.]", "goto": "_end" }
       ]
     },
@@ -75,6 +81,12 @@
       "speaker": "earl",
       "emotion": "neutral",
       "text": "[Flavor — states the debt, the daily interest, and the day of the month, plainly. The calendar should sting a little.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    },
+    "status_tight": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[BLANK E1 — same loan facts, but Earl cites 'community standing' as the reason the rate carries a surcharge now. He never says gossip; he says paperwork. Awaiting Director.]",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     }
   }

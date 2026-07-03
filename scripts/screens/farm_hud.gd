@@ -62,10 +62,11 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	_status.text = "Day %d of %d (%s) — %s | %s | Cash: $%d | Debt: $%d" % [
+	_status.text = "Day %d of %d (%s) — %s | %s | Cash: $%d | Debt: $%d%s" % [
 		CalendarManager.day, CalendarManager.RUN_LENGTH_DAYS,
 		CalendarManager.weekday_name(), CalendarManager.block_name(),
 		WeatherManager.display_name(WeatherManager.current), GameState.cash, GameState.debt,
+		" ⚠ credit tight" if GameState.credit_tight() else "",
 	]
 	var inv_bits: Array[String] = []
 	for item in GameState.inventory.keys():

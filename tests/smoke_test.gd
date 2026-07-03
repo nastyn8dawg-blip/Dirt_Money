@@ -12,6 +12,7 @@ func _ready() -> void:
 	test_reputation_ripple()
 	test_field_order_lifecycle()
 	test_save_roundtrip()
+	test_county_memory()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -112,3 +113,24 @@ func test_save_roundtrip() -> void:
 	check(GameState.background_id == "old_school", "background round-trips")
 	check(GameState.has_flag("test_flag"), "flags round-trip")
 	check(ReputationLedger.get_rep("patti") == patti, "reputation round-trips")
+
+
+func test_county_memory() -> void:
+	GameState.new_run("mechanic", 42)
+	var runner = load("res://scripts/dialogue/dialogue_runner.gd").new()
+	var tree: Dictionary = DataLoader.get_dialogue("hollis_baler")
+	check(runner.resolve_rules(tree.get("entry", []), tree.start) == "intro", "fresh run routes to normal intro")
+	GameState.set_flag("baler_botched")
+	check(runner.resolve_rules(tree.get("entry", []), tree.start) == "intro_cold", "botched flag routes to cold greeting")
+	runner.free()
+	# County memory reaches the bank: tight credit costs more per day
+	ReputationLedger.county = -5
+	check(GameState.credit_tight(), "low county standing tightens credit")
+	var d0 := GameState.debt
+	GameState.tick_debt()
+	var tight_delta := GameState.debt - d0
+	GameState.new_run("mechanic", 43)
+	check(not GameState.credit_tight(), "fresh run has normal credit")
+	var d1 := GameState.debt
+	GameState.tick_debt()
+	check(GameState.debt - d1 < tight_delta, "tight credit accrues more interest daily")

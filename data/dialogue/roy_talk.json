@@ -4,7 +4,24 @@
   "id": "roy_talk",
   "npc": "roy",
   "start": "intro",
+  "entry": [
+    { "if_flag": "roy_marks_you_retail", "goto": "intro_retail" },
+    { "if_flag": "roy_shows_real_stock", "goto": "intro_respect" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_retail": {
+      "speaker": "roy",
+      "emotion": "excited",
+      "text": "[BLANK R1 — Roy in full salesman mode because he's got you filed under retail: friendlier than ever, prices quietly firmer. The player should FEEL the markup in the warmth. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    },
+    "intro_respect": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[BLANK R2 — Roy dropping the act for a fellow professional: shorter sentences, real machines, real numbers. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
+    },
     "intro": {
       "speaker": "roy",
       "emotion": "excited",

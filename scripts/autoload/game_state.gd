@@ -18,6 +18,8 @@ var perks: Array = []
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
 const DEBT_DAILY_INTEREST := 0.004
+const CREDIT_TIGHT_COUNTY := -3    # county standing at/below this → bank surcharge
+const CREDIT_TIGHT_MULT := 1.25
 const FIELD_IDS := ["north", "south", "east"]
 
 
@@ -123,9 +125,17 @@ func tick_growth() -> void:
 				f.state = "ready"
 
 
+func credit_tight() -> bool:
+	# County memory reaching the bank: public failures tighten credit.
+	return ReputationLedger.county <= CREDIT_TIGHT_COUNTY
+
+
 func tick_debt() -> void:
 	if debt > 0:
-		debt += int(ceil(debt * DEBT_DAILY_INTEREST))
+		var rate := DEBT_DAILY_INTEREST
+		if credit_tight():
+			rate *= CREDIT_TIGHT_MULT
+		debt += int(ceil(debt * rate))
 		EventBus.money_changed.emit(cash, debt)
 
 

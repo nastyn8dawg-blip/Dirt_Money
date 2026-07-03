@@ -33,7 +33,24 @@ func _ready() -> void:
 		return
 	_npc = DataLoader.get_npc(_tree.get("npc", ""))
 	_build_ui()
-	_enter_node(_tree.get("start", ""))
+	_enter_node(resolve_rules(_tree.get("entry", []), _tree.get("start", "")))
+
+
+func resolve_rules(rules: Array, default_goto: String) -> String:
+	# County memory routing: first matching rule wins. A rule with no
+	# conditions is the fallback. Conditions: if_flag, if_not_flag,
+	# if_rep_below {npc, value}, if_county_below.
+	for rule in rules:
+		if rule.has("if_flag") and not GameState.has_flag(rule.if_flag):
+			continue
+		if rule.has("if_not_flag") and GameState.has_flag(rule.if_not_flag):
+			continue
+		if rule.has("if_rep_below") and ReputationLedger.get_rep(rule.if_rep_below.get("npc", "")) >= int(rule.if_rep_below.get("value", 0)):
+			continue
+		if rule.has("if_county_below") and ReputationLedger.county >= int(rule.if_county_below):
+			continue
+		return rule.get("goto", default_goto)
+	return default_goto
 
 
 func _process(delta: float) -> void:
@@ -151,6 +168,12 @@ func _show_options() -> void:
 	var node := _current_node()
 	for option in node.get("options", []):
 		var req: Dictionary = option.get("requires", {})
+		# Memory-gated options are HIDDEN, not teased — the county's memory
+		# should feel organic, never like menu content you're missing.
+		if req.has("flag") and not GameState.has_flag(req.flag):
+			continue
+		if req.has("not_flag") and GameState.has_flag(req.not_flag):
+			continue
 		var bg_req: String = req.get("background", "")
 		var gated := bg_req != "" and bg_req != GameState.background_id
 		var label: String = option.get("text", "")
@@ -174,7 +197,9 @@ func _show_options() -> void:
 func _choose(option: Dictionary) -> void:
 	ReputationLedger.apply_effects(option.get("effects", []))
 	var check: Dictionary = option.get("check", {})
-	if check.is_empty():
+	if option.has("goto_rules"):
+		_enter_node(resolve_rules(option.goto_rules, "_end"))
+	elif check.is_empty():
 		_enter_node(option.get("goto", "_end"))
 	else:
 		# Odds shown are odds rolled — trust is a design feature (GAMEPLAY_SPEC §2)
