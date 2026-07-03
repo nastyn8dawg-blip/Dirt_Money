@@ -157,7 +157,7 @@ func test_contracts() -> void:
 	check(GameState.accept_contract("corn_delivery_t1"), "second run accepts contract")
 	var cash1 := GameState.cash
 	var rep1 := ReputationLedger.get_rep("marge")
-	for i in range(14):
+	for i in range(20):
 		CalendarManager.advance_day()
 	check(GameState.contracts_active.is_empty(), "missed contract removed")
 	check(GameState.cash < cash1, "missed contract costs the penalty")

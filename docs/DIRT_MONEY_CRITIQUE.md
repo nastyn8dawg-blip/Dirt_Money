@@ -43,6 +43,15 @@
 - Storm damage to unprotected fields (weather_sensitivity data exists, no mechanic yet) — pairs
   with the sandbag choice's "protect your own planting" branch. Sprint 4 (crop/weather sprint).
 
+## Balance drift log (harness: tests/autoplay.tscn vs design/economy_model.xlsx)
+- **2026-07-03 (first run)** — OS −40% / IT +43% / ME −47%. Diagnosed: (1) corn contract deadline
+  12d < corn cycle 14d — impossible contract, FIXED to 18d; (2) IT labor_cost_mult never applied to
+  order costs — FIXED; (3) OS gap is mostly the legacy contract (needs Marge ≥40, hard to reach in
+  a bot run — watch in human playtests); (4) ME gap is expected: repair contracts + salvage flip
+  (his income identity) are sprints 7–8; (5) IT's tight-credit spiral (starts county −5, declines
+  storm, pays 1.25× interest all run, verdict "The County Quit Calling") is EMERGENT and on-thesis
+  — keep it.
+
 ## Open questions (unresolved, need director ruling)
 - Telemetry implementation for demo (local opt-in file vs none) — decide in Phase 2 planning.
 - gdUnit4 vs lightweight custom test runner — start custom, adopt gdUnit4 when test count justifies (tech spec §6); revisit at sprint 3.

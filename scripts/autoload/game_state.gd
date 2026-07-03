@@ -86,7 +86,8 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 	if kind == "harvest" and fields[field].state != "ready":
 		return false
 	var order_info: Dictionary = crop.get(kind + "_order", {})
-	var cost := int(order_info.get("cost", 0))
+	# IT Nephew hires the labor he can't do himself (backgrounds.json mult)
+	var cost := int(round(float(order_info.get("cost", 0)) * float(background().get("labor_cost_mult", 1.0))))
 	if cash < cost:
 		return false
 	cash -= cost

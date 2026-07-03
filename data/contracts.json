@@ -5,7 +5,7 @@
       "id": "corn_delivery_t1", "type": "delivery", "offered_by": "marge",
       "title": "Co-op Corn Delivery",
       "requires": { "min_reputation": 0 },
-      "terms": { "commodity": "corn", "units": 100, "rate_mult": 1.1, "deadline_days": 12, "penalty": 200 },
+      "terms": { "commodity": "corn", "units": 100, "rate_mult": 1.1, "deadline_days": 18, "penalty": 200 },
       "negotiable": ["rate_mult", "deadline_days"]
     },
     {

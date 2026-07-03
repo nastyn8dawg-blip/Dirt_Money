@@ -112,6 +112,12 @@ volunteered lines, NPC questions directed at the player. Canonical proofs:
 - Tight-credit Earl: "Bank doesn't lend to spreadsheets. / We lend to people. / People come with
   reputations." — no gossip mentioned, no villain, just how risk works here.
 
+## Ending titles are verdicts, not badges (Director, 2026-07-03)
+An ending title must read like **something Patti could say out loud** without sounding like an
+achievement popup. Never gamey ("Reliable Farmer", "County Hero", "Bad Reputation").
+Canon: *The County Quit Calling · People Stopped Checking · Rich Enough to Eat Alone ·
+Carried Into Spring · Still Here.*
+
 ## Workflow
 Structure-first stays: flowchart + numbered blanks per conversation, Director fills them. With this
 guide in hand, Claude may additionally attach *clearly marked draft suggestions* under a blank when

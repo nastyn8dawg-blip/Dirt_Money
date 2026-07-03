@@ -1,33 +1,33 @@
 {
-  "_schema": "Ending titles for the report card - the run's verdict, derived from DEPENDABILITY, not dollars. First matching rule wins; last entry is the fallback. Conditions: if_flag, if_not_flag, if_county_at_least, if_county_below, if_cash_at_least, if_contracts_at_least. Titles are scratch placeholders awaiting Director wording (law 6). Blanks T1-T5.",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "Ending titles for the report card - VERDICTS, not achievement badges (Director rule: must read like something Patti could say out loud). First matching rule wins; last entry is the fallback. Conditions: if_flag, if_not_flag, if_county_at_least, if_county_below, if_cash_at_least, if_contracts_at_least.",
+  "_status": "director_approved (2026-07-03)",
   "endings": [
     {
       "id": "word_is_no_good",
       "if_flag": "contract_missed",
       "if_county_below": 0,
-      "title": "[BLANK T1 — the ending for a player whose handshakes bounced: the county stopped calling. Awaiting Director.]"
+      "title": "The County Quit Calling"
     },
     {
       "id": "dependable",
       "if_contracts_at_least": 2,
       "if_county_at_least": 5,
-      "title": "[BLANK T2 — the ending for the player people stopped checking on: delivered, showed up, word held. Awaiting Director.]"
+      "title": "People Stopped Checking"
     },
     {
       "id": "solvent_stranger",
       "if_cash_at_least": 3000,
       "if_county_below": 3,
-      "title": "[BLANK T3 — money in the bank, nobody waves: successful and alone. The resentment thread's first appearance. Awaiting Director.]"
+      "title": "Rich Enough to Eat Alone"
     },
     {
       "id": "broke_but_beloved",
       "if_county_at_least": 14,
-      "title": "[BLANK T4 — no money, all trust: the county carries you into next season. Awaiting Director.]"
+      "title": "Carried Into Spring"
     },
     {
       "id": "still_standing",
-      "title": "[BLANK T5 — the fallback: survived, nothing proven yet either way. Awaiting Director.]"
+      "title": "Still Here"
     }
   ]
 }
