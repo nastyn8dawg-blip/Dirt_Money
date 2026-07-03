@@ -86,7 +86,7 @@
     "status_tight": {
       "speaker": "earl",
       "emotion": "neutral",
-      "text": "[BLANK E1 — same loan facts, but Earl cites 'community standing' as the reason the rate carries a surcharge now. He never says gossip; he says paperwork. Awaiting Director.]",
+      "text": "Bank doesn't lend to spreadsheets.\n\nWe lend to people.\n\nPeople come with reputations.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     }
   }

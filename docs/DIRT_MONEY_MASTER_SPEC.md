@@ -62,6 +62,10 @@ Crops: corn, soybeans, hay. Map: Ash Creek County.
   stories about embarrassment, favors, gossip, and weather — not yield percentages. This is what
   they'll tell each other. **Pacing law: do not expand mechanics faster than county memory** —
   every new system must feed flags into the memory, or it waits.
+  The system's one-rule distillation (Director): **"Friendship is not enthusiasm. Friendship is
+  time."** Relationship temperature is expressed as conversation *length* — warm people volunteer,
+  cold people answer, trusted people ask back, respected people get honesty instead of pitches,
+  forgiven people get humor again. (Full ladder: VOICE_GUIDE.)
 - **Conversation-as-gameplay (§2.6 roadmap):** dialogue-driven skill checks with visible odds, Fallout-style background gating. Failed checks are content, not punishment — both branches produce consequences. Reputation ripples: one value per key NPC + county-wide standing; outcomes propagate across NPCs and shape tomorrow's options.
 - **Field work abstraction (§2.7):** one-tap orders (*Plant corn, north field — 2 days, $340*), ambient animation, tap-to-zoom progress, interruptions arrive only as choices/conversations.
 - **Talking portraits + gibberish audio (§2.8):** Punch-Out-style busts, 2–3 frame jaw-flap, Animalese-style synthesized speech from per-NPC pitch/tempo profiles. Zero voice acting cost, infinite rewrites.

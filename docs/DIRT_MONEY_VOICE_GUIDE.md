@@ -75,6 +75,29 @@ Weather cues and ambient lines must:
 Structural corollary (locked in code): the gut-about-tomorrow cue is SILENT unless weather worth
 sensing is coming. Absence of a line is a line.
 
+## Relationship temperature (Director, 2026-07-03)
+
+> **Friendship is not enthusiasm. Friendship is time.**
+
+Temperature in Ash Creek is measured by **conversation length, not sentiment**:
+- **Warm** people volunteer information.
+- **Cold** people answer questions.
+- **Trusted** people ask questions back.
+- **Respected** people stop receiving sales pitches.
+- **Forgiven** people receive humor again.
+
+Nobody hates you. People simply decide how much of themselves they're willing to give you.
+
+**This is a structural rule, not just a writing rule.** Cold-door nodes get fewer words and fewer
+options than warm-door nodes of the same NPC. When trust rises, trees literally get longer — more
+volunteered lines, NPC questions directed at the player. Canonical proofs:
+- Cold Hollis: "Morning. / Dealer got her going." (conversation already half over)
+- Warm Hollis: "Morning. / Baler's still running, if that's what you're wondering." (humor returns)
+- Respected Roy: "Alright. / Let's skip the sales pitch. / What are you actually looking for?" —
+  Roy isn't becoming nicer; he's becoming honest. And he asks a question back.
+- Tight-credit Earl: "Bank doesn't lend to spreadsheets. / We lend to people. / People come with
+  reputations." — no gossip mentioned, no villain, just how risk works here.
+
 ## Workflow
 Structure-first stays: flowchart + numbered blanks per conversation, Director fills them. With this
 guide in hand, Claude may additionally attach *clearly marked draft suggestions* under a blank when

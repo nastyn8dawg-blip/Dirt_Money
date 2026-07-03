@@ -1,6 +1,6 @@
 {
   "_schema": "Dialogue tree. Director-authored text (2026-07-03) — verbatim, do not edit. `variants` = alternate lines chosen at random on node entry. Option `_alts` are Director-provided alternate player lines kept for future rotation.",
-  "_status": "director_approved; entry-routing blanks C1-C3, W1 pending",
+  "_status": "director_approved (full tree incl. entry routing, 2026-07-03)",
   "id": "hollis_baler",
   "npc": "hollis",
   "start": "intro",
@@ -13,23 +13,23 @@
     "intro_cold": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "[BLANK C1 — Hollis after the botched repair: civil, cooler, keeps it short. He's not cruel — but the warmth is gone and he mentions the dealer handled it. Awaiting Director.]",
+      "text": "Morning.\n\nDealer got her going.",
       "options": [
-        { "text": "[BLANK C2 — the player's apology / owning it. Awaiting Director.]", "goto": "cold_thaw" },
+        { "text": "\"I got in over my head on that one. That's on me.\"", "goto": "cold_thaw" },
         { "text": "(Leave)", "goto": "_end" }
       ]
     },
     "cold_thaw": {
       "speaker": "hollis",
       "emotion": "neutral",
-      "text": "[BLANK C3 — Hollis takes the apology the county way: noted, not forgotten, door not closed. Small rep back. Awaiting Director.]",
+      "text": "Well, you owned it.\n\nThat's worth something around here.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [{ "op": "rep_delta", "npc": "hollis", "value": 2 }]
     },
     "intro_warm": {
       "speaker": "hollis",
       "emotion": "excited",
-      "text": "[BLANK W1 — Hollis after the successful fix: greets you like proof of a good decision. Maybe the baler's still running better than it should. Awaiting Director.]",
+      "text": "Morning.\n\nBaler's still running, if that's what you're wondering.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "intro": {

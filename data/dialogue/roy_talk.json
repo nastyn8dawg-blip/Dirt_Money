@@ -13,13 +13,13 @@
     "intro_retail": {
       "speaker": "roy",
       "emotion": "excited",
-      "text": "[BLANK R1 — Roy in full salesman mode because he's got you filed under retail: friendlier than ever, prices quietly firmer. The player should FEEL the markup in the warmth. Awaiting Director.]",
+      "text": "Let's find you something that'll fit the budget.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "intro_respect": {
       "speaker": "roy",
       "emotion": "neutral",
-      "text": "[BLANK R2 — Roy dropping the act for a fellow professional: shorter sentences, real machines, real numbers. Awaiting Director.]",
+      "text": "Alright.\n\nLet's skip the sales pitch.\n\nWhat are you actually looking for?",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "intro": {
