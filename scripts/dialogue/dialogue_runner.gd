@@ -47,6 +47,8 @@ func resolve_rules(rules: Array, default_goto: String) -> String:
 			continue
 		if rule.has("if_rep_below") and ReputationLedger.get_rep(rule.if_rep_below.get("npc", "")) >= int(rule.if_rep_below.get("value", 0)):
 			continue
+		if rule.has("if_rep_at_least") and ReputationLedger.get_rep(rule.if_rep_at_least.get("npc", "")) < int(rule.if_rep_at_least.get("value", 0)):
+			continue
 		if rule.has("if_county_below") and ReputationLedger.county >= int(rule.if_county_below):
 			continue
 		return rule.get("goto", default_goto)

@@ -82,6 +82,13 @@ func _refresh() -> void:
 
 
 func _suggestion() -> String:
+	for c in GameState.contracts_active:
+		if GameState.inventory.get(c.commodity, 0) >= int(c.units):
+			return "You can fill Marge's contract — deliver at the Co-op before %s (Day %d)." % [
+				CalendarManager.weekday_of(c.deadline_day), c.deadline_day]
+		if int(c.deadline_day) - CalendarManager.day <= 2:
+			return "Contract due %s (Day %d) and you're short %s — move." % [
+				CalendarManager.weekday_of(c.deadline_day), c.deadline_day, c.commodity]
 	for f in GameState.fields.values():
 		if f.state == "ready":
 			return "A crop is READY — order the harvest, then sell it at the Grain Elevator."

@@ -13,6 +13,7 @@ func _ready() -> void:
 	test_field_order_lifecycle()
 	test_save_roundtrip()
 	test_county_memory()
+	test_contracts()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -134,3 +135,36 @@ func test_county_memory() -> void:
 	var d1 := GameState.debt
 	GameState.tick_debt()
 	check(GameState.debt - d1 < tight_delta, "tight credit accrues more interest daily")
+
+
+func test_contracts() -> void:
+	GameState.new_run("old_school", 55)
+	check(not GameState.accept_contract("hollis_hauling"), "favor contracts not accepted via board (conversation, sprint 6)")
+	check(GameState.accept_contract("corn_delivery_t1"), "delivery contract accepts")
+	check(not GameState.accept_contract("corn_delivery_t1"), "no double-accept")
+	GameState.add_inventory("corn", 100)
+	var cash0 := GameState.cash
+	var rep0 := ReputationLedger.get_rep("marge")
+	check(GameState.deliver_contract("corn_delivery_t1"), "contract delivers when stocked")
+	check(GameState.cash > cash0, "delivery pays out")
+	check(ReputationLedger.get_rep("marge") > rep0, "delivery builds reputation")
+	check(GameState.has_flag("contract_delivered"), "delivery feeds county memory")
+	# Miss a deadline: penalty, reputation, gossip flag
+	GameState.new_run("old_school", 56)
+	check(GameState.accept_contract("corn_delivery_t1"), "second run accepts contract")
+	var cash1 := GameState.cash
+	var rep1 := ReputationLedger.get_rep("marge")
+	for i in range(14):
+		CalendarManager.advance_day()
+	check(GameState.contracts_active.is_empty(), "missed contract removed")
+	check(GameState.cash < cash1, "missed contract costs the penalty")
+	check(ReputationLedger.get_rep("marge") < rep1, "missing a handshake costs reputation")
+	check(GameState.has_flag("contract_missed"), "the county hears about it")
+	# Marge greeting routes by tier (relationship grammar)
+	var runner = load("res://scripts/dialogue/dialogue_runner.gd").new()
+	var tree: Dictionary = DataLoader.get_dialogue("marge_talk")
+	ReputationLedger.rep["marge"] = -10
+	check(runner.resolve_rules(tree.get("entry", []), tree.start) == "intro_cold", "distrusted Marge answers the door cold")
+	ReputationLedger.rep["marge"] = 50
+	check(runner.resolve_rules(tree.get("entry", []), tree.start) == "intro_trusted", "trusted Marge volunteers")
+	runner.free()

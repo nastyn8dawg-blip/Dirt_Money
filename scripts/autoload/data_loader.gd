@@ -23,6 +23,8 @@ func pick_gossip() -> String:
 	var eligible: Array = []
 	var flagged := false
 	for bank in gossip_banks:
+		if bank.get("lines", []).is_empty():
+			continue
 		var flag: String = bank.get("requires_flag", "")
 		if flag != "":
 			if GameState.has_flag(flag):

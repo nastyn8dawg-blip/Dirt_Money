@@ -23,6 +23,10 @@ func weekday_name() -> String:
 	return WEEKDAYS[(day - 1) % 7]
 
 
+func weekday_of(d: int) -> String:
+	return WEEKDAYS[(d - 1) % 7]
+
+
 func spend_block() -> void:
 	if block < BLOCKS.size() - 1:
 		block += 1
@@ -47,6 +51,8 @@ func advance_day() -> void:
 	GameState.add_inventory("eggs", GameState.chickens)
 	day += 1
 	block = 0
+	# 7. Contract deadlines checked against the new day
+	GameState.check_contract_deadlines()
 	EventBus.day_advanced.emit(day)
 	EventBus.time_block_changed.emit(block)
 	if day > RUN_LENGTH_DAYS:

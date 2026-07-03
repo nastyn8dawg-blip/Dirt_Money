@@ -24,6 +24,20 @@
       ]
     },
     {
+      "id": "contract_delivered",
+      "requires_flag": "contract_delivered",
+      "lines": [
+        "[BLANK G1 — county notes you deliver what you shake on. Awaiting Director.]"
+      ]
+    },
+    {
+      "id": "contract_missed",
+      "requires_flag": "contract_missed",
+      "lines": [
+        "[BLANK G2 — a missed handshake travels fast. Awaiting Director.]"
+      ]
+    },
+    {
       "id": "auction",
       "lines": [
         "Saturday auction's got a couple tractors worth looking at.",

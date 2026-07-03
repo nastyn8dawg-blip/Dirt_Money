@@ -4,7 +4,29 @@
   "id": "marge_talk",
   "npc": "marge",
   "start": "intro",
+  "entry": [
+    { "if_rep_below": { "npc": "marge", "value": 0 }, "goto": "intro_cold" },
+    { "if_rep_at_least": { "npc": "marge", "value": 40 }, "goto": "intro_trusted" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_cold": {
+      "speaker": "marge",
+      "emotion": "neutral",
+      "text": "[BLANK M1 — DISTRUSTED Marge, grammar budget 1-2 sentences MAX: answers the door, volunteers nothing, no humor. The board behind her does the talking. Awaiting Director.]",
+      "options": [
+        { "text": "(Check the board and leave)", "goto": "_end" }
+      ]
+    },
+    "intro_trusted": {
+      "speaker": "marge",
+      "emotion": "excited",
+      "text": "[BLANK M2 — TRUSTED Marge, grammar budget 4-7 sentences: volunteers a rumor or a heads-up about the board, and asks the player a question back. Awaiting Director.]",
+      "options": [
+        { "text": "[BLANK M3 — the player's answer to her question. Awaiting Director.]", "goto": "chat" },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
     "intro": {
       "speaker": "marge",
       "emotion": "neutral",

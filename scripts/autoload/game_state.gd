@@ -139,6 +139,82 @@ func tick_debt() -> void:
 		EventBus.money_changed.emit(cash, debt)
 
 
+func find_contract_template(contract_id: String) -> Dictionary:
+	for c in DataLoader.contracts:
+		if c.get("id", "") == contract_id:
+			return c
+	return {}
+
+
+func active_contract(contract_id: String) -> Dictionary:
+	for c in contracts_active:
+		if c.get("id", "") == contract_id:
+			return c
+	return {}
+
+
+func accept_contract(contract_id: String) -> bool:
+	# v1: delivery/legacy only — supply, repair, and favor contracts resolve
+	# through conversation flows landing in sprints 6-7.
+	var tpl := find_contract_template(contract_id)
+	if tpl.is_empty() or not tpl.get("type", "") in ["delivery", "legacy"]:
+		return false
+	if not active_contract(contract_id).is_empty():
+		return false
+	var terms: Dictionary = tpl.get("terms", {})
+	contracts_active.append({
+		"id": contract_id,
+		"offered_by": tpl.get("offered_by", ""),
+		"commodity": terms.get("commodity", ""),
+		"units": int(terms.get("units", 0)),
+		"rate_mult": float(terms.get("rate_mult", 1.0)),
+		"penalty": int(terms.get("penalty", 0)),
+		"accepted_day": CalendarManager.day,
+		"deadline_day": CalendarManager.day + int(terms.get("deadline_days", 7)),
+	})
+	set_flag("contract_accepted")
+	EventBus.contract_accepted.emit(contract_id)
+	return true
+
+
+func deliver_contract(contract_id: String) -> bool:
+	var c := active_contract(contract_id)
+	if c.is_empty():
+		return false
+	if inventory.get(c.commodity, 0) < c.units:
+		return false
+	inventory[c.commodity] -= c.units
+	var payout := int(round(c.units * EconomyManager.prices.get(c.commodity, 0.0) * c.rate_mult))
+	add_cash(payout)
+	contracts_completed += 1
+	contracts_active.erase(c)
+	ReputationLedger.apply_effects([
+		{"op": "rep_delta", "npc": c.offered_by, "value": 5},
+		{"op": "county_delta", "value": 1},
+		{"op": "flag_set", "flag": "contract_delivered"},
+	])
+	EventBus.contract_delivered.emit(contract_id)
+	return true
+
+
+func check_contract_deadlines() -> void:
+	# A missed handshake is county memory: penalty, reputation, gossip flag.
+	var missed: Array = []
+	for c in contracts_active:
+		if CalendarManager.day > int(c.deadline_day):
+			missed.append(c)
+	for c in missed:
+		contracts_active.erase(c)
+		cash -= int(c.penalty)
+		ReputationLedger.apply_effects([
+			{"op": "rep_delta", "npc": c.offered_by, "value": -6},
+			{"op": "county_delta", "value": -2},
+			{"op": "flag_set", "flag": "contract_missed"},
+		])
+		EventBus.money_changed.emit(cash, debt)
+		EventBus.contract_missed.emit(c.id)
+
+
 func run_summary() -> Dictionary:
 	return {
 		"background": background_id,
