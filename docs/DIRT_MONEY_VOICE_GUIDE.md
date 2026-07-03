@@ -88,6 +88,20 @@ Temperature in Ash Creek is measured by **conversation length, not sentiment**:
 
 Nobody hates you. People simply decide how much of themselves they're willing to give you.
 
+### Relationship grammar (Director, 2026-07-03 — FORMAL WRITING BUDGET)
+Reputation isn't a +10 vendor discount. It's **people spending more of themselves on you.**
+
+| Tier | Sentence budget | What the NPC gives |
+|---|---|---|
+| **Distrusted** | 1–2 sentences | No volunteered information. No humor. No stories. No questions. |
+| **Neutral** | 2–4 sentences | Basic explanations. Practical advice. |
+| **Trusted** | 4–7 sentences | Stories. Memories. Offers. Questions. Inside jokes. Warnings. Rumors. |
+| **Friend** | NPC-initiated | NPC initiates topics, remembers previous years, asks about family, offers discounts, shares secrets, warns before opportunities disappear. |
+
+These budgets are ENFORCEABLE at review time: a distrusted-tier node with four sentences is a
+defect, same as a formula error. Engine hook: entry rules and goto_rules already route on
+reputation — tier-length variants of greetings are the standing pattern for every tree.
+
 **This is a structural rule, not just a writing rule.** Cold-door nodes get fewer words and fewer
 options than warm-door nodes of the same NPC. When trust rises, trees literally get longer — more
 volunteered lines, NPC questions directed at the player. Canonical proofs:

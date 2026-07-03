@@ -20,7 +20,10 @@
 
 ## 2. Dialogue presentation (locked)
 
-- **Punch-Out-style talking portraits:** character bust, 2–3 frame jaw-flap while text scrolls.
+- **Painted talking portraits** (see ART_DIRECTION: 80% Fallout / 20% Rockwell), bust occupies
+  ~25% of the dialogue screen, 2–3 frame jaw-flap while text scrolls.
+- **Portraits react to reputation** — tiny deltas only: lighting, smile, eye direction, body
+  angle, prop toggles (mug, hat, clipboard). Selected by the same tier/flag routing as dialogue.
 - **Gibberish audio:** Animalese-style syllable blips from per-NPC pitch/tempo profiles; emotion modulation (excited = faster+up, angry = louder+down+hard stops, sad = slow+quiet).
 - Check options rendered as: `[Mechanic 40] "Let me look at that baler myself." — 65%` with a risk tag when variance is high.
 - Failed-gate options shown grayed with the reason (unless data flags them hidden).
