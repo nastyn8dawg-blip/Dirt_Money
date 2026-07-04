@@ -20,6 +20,7 @@ func _ready() -> void:
 	test_one_cycle_season()
 	test_repair_contracts()
 	test_salvage_flip()
+	test_it_identity()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -91,12 +92,16 @@ func test_reputation_ripple() -> void:
 
 
 func test_field_order_lifecycle() -> void:
-	GameState.new_run("it_nephew", 12345)
+	# old_school: no greenhorn rolls to muddy generic order mechanics
+	GameState.new_run("old_school", 12345)
 	var cash_before := GameState.cash
 	check(GameState.issue_field_order("north", "hay", "plant"), "field order issues")
 	check(GameState.cash < cash_before, "order costs cash")
 	check(GameState.fields["north"].state == "working", "field goes to working")
 	CalendarManager.advance_day()
+	if not GameState.pending_breakdown.is_empty():
+		ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
+		CalendarManager.advance_day()
 	check(GameState.fields["north"].state == "growing", "1-day hay plant completes")
 	check(int(GameState.fields["north"].days_to_ready) == 6, "grow time starts at crop grow_days")
 	check(not GameState.issue_field_order("north", "hay", "harvest"), "cannot harvest before ready")
@@ -318,3 +323,34 @@ func test_salvage_flip() -> void:
 	CalendarManager.day = GameState.salvage_offers[0].hold_until_day + 1
 	GameState.expire_salvage_offers()
 	check(GameState.salvage_offers.is_empty(), "unclaimed machines leave the yard")
+
+
+func test_it_identity() -> void:
+	# The market forecast is honest: tomorrow's shown price IS tomorrow's price
+	GameState.new_run("it_nephew", 400)
+	var promised := EconomyManager.forecast_price("corn")
+	EconomyManager.tick()
+	check(is_equal_approx(EconomyManager.prices["corn"], promised), "forecast is a real look at the future")
+	# Greenhorn mistakes: guaranteed roll delays the plant and costs a redo
+	var bg: Dictionary = DataLoader.backgrounds["it_nephew"]
+	var original = bg.get("greenhorn_mistake_chance", 0.35)
+	bg["greenhorn_mistake_chance"] = 1.0
+	GameState.new_run("it_nephew", 401)
+	GameState.issue_field_order("north", "corn", "plant")
+	for i in range(5):
+		CalendarManager.advance_day()
+		if not GameState.pending_breakdown.is_empty():
+			ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
+		if GameState.has_flag("greenhorn_mistake"):
+			break
+	check(GameState.has_flag("greenhorn_mistake"), "guaranteed greenhorn mistake fires")
+	check(int(GameState.ledger.get("greenhorn_costs", 0)) < 0, "redo cost lands in its own ledger line")
+	bg["greenhorn_mistake_chance"] = original
+	# Old School never fumbles a planter
+	GameState.new_run("old_school", 402)
+	GameState.issue_field_order("north", "corn", "plant")
+	for i in range(3):
+		CalendarManager.advance_day()
+		if not GameState.pending_breakdown.is_empty():
+			ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
+	check(int(GameState.ledger.get("greenhorn_costs", 0)) == 0, "no greenhorn costs for a lifer")

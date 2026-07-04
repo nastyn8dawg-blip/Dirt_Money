@@ -35,6 +35,9 @@
       "exclusive_systems": ["farm_dashboard", "arbitrage_checks", "automation", "trust_questline"],
       "starting_reputation": { "hollis": -10, "marge": 0, "patti": 0, "earl": 5, "roy": 0, "sandy": 0, "dee": 5, "gus": -5, "county": -5 },
       "labor_cost_mult": 1.5,
+      "greenhorn_mistake_chance": 0.35,
+      "greenhorn_cost": 60,
+      "greenhorn_delay_days": 1,
       "perk_tree": "it_nephew_tree"
     },
     {

@@ -151,6 +151,17 @@ func progress_field_orders() -> void:
 				continue
 		order.days_left -= 1
 		if order.days_left <= 0:
+			# Practical incompetence (IT identity): a plant order can go
+			# greenhorn-wrong once — redo cost, lost day. Data-driven per
+			# background; zero for people who grew up doing this.
+			if order.kind == "plant" and not order.get("greenhorn_checked", false):
+				order.greenhorn_checked = true
+				var gh := float(background().get("greenhorn_mistake_chance", 0.0))
+				if gh > 0.0 and _breakdown_rng.randf() < gh:
+					order.days_left = int(background().get("greenhorn_delay_days", 1))
+					add_cash(-int(background().get("greenhorn_cost", 0)), "greenhorn_costs")
+					set_flag("greenhorn_mistake")
+					continue
 			done.append(order)
 	for order in done:
 		field_orders.erase(order)

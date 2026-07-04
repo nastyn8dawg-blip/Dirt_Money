@@ -179,7 +179,10 @@ func _rebuild_info() -> void:
 				fc_names.append(WeatherManager.display_name(w))
 			make_label(_info_col, "Forecast: %s" % " / ".join(fc_names), 14)
 			for cid in EconomyManager.prices.keys():
-				make_label(_info_col, "%s: $%.2f (%s)" % [cid, EconomyManager.prices[cid], EconomyManager.trend(cid)], 14)
+				make_label(_info_col, "%s: $%.2f (%s) → tomorrow $%.2f" % [
+					cid, EconomyManager.prices[cid], EconomyManager.trend(cid),
+					EconomyManager.forecast_price(cid),
+				], 14)
 			make_label(_info_col, "(All the data. None of the trust.)", 12, Color(0.5, 0.5, 0.5))
 		"mechanic":
 			make_label(_info_col, "EQUIPMENT STATUS", 16, ACCENT)

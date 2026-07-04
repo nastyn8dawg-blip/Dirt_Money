@@ -17,7 +17,7 @@ const MISSING_SYSTEMS := {
 	"mechanic": "cheaper self-repair on own equipment; repair contracts + salvage flip BOTH LIVE as of 2026-07-03 - identity complete",
 }
 const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
-const COST_KEYS := ["order_seed_fuel", "labor_premium", "repair_costs", "penalties", "travel_fuel"]
+const COST_KEYS := ["order_seed_fuel", "labor_premium", "greenhorn_costs", "repair_costs", "penalties", "travel_fuel", "salvage_purchase_cost", "parts_cost"]
 
 var _current_bg := ""
 
@@ -138,11 +138,17 @@ func _bot_act() -> void:
 			GameState.sell_salvage()
 		elif not GameState.salvage_projects.is_empty():
 			GameState.work_salvage()
-	# Sell whatever's left at today's prices
+	# Sell: IT reads the terminal and holds when tomorrow pays better —
+	# the information edge is a DECISION, not a multiplier. Everyone else
+	# sells at whatever today says.
 	for commodity in GameState.inventory.keys():
 		var units: int = GameState.inventory[commodity]
-		if units > 0:
-			EconomyManager.sell(commodity, units)
+		if units <= 0:
+			continue
+		if _current_bg == "it_nephew" and commodity != "eggs":
+			if EconomyManager.forecast_price(commodity) > EconomyManager.prices.get(commodity, 0.0) and CalendarManager.day < 29:
+				continue
+		EconomyManager.sell(commodity, units)
 
 
 func _bot_handle_event(ev: Dictionary) -> void:

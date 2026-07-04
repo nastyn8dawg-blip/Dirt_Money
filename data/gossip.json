@@ -45,14 +45,14 @@
       "id": "salvage_flip_success",
       "requires_flag": "salvage_flip_success",
       "lines": [
-        "[BLANK G3 — Patti hears you turned rust into money. Awaiting Director.]"
+        "Some folks see rust.\n\nYou saw supper money."
       ]
     },
     {
       "id": "salvage_flip_bust",
       "requires_flag": "salvage_flip_bust",
       "lines": [
-        "[BLANK G4 — Patti hears you bought a painted-over headache. Awaiting Director.]"
+        "Heard you bought fresh paint with old trouble underneath."
       ]
     },
     {

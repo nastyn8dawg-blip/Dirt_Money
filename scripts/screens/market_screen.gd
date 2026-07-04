@@ -45,7 +45,8 @@ func _refresh() -> void:
 				var spark := ""
 				for i in range(max(0, h.size() - 12), h.size()):
 					spark += "▁▂▃▄▅▆▇█"[clampi(int(remap(h[i], 0.0, 16.0, 0, 7)), 0, 7)]
-				make_label(_list, "%s  %s  (%s)" % [cid, spark, EconomyManager.trend(cid)], 13)
+				make_label(_list, "%s  %s  (%s) → tomorrow $%.2f" % [
+					cid, spark, EconomyManager.trend(cid), EconomyManager.forecast_price(cid)], 13)
 		"mechanic":
 			make_label(_list, "(Board out front says:)", 12, Color(0.5, 0.5, 0.5))
 
