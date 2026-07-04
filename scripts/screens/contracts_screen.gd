@@ -44,6 +44,16 @@ func _refresh() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		_list.add_child(row)
+		if contract.get("type", "") == "repair":
+			make_label(row, "ACTIVE: %d repair job(s) left — due %s (Day %d), $%d each" % [
+				contract.jobs_left, CalendarManager.weekday_of(contract.deadline_day),
+				contract.deadline_day, contract.pay_per_job,
+			], 15, Color(0.6, 0.85, 0.6))
+			make_button(row, "Work a job (costs a time block)", func():
+				CalendarManager.spend_block()
+				GameState.work_repair_job()
+				_refresh())
+			continue
 		var have: int = GameState.inventory.get(contract.commodity, 0)
 		make_label(row, "ACTIVE: %d %s — due %s (Day %d) — you have %d" % [
 			contract.units, contract.commodity,
@@ -88,7 +98,7 @@ func _refresh() -> void:
 			]
 		make_label(row, desc, 15, color)
 		if available:
-			if contract.type in ["delivery", "legacy"]:
+			if contract.type in ["delivery", "legacy", "repair"]:
 				make_button(row, "Shake on it", func():
 					GameState.accept_contract(contract.id)
 					_refresh())

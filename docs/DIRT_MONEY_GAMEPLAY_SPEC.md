@@ -33,13 +33,43 @@ Rules:
 - Tomorrow's dialogue options are shaped by yesterday's outcomes — not stats.
 - Ripple rules live in data (`effects` with `rep_delta` on *other* NPCs and `county_delta`), never hardcoded.
 
-## 3. Field work abstraction
+## 3. Field work abstraction — REVISED (Director ruling, 2026-07-03)
+
+**The 30-day demo is a compressed farming season, not a literal month — and not a thin
+plant/wait/harvest loop.** One committed cycle with planting windows; missing the window is a
+strategic consequence, not a bug. *A compressed season is acceptable. A fake farming loop is not.*
 
 - **Issue an order:** *Plant corn, north field — 2 days, $340 fuel/seed.* Confirm. Done.
-- Tractor animates in the background as ambient life.
-- Tap/click a working field to zoom: progress bar, fuel burn, time remaining, weather risk, breakdown probability, and (Mechanic only) live condition readouts.
-- Field work only interrupts when something goes wrong — and the interruption arrives as a **choice or conversation** (breakdown, neighbor drives up, storm warning).
+- Field work only interrupts when something goes wrong — and the interruption arrives as a
+  **choice or conversation** (Roy calls about The 2010; nobody gets a "Tractor broken" popup).
 - Design law: **no input requires a tutorial.**
+
+### Planting windows (v1 — implemented)
+Corn: early window, closes Day 6 — punishes lateness, highest ceiling. Soybeans: flexible but
+limited, closes Day 10. Hay: flexible (Day 18), multi-cut capped per season (no infinite money
+loop). Once fields are committed, the middle of the month belongs to field care and county life.
+
+### Field stages (target model — built across sprints 4 and 8)
+States: rough → cleared → tilled → planted → emerged → growing → stressed → ready → harvested.
+Actions: clear debris, till / no-till plant, fertilize, scout, treat pest/disease, repair weather
+damage, harvest, haul/store/sell.
+- **Tillage:** time/fuel/wear, better planting success, erosion risk in heavy rain — traditional.
+- **No-till:** unlocked via skill/equipment, saves time/fuel, weathers storms better — Old School
+  knows when tillage is worth it; IT optimizes no-till through data; Mechanic keeps old tillage
+  iron running cheap.
+- **Rotation memory:** fields remember last crop. Soy-after-corn, corn-after-soy bonuses; repeated
+  corn = fertilizer + pest pressure. Surfaced in PLAIN LANGUAGE, never a spreadsheet wall:
+  *"Good rotation: corn after soybeans. Fertilizer cost reduced."*
+- Double-crop, cover crops, winter wheat, specialty crops: FUTURE unlocks (skill, co-op advice,
+  extension events, field history). Designed-for, not built in the slice.
+
+### The season arc (pacing target)
+Days 1–5 prep + planting pressure · 6–12 emergence, scouting, county favors · 13–20 stress,
+storms, deadlines, breakdowns · 21–27 harvest prep, market timing, memory coming due ·
+28–30 harvest, delivery, debts, the verdict.
+
+> **The field creates the pressure. The county creates the consequences. The people make it
+> matter.** The county interrupts, supports, punishes, and remembers farming — it never replaces it.
 
 ## 4. Background-exclusive mechanics (slice)
 

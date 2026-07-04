@@ -14,7 +14,7 @@ const SPREADSHEET_TARGETS := {
 const MISSING_SYSTEMS := {
 	"old_school": "legacy contract premium rarely reachable by bot (Marge >= 40); weather intuition has no mechanical value yet",
 	"it_nephew": "market-timing edge (model prices 1.15x), automation perks, trust questline, incompetence costs beyond labor mult",
-	"mechanic": "repair contracts, salvage/auction flip, cheaper self-repair, restoration income - his ENTIRE income identity",
+	"mechanic": "salvage/auction flip (~$750 in model), cheaper self-repair, restoration income; repair contracts LIVE as of 2026-07-03",
 }
 const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
 const COST_KEYS := ["order_seed_fuel", "labor_premium", "repair_costs", "penalties", "travel_fuel"]
@@ -115,6 +115,11 @@ func _bot_act() -> void:
 	if GameState.active_contract("corn_delivery_t1").is_empty() and _current_bg != "mechanic":
 		GameState.accept_contract("corn_delivery_t1")
 	GameState.deliver_contract("corn_delivery_t1")
+	# Mechanic identity: take the repair pipeline once the baler fix opens it
+	if _current_bg == "mechanic":
+		if GameState.has_flag("baler_fixed") and GameState.active_contract("baler_repair").is_empty() and not GameState.has_flag("repair_contract_done"):
+			GameState.accept_contract("baler_repair")
+		GameState.work_repair_job()
 	# Sell whatever's left at today's prices
 	for commodity in GameState.inventory.keys():
 		var units: int = GameState.inventory[commodity]

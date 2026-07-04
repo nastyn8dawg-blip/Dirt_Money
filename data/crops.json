@@ -5,6 +5,7 @@
       "id": "corn",
       "name": "Corn",
       "grow_days": 10,
+      "plant_by_day": 6,
       "plant_order": { "days": 2, "cost": 340 },
       "harvest_order": { "days": 2, "cost": 180 },
       "base_yield_units": 300,
@@ -15,6 +16,7 @@
       "id": "soybeans",
       "name": "Soybeans",
       "grow_days": 9,
+      "plant_by_day": 10,
       "plant_order": { "days": 2, "cost": 220 },
       "harvest_order": { "days": 1, "cost": 140 },
       "base_yield_units": 200,
@@ -25,10 +27,12 @@
       "id": "hay",
       "name": "Hay",
       "grow_days": 6,
+      "plant_by_day": 18,
       "plant_order": { "days": 1, "cost": 90 },
       "harvest_order": { "days": 1, "cost": 80 },
       "base_yield_units": 100,
       "multi_cut": true,
+      "max_harvests": 3,
       "weather_sensitivity": { "drought": -0.2, "rain_heavy": -0.3 },
       "role": "steady trickle + livestock tie-in"
     }

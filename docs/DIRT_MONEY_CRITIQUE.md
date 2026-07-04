@@ -64,6 +64,12 @@ loop → 3) IT practical-incompetence cost or starting-debt pressure → 4) IT m
   ("nobody plants corn past Day X") — rural-authentic, enforces one cycle, STRENGTHENS the
   downtime law by protecting the mid-month county-work gap; (b) accept two cycles and re-derive
   the spreadsheet. Recommendation: (a).
+- **2026-07-03 — RULED (Director): (a) one-cycle season, with teeth.** Planting windows: corn by
+  Day 6, soybeans by Day 10, hay by Day 18 with cuts capped at 3/season. But NOT a thin
+  plant/wait/harvest loop: farming depth directive canonized in GAMEPLAY_SPEC §3 (field prep
+  stages, rotation memory, mid-growth care — sprints 4/8), county events come to the player
+  weighted by state (sprint 9), dealer pop-ins parked in CANON_LINES.md. One-cycle model math
+  stands; spreadsheet targets remain valid.
 - **2026-07-03 (first run)** — OS −40% / IT +43% / ME −47%. Diagnosed: (1) corn contract deadline
   12d < corn cycle 14d — impossible contract, FIXED to 18d; (2) IT labor_cost_mult never applied to
   order costs — FIXED; (3) OS gap is mostly the legacy contract (needs Marge ≥40, hard to reach in
@@ -71,6 +77,13 @@ loop → 3) IT practical-incompetence cost or starting-debt pressure → 4) IT m
   (his income identity) are sprints 7–8; (5) IT's tight-credit spiral (starts county −5, declines
   storm, pays 1.25× interest all run, verdict "The County Quit Calling") is EMERGENT and on-thesis
   — keep it.
+
+- **2026-07-03 (post-ruling run)** — One-cycle season enforced (windows corn D6 / soy D10 / hay D18,
+  hay capped 3 cuts) + Mechanic repair pipeline live (gated on baler_fixed per the ripple chain,
+  $750 landed in repair_salvage_revenue = exactly the model's repair-jobs line). Drift now maps
+  1:1 to missing identity systems: OS −21% ≈ legacy premium; IT −11% ≈ timing edge (Director's
+  suspicion CONFIRMED — without the edge he undershoots); ME −22% ≈ salvage flip. The harness
+  reads clean. Next per Director order: flip loop → IT pressure → IT timing → re-run.
 
 ## Open questions (unresolved, need director ruling)
 - Telemetry implementation for demo (local opt-in file vs none) — decide in Phase 2 planning.

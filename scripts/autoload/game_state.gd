@@ -93,6 +93,10 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 		return false
 	if kind == "plant" and fields[field].state != "fallow":
 		return false
+	# One-cycle season: planting windows are commitments (Director ruling).
+	# Missing the window is a strategic consequence, not a bug.
+	if kind == "plant" and CalendarManager.day > int(crop.get("plant_by_day", 30)):
+		return false
 	if kind == "harvest" and fields[field].state != "ready":
 		return false
 	var order_info: Dictionary = crop.get(kind + "_order", {})
@@ -111,7 +115,10 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 		"days_left": int(order_info.get("days", 1)), "cost": cost,
 	}
 	field_orders.append(order)
-	fields[field] = {"state": "working", "crop": crop_id}
+	fields[field] = {
+		"state": "working", "crop": crop_id,
+		"cuts": int(fields[field].get("cuts", 0)),
+	}
 	EventBus.money_changed.emit(cash, debt)
 	EventBus.field_order_issued.emit(order)
 	return true
@@ -150,7 +157,15 @@ func progress_field_orders() -> void:
 			var units := int(crop.get("base_yield_units", 0))
 			add_inventory(order.crop, units)
 			harvest_log[order.crop] = int(harvest_log.get(order.crop, 0)) + units
-			fields[order.field] = {"state": "fallow", "crop": ""}
+			var cuts := int(fields[order.field].get("cuts", 0)) + 1
+			if crop.get("multi_cut", false) and cuts < int(crop.get("max_harvests", 1)):
+				# Hay regrows for another cutting — capped per season
+				fields[order.field] = {
+					"state": "growing", "crop": order.crop,
+					"days_to_ready": int(crop.get("grow_days", 1)), "cuts": cuts,
+				}
+			else:
+				fields[order.field] = {"state": "fallow", "crop": ""}
 		EventBus.field_order_completed.emit(order)
 
 
@@ -209,20 +224,35 @@ func active_contract(contract_id: String) -> Dictionary:
 
 
 func accept_contract(contract_id: String) -> bool:
-	# v1: delivery/legacy only — supply, repair, and favor contracts resolve
-	# through conversation flows landing in sprints 6-7.
+	# v1: delivery/legacy/repair — supply and favor contracts resolve
+	# through conversation flows landing in sprint 6.
 	var tpl := find_contract_template(contract_id)
-	if tpl.is_empty() or not tpl.get("type", "") in ["delivery", "legacy"]:
+	var kind: String = tpl.get("type", "")
+	if tpl.is_empty() or not kind in ["delivery", "legacy", "repair"]:
+		return false
+	if kind == "repair" and background_id != "mechanic":
 		return false
 	if not active_contract(contract_id).is_empty():
+		return false
+	# Enforce requires here too — the board grays these out, but direct
+	# callers (bot, future dialogue effects) must hit the same gates
+	var req: Dictionary = tpl.get("requires", {})
+	if req.get("background", "") != "" and req.background != background_id:
+		return false
+	if req.get("flag", "") != "" and not has_flag(req.flag):
+		return false
+	if ReputationLedger.get_rep(tpl.get("offered_by", "")) < int(req.get("min_reputation", 0)):
 		return false
 	var terms: Dictionary = tpl.get("terms", {})
 	contracts_active.append({
 		"id": contract_id,
+		"type": kind,
 		"offered_by": tpl.get("offered_by", ""),
 		"commodity": terms.get("commodity", ""),
 		"units": int(terms.get("units", 0)),
 		"rate_mult": float(terms.get("rate_mult", 1.0)),
+		"jobs_left": int(terms.get("jobs", 0)),
+		"pay_per_job": int(terms.get("pay_per_job", 0)),
 		"penalty": int(terms.get("penalty", 0)),
 		"accepted_day": CalendarManager.day,
 		"deadline_day": CalendarManager.day + int(terms.get("deadline_days", 7)),
@@ -230,6 +260,35 @@ func accept_contract(contract_id: String) -> bool:
 	set_flag("contract_accepted")
 	EventBus.contract_accepted.emit(contract_id)
 	return true
+
+
+func work_repair_job() -> Dictionary:
+	# The Mechanic's income identity: a day's wrench work on a co-op member's
+	# machine. Returns {} if there's nothing to work.
+	if background_id != "mechanic":
+		return {}
+	for c in contracts_active:
+		if c.get("type", "") != "repair" or int(c.get("jobs_left", 0)) <= 0:
+			continue
+		var success := _breakdown_rng.randf() < 0.8
+		if success:
+			add_cash(int(c.pay_per_job), "repair_salvage_revenue")
+		else:
+			# The stubborn one: parts eat the day's pay (still content, not
+			# punishment — the county hears you kept at it)
+			add_cash(-40, "repair_costs")
+		c.jobs_left = int(c.jobs_left) - 1
+		if int(c.jobs_left) <= 0:
+			contracts_active.erase(c)
+			contracts_completed += 1
+			ReputationLedger.apply_effects([
+				{"op": "rep_delta", "npc": "marge", "value": 4},
+				{"op": "county_delta", "value": 1},
+				{"op": "flag_set", "flag": "repair_contract_done"},
+			])
+			EventBus.contract_delivered.emit(c.id)
+		return {"success": success, "jobs_left": int(c.get("jobs_left", 0))}
+	return {}
 
 
 func deliver_contract(contract_id: String) -> bool:

@@ -125,13 +125,20 @@ func _rebuild_fields() -> void:
 			_: state_txt = "%s field — %s" % [field_id.capitalize(), f.state]
 		make_label(row, state_txt, 14)
 		if f.state == "fallow":
+			var any_open := false
 			for crop_id in DataLoader.crops.keys():
 				var crop: Dictionary = DataLoader.crops[crop_id]
+				if CalendarManager.day > int(crop.get("plant_by_day", 30)):
+					continue
+				any_open = true
 				var order: Dictionary = crop.get("plant_order", {})
-				make_button(row, "Plant %s — %dd, $%d" % [crop.name, order.get("days", 0), order.get("cost", 0)],
+				make_button(row, "Plant %s — %dd, $%d (window closes Day %d)" % [
+					crop.name, order.get("days", 0), order.get("cost", 0), crop.get("plant_by_day", 30)],
 					func():
 						GameState.issue_field_order(field_id, crop_id, "plant")
 						_refresh())
+			if not any_open:
+				make_label(row, "— planting windows closed for the season", 13, Color(0.6, 0.55, 0.45))
 		elif f.state == "growing":
 			make_label(row, "— ready in %d day(s)" % int(f.get("days_to_ready", 0)), 13, Color(0.7, 0.85, 0.6))
 		elif f.state == "ready":

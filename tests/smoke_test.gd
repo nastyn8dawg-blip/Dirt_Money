@@ -17,6 +17,8 @@ func _ready() -> void:
 	test_storm_event()
 	test_breakdown()
 	test_endings()
+	test_one_cycle_season()
+	test_repair_contracts()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -239,3 +241,47 @@ func test_endings() -> void:
 	GameState.cash = 5000
 	ReputationLedger.county = 0
 	check(DataLoader.pick_ending().get("id", "") == "solvent_stranger", "solvent stranger ending wins")
+
+
+func test_one_cycle_season() -> void:
+	GameState.new_run("old_school", 200)
+	CalendarManager.day = 7
+	check(not GameState.issue_field_order("north", "corn", "plant"), "corn window closes Day 6")
+	check(GameState.issue_field_order("north", "soybeans", "plant"), "soy window still open Day 7")
+	CalendarManager.day = 19
+	check(not GameState.issue_field_order("south", "hay", "plant"), "hay window closes Day 18")
+	# Hay: multi-cut capped, no infinite loop
+	GameState.new_run("old_school", 201)
+	GameState.issue_field_order("east", "hay", "plant")
+	var cuts := 0
+	for i in range(30):
+		CalendarManager.advance_day()
+		if not GameState.pending_breakdown.is_empty():
+			ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
+		if GameState.fields["east"].state == "ready":
+			GameState.issue_field_order("east", "hay", "harvest")
+			cuts += 1
+	check(cuts == 3, "hay gives exactly max_harvests cuts (got %d)" % cuts)
+	check(GameState.fields["east"].state == "fallow", "hay field retires after final cut")
+
+
+func test_repair_contracts() -> void:
+	GameState.new_run("mechanic", 202)
+	check(not GameState.accept_contract("baler_repair"), "repair pipeline locked until the baler story")
+	GameState.set_flag("baler_fixed")
+	check(GameState.accept_contract("baler_repair"), "repair contract accepts for mechanic")
+	GameState.new_run("old_school", 203)
+	GameState.set_flag("baler_fixed")
+	check(not GameState.accept_contract("baler_repair"), "repair contract refuses non-mechanic")
+	GameState.new_run("mechanic", 204)
+	GameState.set_flag("baler_fixed")
+	GameState.accept_contract("baler_repair")
+	var earned_before := int(GameState.ledger.get("repair_salvage_revenue", 0))
+	var worked := 0
+	while not GameState.active_contract("baler_repair").is_empty() and worked < 10:
+		GameState.work_repair_job()
+		worked += 1
+	check(worked == 3, "three jobs complete the contract (worked %d)" % worked)
+	check(GameState.contracts_completed == 1, "repair contract counts as a kept handshake")
+	check(GameState.has_flag("repair_contract_done"), "county hears the wrench")
+	check(int(GameState.ledger.get("repair_salvage_revenue", 0)) > earned_before, "wrench income lands in its own ledger line")

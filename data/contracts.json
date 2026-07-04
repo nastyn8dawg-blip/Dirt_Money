@@ -18,7 +18,7 @@
     {
       "id": "baler_repair", "type": "repair", "offered_by": "marge",
       "title": "Co-op Members' Baler Repairs",
-      "requires": { "background": "mechanic", "min_reputation": 20 },
+      "requires": { "background": "mechanic", "flag": "baler_fixed" },
       "terms": { "jobs": 3, "pay_per_job": 250, "deadline_days": 8, "penalty": 100 },
       "negotiable": ["pay_per_job"]
     },
