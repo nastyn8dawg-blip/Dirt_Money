@@ -86,6 +86,20 @@ func _schedule_event() -> void:
 			continue
 		if t.has("weather_next") and WeatherManager.forecast(1)[0] != t.weather_next:
 			continue
+		# Morning-contact triggers: the county calls YOU when state warrants
+		if t.has("contract_due_in"):
+			var due_soon := false
+			for c in GameState.contracts_active:
+				if int(c.deadline_day) >= day and int(c.deadline_day) - day <= int(t.contract_due_in):
+					due_soon = true
+			if not due_soon:
+				continue
+		if t.get("credit_tight", false) and not GameState.credit_tight():
+			continue
+		if t.has("cooldown_days") and day - int(GameState.event_last.get(ev.get("id", ""), -99)) < int(t.cooldown_days):
+			continue
+		if t.has("chance") and GameState.event_roll() > float(t.chance):
+			continue
 		var blocked := false
 		for f in t.get("not_flags", []):
 			if GameState.has_flag(f):
@@ -98,6 +112,7 @@ func _schedule_event() -> void:
 			continue
 		if t.get("once", false):
 			GameState.set_flag("event_fired_" + ev.get("id", ""))
+		GameState.event_last[ev.get("id", "")] = day
 		if ev.get("action", "") == "salvage_offers":
 			GameState.create_salvage_offers()
 		EventBus.event_triggered.emit(ev)

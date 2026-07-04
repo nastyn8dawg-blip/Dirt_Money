@@ -92,6 +92,13 @@ loop → 3) IT practical-incompetence cost or starting-debt pressure → 4) IT m
   identity complete without touching his crops. Remaining drift: OS legacy premium (trust climb),
   IT timing edge (next per Director order: IT pressure, then IT timing).
 
+- **2026-07-03 (fix-the-field sprint)** — Field care is real: weeds creep daily, storms stress
+  crops, care costs money and blocks. Drift widened ~5pts across the board (OS −24 / IT −28 /
+  ME −5) because the model never priced field care or imperfect care — this is the field finally
+  charging rent, not a regression. The economy model needs a care-cost line when we next re-derive
+  (post-freeze). IT still sees zero timing holds on the harness seed — multi-seed runs remain the
+  open follow-up.
+
 ## Open questions (unresolved, need director ruling)
 - Telemetry implementation for demo (local opt-in file vs none) — decide in Phase 2 planning.
 - gdUnit4 vs lightweight custom test runner — start custom, adopt gdUnit4 when test count justifies (tech spec §6); revisit at sprint 3.

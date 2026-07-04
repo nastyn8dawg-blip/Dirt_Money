@@ -30,6 +30,8 @@ var salvage_projects: Array = []         # {deal_id, blocks_done, parts_paid, hi
 var salvage_stats := {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
 var greenhorn_count: int = 0
 var run_recorded: bool = false
+var event_last: Dictionary = {}          # event_id -> last day fired (cooldowns)
+var _event_rng := RandomNumberGenerator.new()
 
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
@@ -49,7 +51,7 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	field_orders = []
 	fields = {}
 	for f in FIELD_IDS:
-		fields[f] = {"state": "fallow", "crop": ""}
+		fields[f] = _fresh_field()
 	chickens = 12
 	contracts_active = []
 	contracts_completed = 0
@@ -65,6 +67,8 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	salvage_stats = {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
 	greenhorn_count = 0
 	run_recorded = false
+	event_last = {}
+	_event_rng.seed = run_seed + 13
 	ReputationLedger.init_from_background(bg_id)
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
@@ -127,10 +131,8 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 		"days_left": int(order_info.get("days", 1)), "cost": cost,
 	}
 	field_orders.append(order)
-	fields[field] = {
-		"state": "working", "crop": crop_id,
-		"cuts": int(fields[field].get("cuts", 0)),
-	}
+	fields[field].state = "working"
+	fields[field].crop = crop_id
 	EventBus.money_changed.emit(cash, debt)
 	EventBus.field_order_issued.emit(order)
 	return true
@@ -172,24 +174,31 @@ func progress_field_orders() -> void:
 		field_orders.erase(order)
 		if order.kind == "plant":
 			var planted: Dictionary = DataLoader.crops.get(order.crop, {})
-			fields[order.field] = {
-				"state": "growing", "crop": order.crop,
-				"days_to_ready": int(planted.get("grow_days", 1)),
-			}
+			fields[order.field].state = "growing"
+			fields[order.field].days_to_ready = int(planted.get("grow_days", 1))
+			fields[order.field].weeds = 0
+			fields[order.field].scouted = false
 		elif order.kind == "harvest":
 			var crop: Dictionary = DataLoader.crops.get(order.crop, {})
-			var units := int(crop.get("base_yield_units", 0))
+			var f: Dictionary = fields[order.field]
+			var units := field_yield_units(f)
 			add_inventory(order.crop, units)
 			harvest_log[order.crop] = int(harvest_log.get(order.crop, 0)) + units
-			var cuts := int(fields[order.field].get("cuts", 0)) + 1
+			var cuts := int(f.get("cuts", 0)) + 1
 			if crop.get("multi_cut", false) and cuts < int(crop.get("max_harvests", 1)):
-				# Hay regrows for another cutting — capped per season
-				fields[order.field] = {
-					"state": "growing", "crop": order.crop,
-					"days_to_ready": int(crop.get("grow_days", 1)), "cuts": cuts,
-				}
+				# Hay regrows for another cutting — capped per season; field
+				# care resets between cuts, fertility/lime persist
+				f.state = "growing"
+				f.days_to_ready = int(crop.get("grow_days", 1))
+				f.cuts = cuts
+				f.weeds = 0
+				f.scouted = false
+				f.stressed = false
 			else:
-				fields[order.field] = {"state": "fallow", "crop": ""}
+				var fresh := _fresh_field()
+				fresh.fertility = f.get("fertility", 60)
+				fresh.limed = f.get("limed", false)
+				fields[order.field] = fresh
 		EventBus.field_order_completed.emit(order)
 
 
@@ -198,8 +207,89 @@ func tick_growth() -> void:
 		var f: Dictionary = fields[field_id]
 		if f.state == "growing":
 			f.days_to_ready = int(f.get("days_to_ready", 1)) - 1
+			# The field pushes back: weeds creep daily, bad weather stresses
+			f.weeds = mini(100, int(f.get("weeds", 0)) + _breakdown_rng.randi_range(4, 8))
+			if WeatherManager.current in ["storm", "drought"]:
+				f.stressed = true
 			if f.days_to_ready <= 0:
 				f.state = "ready"
+
+
+func _fresh_field() -> Dictionary:
+	return {
+		"state": "fallow", "crop": "", "cuts": 0,
+		"fertility": 60, "weeds": 0, "stressed": false,
+		"tilled": false, "tested": false, "scouted": false,
+		"fertilized": false, "limed": false,
+	}
+
+
+const FIELD_ACTIONS := {
+	# action: [cost, allowed_states]
+	"soil_test": [30, ["fallow"]],
+	"till": [40, ["fallow"]],
+	"soil_prep": [40, ["fallow"]],
+	"cover_crop": [50, ["fallow"]],
+	"scout": [0, ["growing"]],
+	"fertilize": [80, ["growing"]],
+	"treat": [60, ["growing"]],
+	"repair_field": [20, ["growing"]],
+}
+
+
+func field_action(field_id: String, action: String) -> bool:
+	# Simple versions first (Director): the field needs to feel alive, not deep.
+	if not fields.has(field_id) or not FIELD_ACTIONS.has(action):
+		return false
+	var f: Dictionary = fields[field_id]
+	var spec: Array = FIELD_ACTIONS[action]
+	if not f.state in spec[1] or cash < int(spec[0]):
+		return false
+	if int(spec[0]) > 0:
+		add_cash(-int(spec[0]), "field_care")
+	match action:
+		"soil_test": f.tested = true
+		"till": f.tilled = true
+		"soil_prep": f.limed = true; f.fertility = mini(100, int(f.fertility) + 10)
+		"cover_crop": f.state = "cover"; f.crop = "cover crop"; set_flag("cover_cropped")
+		"scout": f.scouted = true
+		"fertilize": f.fertilized = true
+		"treat": f.weeds = 0; f.scouted = true
+		"repair_field": f.stressed = false
+	return true
+
+
+func field_stage_name(f: Dictionary) -> String:
+	match f.state:
+		"fallow": return "prepped" if f.get("tilled", false) else "empty"
+		"cover": return "cover crop"
+		"working": return "crew working"
+		"ready": return "ready"
+		"growing":
+			if f.get("stressed", false):
+				return "stressed"
+			var crop: Dictionary = DataLoader.crops.get(f.crop, {})
+			var total := int(crop.get("grow_days", 1))
+			return "emerged" if int(f.get("days_to_ready", 0)) > total / 2 else "growing"
+	return f.state
+
+
+func field_yield_units(f: Dictionary) -> int:
+	var crop: Dictionary = DataLoader.crops.get(f.get("crop", ""), {})
+	var units := float(crop.get("base_yield_units", 0))
+	if f.get("tilled", false):
+		units *= 1.05
+	if f.get("fertilized", false):
+		units *= 1.10
+	if int(f.get("weeds", 0)) > 50:
+		units *= 0.80
+	if f.get("stressed", false):
+		units *= 0.90
+	return int(round(units))
+
+
+func event_roll() -> float:
+	return _event_rng.randf()
 
 
 func credit_tight() -> bool:

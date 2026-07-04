@@ -17,6 +17,22 @@
       "notes": "Old School ripple chain: protect own planting vs help Hollis sandbag. High priority: weather won't wait."
     },
     {
+      "id": "marge_deadline_call",
+      "title": "Marge Calls About the Paper",
+      "priority": 5,
+      "trigger": { "contract_due_in": 2, "cooldown_days": 3 },
+      "dialogue_tree": "marge_deadline_call",
+      "notes": "Morning contact: reminder beats penalty. County comes to the player."
+    },
+    {
+      "id": "earl_credit_notice",
+      "title": "Notice From Ash Creek Savings",
+      "priority": 4,
+      "trigger": { "credit_tight": true, "once": true, "min_day": 3 },
+      "dialogue_tree": "earl_notice",
+      "notes": "Morning contact: the surcharge arrives as paperwork, not gossip."
+    },
+    {
       "id": "chicken_hawk",
       "title": "Hawk Over the Coop",
       "trigger": { "min_day": 2, "weight": 8 },

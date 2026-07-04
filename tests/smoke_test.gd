@@ -22,6 +22,8 @@ func _ready() -> void:
 	test_salvage_flip()
 	test_it_identity()
 	test_perks_and_history()
+	test_field_care()
+	test_morning_contacts()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -380,3 +382,59 @@ func test_perks_and_history() -> void:
 	var after := SaveManager.load_run_history()
 	check(after.size() == before + 1, "run recorded to history")
 	check(after.back().get("background", "") == "mechanic", "history preserves the run")
+
+
+func test_field_care() -> void:
+	GameState.new_run("old_school", 600)
+	check(GameState.field_action("north", "till"), "till works on empty field")
+	check(GameState.fields["north"].tilled, "till marks the field")
+	check(GameState.field_action("north", "soil_test"), "soil test works")
+	check(GameState.fields["north"].tested, "soil test reveals fertility")
+	GameState.issue_field_order("north", "corn", "plant")
+	check(not GameState.field_action("north", "till"), "cannot till a working field")
+	# Simulate mid-growth care and its yield math
+	var f: Dictionary = GameState.fields["north"]
+	f.state = "growing"
+	f.days_to_ready = 5
+	f.weeds = 60
+	check(GameState.field_action("north", "scout"), "scouting a growing field")
+	var dirty_yield := GameState.field_yield_units(f)
+	check(GameState.field_action("north", "treat"), "treating weeds")
+	check(int(f.weeds) == 0, "treatment clears pressure")
+	check(GameState.field_yield_units(f) > dirty_yield, "clean field out-yields weedy field")
+	check(GameState.field_action("north", "fertilize"), "fertilizing")
+	var boosted := GameState.field_yield_units(f)
+	f.stressed = true
+	check(GameState.field_yield_units(f) < boosted, "storm stress costs yield")
+	check(GameState.field_action("north", "repair_field"), "repairing storm damage")
+	check(not f.stressed, "repair clears stress")
+	# Late-season: cover crop instead of default hay
+	GameState.new_run("old_school", 601)
+	CalendarManager.day = 20
+	check(not GameState.issue_field_order("south", "hay", "plant"), "hay window closed Day 20")
+	check(GameState.field_action("south", "cover_crop"), "cover crop is the late-season answer")
+	check(GameState.fields["south"].state == "cover", "field carries the cover crop")
+
+
+func test_morning_contacts() -> void:
+	GameState.new_run("mechanic", 700)
+	GameState.set_flag("baler_fixed")   # keeps the baler event from claiming the slot
+	ReputationLedger.county = -5        # credit tight
+	CalendarManager.day = 3
+	var fired: Array = []
+	var handler := func(ev): fired.append(ev.get("id", ""))
+	EventBus.event_triggered.connect(handler)
+	CalendarManager.advance_day()
+	EventBus.event_triggered.disconnect(handler)
+	check("earl_credit_notice" in fired, "the bank notice arrives when credit tightens")
+	# Deadline reminder fires when a handshake is due within 2 days
+	GameState.new_run("old_school", 701)
+	GameState.set_flag("event_fired_baler_breakdown_hollis")
+	GameState.set_flag("event_fired_storm_warning")   # keep the slot free
+	GameState.accept_contract("corn_delivery_t1")
+	CalendarManager.day = int(GameState.contracts_active[0].deadline_day) - 2
+	fired.clear()
+	EventBus.event_triggered.connect(handler)
+	CalendarManager.advance_day()
+	EventBus.event_triggered.disconnect(handler)
+	check("marge_deadline_call" in fired, "Marge calls before the deadline lands")

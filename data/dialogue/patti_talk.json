@@ -15,8 +15,16 @@
       ],
       "options": [
         { "text": "\"What are people saying?\"", "goto": "gossip" },
+        { "text": "\"Anybody been in looking for help?\"", "goto": "lead" },
         { "text": "\"Just the coffee, thanks.\"", "goto": "_end" }
       ]
+    },
+    "lead": {
+      "speaker": "patti",
+      "emotion": "neutral",
+      "lead_source": true,
+      "text": "Word travels quicker than trucks around here.",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "gossip": {
       "speaker": "patti",

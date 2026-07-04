@@ -37,7 +37,6 @@ func _refresh() -> void:
 	match GameState.background_id:
 		"old_school":
 			make_label(_list, "Sandy says: \"%s\"" % EconomyManager.gossip_line(), 15)
-			make_label(_list, "(You don't do charts. You do handshakes.)", 12, ScreenBase.MUTED)
 		"it_nephew":
 			make_label(_list, "MARKET TERMINAL", 15, ScreenBase.GOOD)
 			for cid in EconomyManager.prices.keys():

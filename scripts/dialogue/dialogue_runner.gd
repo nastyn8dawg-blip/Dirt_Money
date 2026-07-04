@@ -175,6 +175,11 @@ func _resolve_text(node: Dictionary) -> String:
 		var line := DataLoader.pick_gossip()
 		if line != "":
 			return line
+	# Lead nodes: the diner as lead generator (data/leads.json)
+	if node.get("lead_source", false):
+		var lead := DataLoader.pick_lead()
+		if lead != "":
+			return lead
 	# Director-provided variants rotate randomly so replays don't loop.
 	var texts: Array = [node.get("text", "")]
 	texts.append_array(node.get("variants", []))

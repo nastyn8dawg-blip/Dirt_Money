@@ -17,6 +17,27 @@ var strings: Dictionary = {}
 var gossip_banks: Array = []
 var endings: Array = []
 var salvage_deals: Array = []
+var leads: Array = []
+
+
+func pick_lead() -> String:
+	# The diner tells the player something USEFUL when the county has
+	# something to say — and just pours coffee when it doesn't.
+	for lead in leads:
+		var ok := false
+		match lead.get("condition", ""):
+			"contract_available":
+				ok = GameState.contracts_active.is_empty()
+			"salvage_offer":
+				ok = not GameState.salvage_offers.is_empty()
+			"market_rising":
+				ok = EconomyManager.trend("corn") == "rising"
+			"":
+				ok = true
+		if ok and not lead.get("lines", []).is_empty():
+			var lines: Array = lead.lines
+			return lines[randi() % lines.size()]
+	return ""
 
 
 func pick_ending() -> Dictionary:
@@ -99,6 +120,7 @@ func load_all() -> void:
 	gossip_banks = _read_json("res://data/gossip.json").get("banks", [])
 	endings = _read_json("res://data/endings.json").get("endings", [])
 	salvage_deals = _read_json("res://data/salvage.json").get("deals", [])
+	leads = _read_json("res://data/leads.json").get("leads", [])
 	_load_dialogue_dir("res://data/dialogue")
 
 

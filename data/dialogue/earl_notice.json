@@ -1,0 +1,15 @@
+{
+  "_schema": "Morning contact: a dry bank notice when credit tightens. Fires once. Text is scratch placeholder awaiting Director wording (law 6). Blank EN1.",
+  "_status": "placeholder_awaiting_director",
+  "id": "earl_notice",
+  "npc": "earl",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "[BLANK EN1 — a bank notice in Earl's paperwork voice: the rate now carries a community-standing adjustment, effective already. No judgment, no gossip, just the number. Awaiting Director.]",
+      "options": [{ "text": "(File it where you file bad news)", "goto": "_end" }]
+    }
+  }
+}

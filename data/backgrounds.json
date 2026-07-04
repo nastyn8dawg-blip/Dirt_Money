@@ -32,7 +32,23 @@
       },
       "labor_cost_mult": 1.0,
       "perk_tree": "old_school_tree",
-      "proof_perk": "read_the_land_2"
+      "proof_perk": "read_the_land_2",
+      "card": {
+        "summary": "You grew up on this ground. The county knows your family name, and some doors open because of it.",
+        "starts_with": [
+          "more county goodwill",
+          "better field reads",
+          "stronger weather instincts",
+          "old equipment",
+          "less cash"
+        ],
+        "harder_path": [
+          "no dashboards",
+          "fewer market tools",
+          "slower modernization"
+        ],
+        "county_read": "Your name still means something. What you do with it is yours."
+      }
     },
     {
       "id": "it_nephew",
@@ -69,7 +85,23 @@
       "greenhorn_cost": 60,
       "greenhorn_delay_days": 1,
       "perk_tree": "it_nephew_tree",
-      "proof_perk": "price_alerts"
+      "proof_perk": "price_alerts",
+      "card": {
+        "summary": "You inherited the farm with more software experience than field experience. The numbers make sense. The county does not, not yet.",
+        "starts_with": [
+          "market forecast tools",
+          "better price information",
+          "weak county trust",
+          "early field mistakes",
+          "debt pressure"
+        ],
+        "harder_path": [
+          "practical farming mistakes",
+          "less neighbor trust",
+          "no inherited farming credibility"
+        ],
+        "county_read": "People are waiting to see if you stay."
+      }
     },
     {
       "id": "mechanic",
@@ -102,7 +134,23 @@
       },
       "labor_cost_mult": 1.0,
       "perk_tree": "mechanic_tree",
-      "proof_perk": "diagnostics_1"
+      "proof_perk": "diagnostics_1",
+      "card": {
+        "summary": "You understand machines better than crops. The land may not talk to you yet, but equipment does.",
+        "starts_with": [
+          "repair skill",
+          "salvage opportunities",
+          "better equipment reads",
+          "weaker crop instincts",
+          "less farm income early"
+        ],
+        "harder_path": [
+          "crop decisions are less clear",
+          "money comes from time-consuming repairs",
+          "bad flips can follow you around town"
+        ],
+        "county_read": "Folks trust a person who can keep iron moving."
+      }
     }
   ]
 }

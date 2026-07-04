@@ -119,7 +119,7 @@ func _bot_act() -> void:
 	if not GameState.pending_breakdown.is_empty():
 		if GameState.cash >= 300:
 			ReputationLedger.apply_effects([
-				{"op": "cash_delta", "value": -150},
+				{"op": "cash_delta", "value": -150, "category": "repair_costs"},
 				{"op": "flag_set", "flag": "breakdown_paid_shop"},
 				{"op": "rep_delta", "npc": "roy", "value": 2},
 				{"op": "breakdown_resolve", "value": "resume"},
@@ -129,6 +129,14 @@ func _bot_act() -> void:
 				{"op": "flag_set", "flag": "breakdown_waited"},
 				{"op": "breakdown_resolve", "value": "wait"},
 			])
+	# Field care: a competent player scouts, treats, and repairs
+	for field_id in GameState.fields.keys():
+		var f: Dictionary = GameState.fields[field_id]
+		if f.state == "growing":
+			if int(f.get("weeds", 0)) > 45:
+				GameState.field_action(field_id, "treat")
+			if f.get("stressed", false):
+				GameState.field_action(field_id, "repair_field")
 	# Harvest anything ready
 	for field_id in GameState.fields.keys():
 		var f: Dictionary = GameState.fields[field_id]
