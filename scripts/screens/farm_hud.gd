@@ -342,12 +342,11 @@ func _open_field_detail(field_id: String) -> void:
 		_action(col, "Treat weeds/pests — $60 + a block — clears the pressure", GameState.cash >= 60, func(): acted.call("treat"))
 		if f.get("stressed", false):
 			# Emergency repair protects an active crop → financeable (ruling
-			# 2026-07-04). Cost line follows the Director's harvest pattern —
-			# flag for his confirm.
+			# 2026-07-04). "Patch runs" — canon, field-damage register.
 			if GameState.cash >= 20:
 				_action(col, "Repair storm damage — $20 + a block — saves 10%% of the crop", true, func(): acted.call("repair_field"))
 			else:
-				_note_prompt(col, 20, "Repair cost is $20.", func():
+				_note_prompt(col, 20, "Patch runs $20.", func():
 					GameState.field_action(field_id, "repair_field", true)
 					CalendarManager.spend_block()
 					_close_detail()

@@ -12,6 +12,9 @@ Then summarize the current priority back to the Director in five bullets.
 **At session end** (or before any long pause), update those five files plus
 `docs/DECISION_LOG.md` with: what changed, what shipped, what's still broken, feedback received,
 decisions made, next recommended task. Commit them with the code.
+**Tiny sessions** (small wording/logic tweaks — Director ruling, 2026-07-04): skip the full
+five-file update. Touch `NEXT_ACTIONS.md` only if the priority changed, `DECISION_LOG.md` only
+if there was a real ruling. Don't burn context churning the brain.
 
 **Size discipline:** AI_CONTEXT stays under ~120 lines. These files are a compressed brain, not
 a transcript — extract decisions, state, rules, next actions only. A 40-page context file

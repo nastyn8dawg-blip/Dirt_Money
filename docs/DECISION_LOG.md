@@ -38,4 +38,7 @@
 - 2026-07-04 — Language law: "note", never "credit balance." Ash Creek, not software.
   ("Earl will carry it, but not clean" — not "credit surcharge applied.")
 - 2026-07-04 — Director wording pass delivered: salvage confirmation/badge/suggestion/panel
-  + all three credit prompts are canon, wired verbatim.
+  + all three credit prompts are canon, wired verbatim. Repair prompt: "Patch runs $20."
+  (field-damage register; "cost is" reads like software).
+- 2026-07-04 — Process ruling: tiny sessions skip the full five-file update — NEXT_ACTIONS
+  only on priority change, DECISION_LOG only on real rulings (now in CLAUDE.md protocol).

@@ -35,9 +35,8 @@
 ## Dialogue canon status
 Every shipped line is Director-authored. Remaining placeholder-structure trees (scratch text,
 awaiting future batches): earl_talk core, sandy_talk chat, dee_talk, gus_talk, marge_talk chat
-node. Salvage/credit UI strings: Director wording pass wired verbatim 2026-07-04. ONE adapted
-line awaiting his confirm: "Repair cost is $20." (his harvest pattern, word-swapped for the
-storm-repair prompt).
+node. Salvage/credit UI strings: Director wording pass wired verbatim 2026-07-04, including
+the repair prompt ("Patch runs $20."). Zero blanks, zero unconfirmed lines outstanding.
 
 ## Parked
 - Portraits + county map art (awaiting Director image-tool decision; prompt pack ready to write).
