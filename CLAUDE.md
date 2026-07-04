@@ -3,6 +3,21 @@
 Farm career RPG. Godot 4.x, GDScript. Solo dev (Creative Director) + Claude Code (Lead Engineer).
 Source of truth: `docs/DIRT_MONEY_MASTER_SPEC.md`. Scope contract: `docs/DIRT_MONEY_VERTICAL_SLICE.md`.
 
+## SESSION PROTOCOL (mandatory — chat history is NOT the source of truth)
+**At session start**, before editing any code, read in order:
+`docs/AI_CONTEXT.md` → `docs/CURRENT_STATE.md` → `docs/NEXT_ACTIONS.md` →
+`docs/PLAYER_FEEDBACK.md` → `docs/KNOWN_BUGS.md`.
+Then summarize the current priority back to the Director in five bullets.
+
+**At session end** (or before any long pause), update those five files plus
+`docs/DECISION_LOG.md` with: what changed, what shipped, what's still broken, feedback received,
+decisions made, next recommended task. Commit them with the code.
+
+**Size discipline:** AI_CONTEXT stays under ~120 lines. These files are a compressed brain, not
+a transcript — extract decisions, state, rules, next actions only. A 40-page context file
+recreates the problem it exists to solve. Hierarchy: AI_CONTEXT = brain · specs = detail ·
+code = truth · chat = temporary steering.
+
 ## Hard laws
 1. **Zero runtime APIs.** Single-player, offline, no accounts, no server, no telemetry SDKs (demo telemetry is local-file only, opt-in, Phase 2 decision). Never add a network call to the game.
 2. **Scope guardrail.** Nothing enters the vertical slice that is not in the Phase 1 sprint table in `DIRT_MONEY_VERTICAL_SLICE.md`. New ideas go to `DIRT_MONEY_CRITIQUE.md`, not into code.
