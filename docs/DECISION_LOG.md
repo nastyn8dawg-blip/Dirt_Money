@@ -24,3 +24,10 @@
   diner leads, late-season choices). Field interaction readability before portraits.
 - 2026-07-03 — Repo-local project memory adopted (AI_CONTEXT/CURRENT_STATE/NEXT_ACTIONS/
   PLAYER_FEEDBACK/KNOWN_BUGS/DECISION_LOG); session protocol in CLAUDE.md; chat is temporary.
+- 2026-07-04 — Cash shortage is pressure, not a dead end: revenue-critical production costs
+  (harvest v1) chargeable to Earl's note up to a credit limit; tight credit adds a fee;
+  collapsed credit refuses; planting stays cash-only. Not free money — routes through
+  county/credit standing.
+- 2026-07-04 — Salvage legibility law: after any purchase the player always sees what was
+  bought, where it sits, its status, parts/time estimate, buyer, and next action — at both
+  the yard and the machine shed. Never buy a thing and wonder where it went.

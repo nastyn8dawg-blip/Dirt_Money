@@ -24,6 +24,7 @@ func _ready() -> void:
 	test_perks_and_history()
 	test_field_care()
 	test_morning_contacts()
+	test_harvest_on_credit()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -438,3 +439,40 @@ func test_morning_contacts() -> void:
 	CalendarManager.advance_day()
 	EventBus.event_triggered.disconnect(handler)
 	check("marge_deadline_call" in fired, "Marge calls before the deadline lands")
+
+
+func test_harvest_on_credit() -> void:
+	# Director ruling 2026-07-04: a ready crop is never lost to a thin wallet
+	# unless credit has truly collapsed.
+	GameState.new_run("old_school", 800)
+	var f: Dictionary = GameState.fields["north"]
+	f.state = "ready"
+	f.crop = "hay"
+	GameState.cash = -54
+	var debt0 := GameState.debt
+	check(not GameState.issue_field_order("north", "hay", "harvest"), "broke harvest still blocked without asking for credit")
+	check(GameState.issue_field_order("north", "hay", "harvest", true), "harvest goes on the note when cash is short")
+	check(GameState.debt == debt0 + 80, "harvest cost lands on debt, no fee at normal standing")
+	check(GameState.cash == -54, "cash untouched when financed")
+	check(int(GameState.ledger.get("orders_financed", 0)) == -80, "financed order categorized in the ledger")
+	check(not GameState.issue_field_order("south", "hay", "plant", true), "planting is never financeable — credit is for revenue work")
+	# Tight credit: Earl's terms add a fee
+	GameState.new_run("old_school", 801)
+	ReputationLedger.county = -5
+	var f2: Dictionary = GameState.fields["south"]
+	f2.state = "ready"
+	f2.crop = "hay"
+	GameState.cash = 0
+	var debt1 := GameState.debt
+	check(GameState.issue_field_order("south", "hay", "harvest", true), "tight credit still allows the harvest")
+	check(GameState.debt == debt1 + 80 + 8, "tight credit adds Earl's fee to the note")
+	check(int(GameState.ledger.get("financing_fees", 0)) == -8, "fee categorized separately")
+	# Collapsed credit: the note has a ceiling
+	GameState.new_run("old_school", 802)
+	GameState.debt = GameState.CREDIT_LIMIT
+	var f3: Dictionary = GameState.fields["east"]
+	f3.state = "ready"
+	f3.crop = "hay"
+	GameState.cash = 0
+	check(not GameState.can_finance(80), "maxed note leaves no credit room")
+	check(not GameState.issue_field_order("east", "hay", "harvest", true), "maxed note refuses new credit")

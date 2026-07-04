@@ -1,6 +1,6 @@
 # DIRT MONEY — AI CONTEXT (compressed project brain)
 *Read this first, cold-start. Keep under ~120 lines. Details live in specs; truth lives in code.
-Chat is temporary steering. Updated: 2026-07-03.*
+Chat is temporary steering. Updated: 2026-07-04.*
 
 ## What this is
 Farm career RPG, Godot 4.7, C:\dev\Dirt_Money, repo nastyn8dawg-blip/Dirt_Money.
@@ -34,11 +34,12 @@ DIAGNOSTIC ONLY). Goal: prove three runs through the same county feel different 
 
 ## Current status (one paragraph)
 Farm view shipped: clickable field parcels + buildings, stable right-side inspector panel
-(status / recommendation / what-if-ignored / vertical actions with costs). Field care live
-(weeds, stress, till/test/scout/fertilize/treat/repair, late-season cover crop/lime/fallow).
-Morning contacts live (Marge deadline call, Earl credit notice + storm/breakdown/salvage).
-Diner is a lead generator. All Director canon wired verbatim; zero prose blanks outstanding.
-Awaiting Director playtest verdict on the fixed field panel.
+(status / recommendation / what-if-ignored / vertical actions with costs). Field care live.
+Morning contacts live. Diner is a lead generator. 2026-07-04 playtest fixes shipped: salvage
+projects fully legible (shared block at shed + yard: status/where/parts/time/buyer/next
+action, purchase confirmation) and harvest chargeable to Earl's note when cash is short
+(tight credit fees, $12k ceiling — placeholders; planting stays cash-only). New UI strings
+are Claude-drafted placeholders pending Director pass. Awaiting Director verdict on both.
 
 ## Do not waste time rediscovering
 - Balance harness: `godot --headless --path . res://tests/autoplay.tscn` (drift + ledger +

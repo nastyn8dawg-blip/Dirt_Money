@@ -94,3 +94,50 @@ func make_button(parent: Control, text: String, callback: Callable) -> Button:
 
 func go(screen_id: String, payload: Dictionary = {}) -> void:
 	EventBus.screen_change_requested.emit(screen_id, payload)
+
+
+func add_salvage_project_block(parent: Control, idx: int, wrap_width: int, on_change: Callable) -> void:
+	# Director required fix (2026-07-04): after buying salvage the player must
+	# always see what they own, where it sits, what it needs, and who buys it.
+	# One renderer, shown identically at Gus's yard and the machine shed.
+	# [Claude-drafted strings — placeholder pending Director pass]
+	var p: Dictionary = GameState.salvage_projects[idx]
+	var deal: Dictionary = GameState.salvage_deal(p.deal_id)
+	var needed: int = int(deal.restore_blocks) + int(p.extra_blocks)
+	var left: int = maxi(0, needed - int(p.blocks_done))
+	var ready := GameState.salvage_ready_to_sell(idx)
+	var tier := GameState.roy_pricing_tier()
+	var offer := int(round(float(deal.base_sale_value) * float(tier.mult)))
+
+	var line := func(text: String, size: int, color: Color) -> void:
+		var l := make_label(parent, text, size, color)
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if wrap_width > 0:
+			l.custom_minimum_size.x = wrap_width
+
+	line.call("%s — bought from Gus, $%d" % [deal.name, int(deal.buy_price)], 15, ACCENT)
+	var status := "restored — ready to sell"
+	if not ready:
+		status = "unrestored" if int(p.blocks_done) == 0 else "restoring — %d of %d sessions done" % [int(p.blocks_done), needed]
+	line.call("Status: %s" % status, 13, GOOD if ready else CREAM)
+	line.call("Where: your machine shed", 13, CREAM)
+	if p.hidden_hit:
+		line.call("Found the painted-over problem. Parts and time both got worse.", 13, WARN)
+	if GameState.background_id == "mechanic":
+		line.call("Estimated parts: %s%s" % [
+			deal.get("mechanic_read", {}).get("parts_range", "?"),
+			" — already paid" if p.parts_paid else ""], 13, INFO)
+	else:
+		line.call("Parts: %s" % ("paid" if p.parts_paid else "unknown till you open it up"), 13, INFO)
+	if not ready:
+		line.call("Time: %d work session(s) left, one time block each" % left, 13, INFO)
+	line.call("Buyer: Roy — his offer today: $%d (%s pricing)" % [offer, tier.tier], 13, INFO)
+	if ready:
+		make_button(parent, "Next action: truck it to Roy — $%d" % offer, func():
+			GameState.sell_salvage(idx)
+			on_change.call())
+	else:
+		make_button(parent, "Next action: put in a work session — costs a time block", func():
+			CalendarManager.spend_block()
+			GameState.work_salvage(idx)
+			on_change.call())

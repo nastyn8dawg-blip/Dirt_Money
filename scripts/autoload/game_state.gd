@@ -38,6 +38,11 @@ const STARTING_DEBT := 8000
 const DEBT_DAILY_INTEREST := 0.004
 const CREDIT_TIGHT_COUNTY := -3    # county standing at/below this → bank surcharge
 const CREDIT_TIGHT_MULT := 1.25
+# Director ruling 2026-07-04: cash shortage is pressure, not a dead end.
+# Revenue-critical work (harvest v1) can go on Earl's note — up to a ceiling,
+# with worse terms when the county has already tightened credit.
+const CREDIT_LIMIT := 12000        # placeholder, DIAGNOSTIC ONLY (freeze)
+const FINANCE_FEE_TIGHT := 0.10    # Earl's surcharge on financed work when tight
 const FIELD_IDS := ["north", "south", "east"]
 
 
@@ -103,7 +108,7 @@ func has_flag(flag: String) -> bool:
 	return flags.get(flag, false)
 
 
-func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
+func issue_field_order(field: String, crop_id: String, kind: String, on_credit: bool = false) -> bool:
 	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
 	if crop.is_empty() or not fields.has(field):
 		return false
@@ -118,17 +123,30 @@ func issue_field_order(field: String, crop_id: String, kind: String) -> bool:
 	var order_info: Dictionary = crop.get(kind + "_order", {})
 	# IT Nephew hires the labor he can't do himself (backgrounds.json mult)
 	var cost := int(round(float(order_info.get("cost", 0)) * float(background().get("labor_cost_mult", 1.0))))
-	if cash < cost:
+	# Harvest can go on Earl's note (Director ruling 2026-07-04): work that
+	# directly creates revenue is never hard-blocked by a thin wallet unless
+	# credit has truly collapsed. Planting stays cash-only — that's a gamble,
+	# not a rescue.
+	var financed := on_credit and kind == "harvest" and can_finance(cost)
+	if cash < cost and not financed:
 		return false
-	# Ledger split: base = seed+fuel at data cost; the rest is hired labor
 	var base_cost := int(order_info.get("cost", 0))
-	cash -= cost
-	ledger["order_seed_fuel"] = int(ledger.get("order_seed_fuel", 0)) - base_cost
-	if cost > base_cost:
-		ledger["labor_premium"] = int(ledger.get("labor_premium", 0)) - (cost - base_cost)
+	if financed:
+		var charge := finance_charge(cost)
+		debt += charge
+		ledger["orders_financed"] = int(ledger.get("orders_financed", 0)) - cost
+		if charge > cost:
+			ledger["financing_fees"] = int(ledger.get("financing_fees", 0)) - (charge - cost)
+	else:
+		# Ledger split: base = seed+fuel at data cost; the rest is hired labor
+		cash -= cost
+		ledger["order_seed_fuel"] = int(ledger.get("order_seed_fuel", 0)) - base_cost
+		if cost > base_cost:
+			ledger["labor_premium"] = int(ledger.get("labor_premium", 0)) - (cost - base_cost)
 	var order := {
 		"field": field, "crop": crop_id, "kind": kind,
 		"days_left": int(order_info.get("days", 1)), "cost": cost,
+		"financed": financed,
 	}
 	field_orders.append(order)
 	fields[field].state = "working"
@@ -297,6 +315,21 @@ func credit_tight() -> bool:
 	return ReputationLedger.county <= CREDIT_TIGHT_COUNTY
 
 
+func credit_room() -> int:
+	return maxi(0, CREDIT_LIMIT - debt)
+
+
+func finance_charge(cost: int) -> int:
+	# What actually lands on the note: the cost, plus Earl's fee when credit
+	# is already tight. Denial only happens when the note is truly maxed.
+	var fee := int(ceil(cost * FINANCE_FEE_TIGHT)) if credit_tight() else 0
+	return cost + fee
+
+
+func can_finance(cost: int) -> bool:
+	return finance_charge(cost) <= credit_room()
+
+
 func tick_debt() -> void:
 	if debt > 0:
 		var rate := DEBT_DAILY_INTEREST
@@ -369,12 +402,12 @@ func buy_salvage(deal_id: String) -> bool:
 	return true
 
 
-func work_salvage() -> Dictionary:
+func work_salvage(idx: int = 0) -> Dictionary:
 	# One block of shop time. Parts get real on the first session; the
 	# painted-over problem (if any) surfaces on the second.
-	if salvage_projects.is_empty():
+	if idx < 0 or idx >= salvage_projects.size():
 		return {}
-	var p: Dictionary = salvage_projects[0]
+	var p: Dictionary = salvage_projects[idx]
 	var deal := salvage_deal(p.deal_id)
 	p.blocks_done = int(p.blocks_done) + 1
 	salvage_stats.blocks += 1
@@ -395,10 +428,10 @@ func work_salvage() -> Dictionary:
 	}
 
 
-func salvage_ready_to_sell() -> bool:
-	if salvage_projects.is_empty():
+func salvage_ready_to_sell(idx: int = 0) -> bool:
+	if idx < 0 or idx >= salvage_projects.size():
 		return false
-	var p: Dictionary = salvage_projects[0]
+	var p: Dictionary = salvage_projects[idx]
 	var deal := salvage_deal(p.deal_id)
 	return int(p.blocks_done) >= int(deal.restore_blocks) + int(p.extra_blocks)
 
@@ -412,10 +445,10 @@ func roy_pricing_tier() -> Dictionary:
 	return {"tier": "neutral", "mult": 1.0}
 
 
-func sell_salvage() -> int:
-	if not salvage_ready_to_sell():
+func sell_salvage(idx: int = 0) -> int:
+	if not salvage_ready_to_sell(idx):
 		return 0
-	var p: Dictionary = salvage_projects[0]
+	var p: Dictionary = salvage_projects[idx]
 	var deal := salvage_deal(p.deal_id)
 	var tier := roy_pricing_tier()
 	var sale := int(round(float(deal.base_sale_value) * float(tier.mult)))

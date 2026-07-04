@@ -13,6 +13,13 @@
   design for background options, but verify it reads okay in the shop-call context.
 
 ## Fixed (most recent first)
+- 2026-07-04 — Salvage vanished after purchase (only visible back at the yard, no confirmation,
+  buy button enabled while broke) → shared project block at shed + yard, confirmation, next
+  actions, honest buy button.
+- 2026-07-04 — Harvest hard-blocked by negative cash → harvest financeable on Earl's note up to
+  CREDIT_LIMIT; tight credit adds a fee; planting stays cash-only.
+- 2026-07-04 — Field panel plant/harvest buttons showed base cost and gated on it while IT pays
+  1.5x labor (button could be enabled yet the order silently fail) → effective cost everywhere.
 - 2026-07-03 — Field detail panel clipped at top-left with horizontal buttons (PRESET_CENTER on
   empty container) → stable right-side inspector for all panels.
 - 2026-07-03 — Crops harvestable instantly (grow_days unenforced) → growth countdown + ready state.

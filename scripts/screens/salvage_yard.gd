@@ -3,6 +3,7 @@ extends ScreenBase
 ## I'm looking at." Anyone can buy; only the wrench-eye sees the real read.
 
 var _list: VBoxContainer
+var _just_bought := ""   # deal name — drives the post-purchase confirmation
 
 
 func _ready() -> void:
@@ -35,27 +36,21 @@ func _refresh() -> void:
 	for c in _list.get_children():
 		c.queue_free()
 
-	# Projects in the shop
-	for p in GameState.salvage_projects:
-		var deal: Dictionary = GameState.salvage_deal(p.deal_id)
-		var needed: int = int(deal.restore_blocks) + int(p.extra_blocks)
+	# Post-purchase confirmation: the player must never buy a machine and
+	# wonder where it went. [Claude-drafted strings — pending Director pass]
+	if _just_bought != "":
+		var conf := VBoxContainer.new()
+		_list.add_child(conf)
+		make_label(conf, "BOUGHT: %s" % _just_bought, 16, ScreenBase.GOOD)
+		make_label(conf, "It's a project at your machine shed now. Restore it there (or right here), then truck it to Roy.", 13)
+		_list.add_child(HSeparator.new())
+
+	# Your projects — same panel the machine shed shows
+	for i in range(GameState.salvage_projects.size()):
 		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 4)
 		_list.add_child(col)
-		make_label(col, "IN YOUR SHOP: %s — %d/%d work sessions" % [deal.name, p.blocks_done, needed], 15, ACCENT)
-		if p.hidden_hit:
-			make_label(col, "   Found the painted-over problem. Parts and time both got worse.", 13, ScreenBase.WARN)
-		if GameState.salvage_ready_to_sell():
-			var tier := GameState.roy_pricing_tier()
-			make_button(col, "Truck it to Roy — his offer: $%d (%s pricing)" % [
-				int(round(float(deal.base_sale_value) * float(tier.mult))), tier.tier],
-				func():
-					GameState.sell_salvage()
-					_refresh())
-		else:
-			make_button(col, "Put in a work session (costs a time block)", func():
-				CalendarManager.spend_block()
-				GameState.work_salvage()
-				_refresh())
+		add_salvage_project_block(col, i, 0, _refresh)
 		_list.add_child(HSeparator.new())
 
 	# Offers on the lot
@@ -80,7 +75,9 @@ func _refresh() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		col.add_child(row)
-		make_button(row, "Buy it — $%d" % deal.buy_price, func():
-			GameState.buy_salvage(o.deal_id)
+		var buy := make_button(row, "Buy it — $%d" % deal.buy_price, func():
+			if GameState.buy_salvage(o.deal_id):
+				_just_bought = deal.name
 			_refresh())
-		make_label(row, "or walk away — that's a skill too", 12, ScreenBase.MUTED)
+		buy.disabled = GameState.cash < int(deal.buy_price)
+		make_label(row, "cash short" if buy.disabled else "or walk away — that's a skill too", 12, ScreenBase.MUTED)

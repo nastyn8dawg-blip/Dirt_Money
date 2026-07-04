@@ -1,5 +1,15 @@
 # PLAYER FEEDBACK LOG (append; newest first; never delete — trends matter)
 
+## 2026-07-04 — Director, salvage + harvest cash blocker playtest
+- Bought salvage (Mechanic run), then couldn't tell what he owned, where it went, or how to
+  turn it into money → FIXED: post-purchase confirmation at the yard; salvage project panel
+  at the Machine Shed AND the yard (what/status/where/parts/time/buyer/next action); shed
+  building badge; morning suggestion line. Rule: never buy something and wonder where it went.
+- Crops ready but cash at −$54 hard-blocked the harvest → FIXED: harvest can be charged to
+  Earl's note (design ruling: cash shortage is pressure, not a dead end). Tight credit adds a
+  fee; maxed note ($12k placeholder) refuses. Planting stays cash-only.
+- Verdict pending on both fixes.
+
 ## 2026-07-03 — Director, farm-view build
 - Farm view is a positive change; right direction.
 - Field action panel was unreadable/clipped (spawned top-left, horizontal buttons) → FIXED:

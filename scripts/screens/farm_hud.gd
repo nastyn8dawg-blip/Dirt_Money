@@ -117,7 +117,14 @@ func _rebuild_canvas() -> void:
 	_building("FARMHOUSE\nsleep · save · end run", Rect2(400, 250, 145, 105), Color("4a3a2a"), _open_farmhouse)
 	_building("BARN\ninventory", Rect2(565, 250, 135, 105), Color("5a3028"), _open_barn)
 	_building("COOP\n%d hens · %d eggs" % [GameState.chickens, GameState.inventory.get("eggs", 0)], Rect2(400, 375, 145, 95), Color("55432c"), _open_coop)
-	_building("MACHINE SHED\n%s" % ("⚠ BREAKDOWN" if not GameState.pending_breakdown.is_empty() else "iron's quiet"), Rect2(565, 375, 135, 95), Color("46464a"), _open_shed)
+	var shed_note := "iron's quiet"
+	if not GameState.pending_breakdown.is_empty():
+		shed_note = "⚠ BREAKDOWN"
+	elif GameState.salvage_ready_to_sell():
+		shed_note = "● salvage READY — Roy buys"
+	elif not GameState.salvage_projects.is_empty():
+		shed_note = "salvage project inside"
+	_building("MACHINE SHED\n%s" % shed_note, Rect2(565, 375, 135, 95), Color("46464a"), _open_shed)
 	# The county road
 	_building("COUNTY ROAD →\ninto town", Rect2(730, 10, 180, 90), Color("3d3a35"), func(): go("world_map"))
 	_building("STOP AT THE DINER\ncoffee and county news", Rect2(730, 120, 180, 90), Color("4d3b2c"), func():
@@ -294,9 +301,10 @@ func _open_field_detail(field_id: String) -> void:
 				continue
 			window_open = true
 			var order: Dictionary = crop.get("plant_order", {})
+			var pcost := int(round(float(order.get("cost", 0)) * float(GameState.background().get("labor_cost_mult", 1.0))))
 			_action(col, "Plant %s — $%d — by Day %d (%d-day job)" % [
-				crop.name, order.get("cost", 0), crop.get("plant_by_day", 30), order.get("days", 1)],
-				GameState.cash >= int(order.get("cost", 0)), plant.bind(crop_id))
+				crop.name, pcost, crop.get("plant_by_day", 30), order.get("days", 1)],
+				GameState.cash >= pcost, plant.bind(crop_id))
 		if not window_open:
 			_wrap(col, "Too late for corn. Soybeans would be a gamble this late.", 12, ScreenBase.MUTED)
 		if not f.get("tested", false):
@@ -318,11 +326,28 @@ func _open_field_detail(field_id: String) -> void:
 	elif f.state == "ready":
 		var crop2: Dictionary = DataLoader.crops.get(f.crop, {})
 		var h: Dictionary = crop2.get("harvest_order", {})
-		_action(col, "HARVEST — $%d — %d day(s) of crew work" % [h.get("cost", 0), h.get("days", 1)],
-			GameState.cash >= int(h.get("cost", 0)), func():
-				GameState.issue_field_order(field_id, f.crop, "harvest")
-				_close_detail()
-				_refresh())
+		var hcost := int(round(float(h.get("cost", 0)) * float(GameState.background().get("labor_cost_mult", 1.0))))
+		var do_harvest := func(on_credit: bool):
+			GameState.issue_field_order(field_id, f.crop, "harvest", on_credit)
+			_close_detail()
+			_refresh()
+		if GameState.cash >= hcost:
+			_action(col, "HARVEST — $%d — %d day(s) of crew work" % [hcost, h.get("days", 1)],
+				true, do_harvest.bind(false))
+		elif GameState.can_finance(hcost):
+			# Director ruling 2026-07-04: cash shortage is pressure, not a
+			# dead end. Revenue work goes on Earl's note instead of blocking.
+			var charge := GameState.finance_charge(hcost)
+			_wrap(col, "Harvest cost $%d. Cash unavailable." % hcost, 13, ScreenBase.WARN)
+			_action(col, "Charge harvest cost to credit — $%d onto the note" % charge,
+				true, do_harvest.bind(true))
+			_wrap(col, "%d day(s) of crew work. Debt goes to $%d.%s" % [
+				h.get("days", 1), GameState.debt + charge,
+				" Earl's terms — credit is tight, $%d fee included." % (charge - hcost) if charge > hcost else "",
+			], 12, ScreenBase.MUTED)
+		else:
+			_wrap(col, "Harvest cost $%d. Cash unavailable — and Earl won't extend the note past $%d." % [
+				hcost, GameState.CREDIT_LIMIT], 13, ScreenBase.WARN)
 		_wrap(col, "Then sell at the elevator, or fill a contract at the Co-op.", 12, ScreenBase.MUTED)
 	elif f.state == "working":
 		for o in GameState.field_orders:
@@ -399,6 +424,12 @@ func _open_coop() -> void:
 
 func _open_shed() -> void:
 	var col := _open_side_panel("MACHINE SHED")
+	# Salvage projects live here — the answer to "I bought it, where did it go?"
+	if not GameState.salvage_projects.is_empty():
+		_wrap(col, "SALVAGE PROJECTS", 13, ACCENT)
+		for i in range(GameState.salvage_projects.size()):
+			add_salvage_project_block(col, i, 360, _open_shed)
+		col.add_child(HSeparator.new())
 	for eq_id in DataLoader.equipment.keys():
 		var eq: Dictionary = DataLoader.equipment[eq_id]
 		_wrap(col, eq.name, 14)
@@ -433,6 +464,11 @@ func _suggestion() -> String:
 			return "%s field is READY — click it and order the harvest." % field_id.capitalize()
 		if f.get("stressed", false):
 			return "%s field took weather damage — click it." % field_id.capitalize()
+	for i in range(GameState.salvage_projects.size()):
+		if GameState.salvage_ready_to_sell(i):
+			return "Your salvage is restored — truck it to Roy for the check."
+	if not GameState.salvage_projects.is_empty():
+		return "Your salvage project is waiting at the machine shed — put in a work session."
 	for field_id in GameState.fields.keys():
 		var f: Dictionary = GameState.fields[field_id]
 		if f.state == "fallow" and GameState.cash >= 90 and CalendarManager.day <= 18:
