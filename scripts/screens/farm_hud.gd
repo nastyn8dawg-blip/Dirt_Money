@@ -57,8 +57,56 @@ func _ready() -> void:
 	make_button(nav, "Save", func(): SaveManager.save_game())
 	make_button(nav, "Sleep → Next Day", func(): CalendarManager.advance_day())
 	make_button(nav, "End Run", func(): go("report_card"))
+	make_button(nav, "[Playtest]", _toggle_playtest_panel)
 
 	_refresh()
+
+
+var _pt_panel: PanelContainer = null
+
+
+func _toggle_playtest_panel() -> void:
+	if _pt_panel:
+		_pt_panel.queue_free()
+		_pt_panel = null
+		return
+	_pt_panel = make_panel(self)
+	_pt_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_pt_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_pt_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	_pt_panel.add_child(col)
+	make_label(col, "PLAYTEST PANEL (dev only)", 16, ACCENT)
+	var ledger_bits: Array[String] = []
+	for k in GameState.ledger.keys():
+		ledger_bits.append("%s: $%d" % [k, GameState.ledger[k]])
+	var l1 := make_label(col, "LEDGER — " + ("; ".join(ledger_bits) if not ledger_bits.is_empty() else "empty"), 12)
+	l1.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l1.custom_minimum_size.x = 560
+	var l2 := make_label(col, "FLAGS — " + (", ".join(GameState.flags.keys()) if not GameState.flags.is_empty() else "none"), 12)
+	l2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l2.custom_minimum_size.x = 560
+	var rep_bits: Array[String] = []
+	for npc_id in ReputationLedger.rep.keys():
+		rep_bits.append("%s %d (%s)" % [npc_id, ReputationLedger.get_rep(npc_id), ReputationLedger.tier(npc_id)])
+	var l3 := make_label(col, "PEOPLE — " + "; ".join(rep_bits) + " | county %d" % ReputationLedger.county, 12)
+	l3.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l3.custom_minimum_size.x = 560
+	make_label(col, "PERKS — " + (", ".join(GameState.perks) if not GameState.perks.is_empty() else "none yet"), 12)
+	var btns := HBoxContainer.new()
+	btns.add_theme_constant_override("separation", 8)
+	col.add_child(btns)
+	make_button(btns, "Restart (same background)", func():
+		GameState.new_run(GameState.background_id)
+		go("farm_hud"))
+	make_button(btns, "New background", func(): go("character_select"))
+	make_button(btns, "Export summary", func():
+		var f := FileAccess.open("user://playtest_export.txt", FileAccess.WRITE)
+		if f:
+			f.store_string(JSON.stringify(GameState.run_summary(), "  "))
+		OS.shell_show_in_file_manager(ProjectSettings.globalize_path("user://")))
+	make_button(btns, "Close", _toggle_playtest_panel)
 
 
 func _refresh() -> void:

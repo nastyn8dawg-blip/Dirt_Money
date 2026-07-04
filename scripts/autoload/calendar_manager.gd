@@ -57,6 +57,10 @@ func advance_day() -> void:
 	# 7. Contract deadlines checked against the new day; Gus's hold expires
 	GameState.check_contract_deadlines()
 	GameState.expire_salvage_offers()
+	# 8. Perk proof: each background earns its signature eye on Day 8
+	# (full perk trees are sprint 8; this is the unlocks-dialogue proof)
+	if day == 8:
+		GameState.grant_perk(GameState.background().get("proof_perk", ""))
 	EventBus.day_advanced.emit(day)
 	EventBus.time_block_changed.emit(block)
 	if day > RUN_LENGTH_DAYS:

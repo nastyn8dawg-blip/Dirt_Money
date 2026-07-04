@@ -74,5 +74,24 @@ func has_save(slot: int = 0) -> bool:
 	return FileAccess.file_exists(_slot_path(slot))
 
 
+const RUN_HISTORY_PATH := "user://run_history.json"
+
+
+func record_run(summary: Dictionary) -> void:
+	var runs := load_run_history()
+	runs.append(summary)
+	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+	var f := FileAccess.open(RUN_HISTORY_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(runs, "  "))
+
+
+func load_run_history() -> Array:
+	if not FileAccess.file_exists(RUN_HISTORY_PATH):
+		return []
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(RUN_HISTORY_PATH))
+	return parsed if parsed is Array else []
+
+
 func _slot_path(slot: int) -> String:
 	return "%s/slot_%d.json" % [SAVE_DIR, slot]

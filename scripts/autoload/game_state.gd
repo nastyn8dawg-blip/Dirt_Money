@@ -28,6 +28,8 @@ var downtime_days: int = 0               # working days lost to breakdowns
 var salvage_offers: Array = []           # {deal_id, hold_until_day}
 var salvage_projects: Array = []         # {deal_id, blocks_done, parts_paid, hidden_hit, extra_blocks}
 var salvage_stats := {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
+var greenhorn_count: int = 0
+var run_recorded: bool = false
 
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
@@ -61,6 +63,8 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	salvage_offers = []
 	salvage_projects = []
 	salvage_stats = {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
+	greenhorn_count = 0
+	run_recorded = false
 	ReputationLedger.init_from_background(bg_id)
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
@@ -161,6 +165,7 @@ func progress_field_orders() -> void:
 					order.days_left = int(background().get("greenhorn_delay_days", 1))
 					add_cash(-int(background().get("greenhorn_cost", 0)), "greenhorn_costs")
 					set_flag("greenhorn_mistake")
+					greenhorn_count += 1
 					continue
 			done.append(order)
 	for order in done:
@@ -464,7 +469,49 @@ func check_contract_deadlines() -> void:
 		EventBus.contract_missed.emit(c.id)
 
 
+func grant_perk(perk_id: String) -> void:
+	if not perk_id in perks:
+		perks.append(perk_id)
+
+
+func has_perk(perk_id: String) -> bool:
+	return perk_id in perks
+
+
+func strongest_income() -> String:
+	var best := ""
+	var best_v := 0
+	for k in ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue"]:
+		if int(ledger.get(k, 0)) > best_v:
+			best_v = int(ledger.get(k, 0))
+			best = k
+	return best if best != "" else "none"
+
+
+func largest_mistake() -> String:
+	# Dry factual labels, not voice lines (pending Director review)
+	if contracts_missed > 0:
+		return "missed %d handshake(s)" % contracts_missed
+	if has_flag("baler_botched"):
+		return "botched Hollis's baler"
+	if has_flag("salvage_flip_bust"):
+		return "bought the painted-over problem"
+	if has_flag("storm_ignored_hollis"):
+		return "left Hollis to the storm"
+	if greenhorn_count > 0:
+		return "%d greenhorn planting mistake(s)" % greenhorn_count
+	return "nothing the county talks about"
+
+
 func run_summary() -> Dictionary:
+	var starting: Dictionary = background().get("starting_reputation", {})
+	var vouchers: Array = []
+	var cooled: Array = []
+	for npc_id in ReputationLedger.rep.keys():
+		if ReputationLedger.get_rep(npc_id) >= 20:
+			vouchers.append(npc_id)
+		if ReputationLedger.get_rep(npc_id) < int(starting.get(npc_id, 0)):
+			cooled.append(npc_id)
 	return {
 		"background": background_id,
 		"day": CalendarManager.day,
@@ -474,4 +521,10 @@ func run_summary() -> Dictionary:
 		"contracts_missed": contracts_missed,
 		"reputation": ReputationLedger.snapshot(),
 		"flags": flags.keys(),
+		"vouchers": vouchers,
+		"cooled": cooled,
+		"ending_title": DataLoader.pick_ending().get("title", "?"),
+		"gossip_line": DataLoader.pick_gossip(),
+		"strongest_income": strongest_income(),
+		"largest_mistake": largest_mistake(),
 	}

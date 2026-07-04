@@ -35,6 +35,13 @@
           "success": "lemon_spotted",
           "failure": "lemon_missed"
         },
+        {
+          "text": "[BLANK P-ME — perk option (Stethoscope Ear): the player hears something in a machine on Roy's lot that Roy hasn't caught yet, and says so. Awaiting Director.]",
+          "label": "[Stethoscope Ear]",
+          "requires": { "background": "mechanic", "perk": "diagnostics_1" },
+          "goto": "machine_read",
+          "effects": [{ "op": "rep_delta", "npc": "roy", "value": 3 }, { "op": "flag_set", "flag": "perk_machine_read_used" }]
+        },
         { "text": "[Ask prices, keep your hands in your pockets.]", "goto": "browse" },
         { "text": "[Leave before he starts a sentence with 'friend'.]", "goto": "_end" }
       ]
@@ -58,6 +65,12 @@
         { "op": "rep_delta", "npc": "roy", "value": -2 },
         { "op": "flag_set", "flag": "roy_marks_you_retail" }
       ]
+    },
+    "machine_read": {
+      "speaker": "roy",
+      "emotion": "neutral",
+      "text": "[BLANK P-ME-R — Roy stops mid-pitch, listens, hears it too. A professional just saved him a warranty headache. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "browse": {
       "speaker": "roy",

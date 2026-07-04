@@ -20,6 +20,10 @@ const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "
 const COST_KEYS := ["order_seed_fuel", "labor_premium", "greenhorn_costs", "repair_costs", "penalties", "travel_fuel", "salvage_purchase_cost", "parts_cost"]
 
 var _current_bg := ""
+var _hold_anchor: Dictionary = {}   # commodity -> price when IT first held
+var _timing_seen := 0
+var _timing_used := 0
+var _timing_value := 0.0
 
 
 func _ready() -> void:
@@ -60,6 +64,21 @@ func _ready() -> void:
 				s.bought, s.parts, s.sold, int(s.sold) - int(s.bought) - int(s.parts),
 				s.blocks, r.roy_tier, "yes" if r.gus_respect else "no",
 			])
+		match bg:
+			"old_school":
+				print("  identity: storm %s | legacy eligible: %s | verdict path: trust" % [
+					"HELPED" if r.flags.has("storm_helped_hollis") else ("ignored" if r.flags.has("storm_ignored_hollis") else "never offered"),
+					"YES" if r.legacy_eligible else "no (Marge %d/40, storm %s)" % [r.marge_rep, "yes" if r.flags.has("storm_helped_hollis") else "no"],
+				])
+			"it_nephew":
+				print("  identity: greenhorn mistakes %d | timing: %d holds seen, %d cashed, $%d gained by waiting" % [
+					r.greenhorn, _timing_seen, _timing_used, int(round(_timing_value)),
+				])
+			"mechanic":
+				var repair_income: int = int(r.ledger.get("repair_salvage_revenue", 0)) - int(s.get("sold", 0))
+				print("  identity: repair income $%d | flip NET $%d | blocks in the shop %d" % [
+					repair_income, int(s.get("sold", 0)) - int(s.get("bought", 0)) - int(s.get("parts", 0)), s.get("blocks", 0),
+				])
 		print("  MISSING SYSTEMS: " + MISSING_SYSTEMS.get(bg, ""))
 	print("")
 	get_tree().quit(failures)
@@ -67,6 +86,10 @@ func _ready() -> void:
 
 func _run_sim(bg: String) -> Dictionary:
 	_current_bg = bg
+	_hold_anchor = {}
+	_timing_seen = 0
+	_timing_used = 0
+	_timing_value = 0.0
 	GameState.new_run(bg, SEED)
 	while CalendarManager.day <= 30:
 		_bot_act()
@@ -84,6 +107,10 @@ func _run_sim(bg: String) -> Dictionary:
 		"salvage": GameState.salvage_stats.duplicate(),
 		"roy_tier": GameState.roy_pricing_tier().tier,
 		"gus_respect": GameState.has_flag("gus_respects_eye"),
+		"flags": GameState.flags.keys(),
+		"greenhorn": GameState.greenhorn_count,
+		"marge_rep": ReputationLedger.get_rep("marge"),
+		"legacy_eligible": ReputationLedger.get_rep("marge") >= 40 and GameState.has_flag("storm_helped_hollis"),
 	}
 
 
@@ -147,7 +174,14 @@ func _bot_act() -> void:
 			continue
 		if _current_bg == "it_nephew" and commodity != "eggs":
 			if EconomyManager.forecast_price(commodity) > EconomyManager.prices.get(commodity, 0.0) and CalendarManager.day < 29:
+				_timing_seen += 1
+				if not _hold_anchor.has(commodity):
+					_hold_anchor[commodity] = EconomyManager.prices.get(commodity, 0.0)
 				continue
+			if _hold_anchor.has(commodity):
+				_timing_used += 1
+				_timing_value += (EconomyManager.prices.get(commodity, 0.0) - float(_hold_anchor[commodity])) * units
+				_hold_anchor.erase(commodity)
 		EconomyManager.sell(commodity, units)
 
 

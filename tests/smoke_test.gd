@@ -21,6 +21,7 @@ func _ready() -> void:
 	test_repair_contracts()
 	test_salvage_flip()
 	test_it_identity()
+	test_perks_and_history()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -354,3 +355,28 @@ func test_it_identity() -> void:
 		if not GameState.pending_breakdown.is_empty():
 			ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
 	check(int(GameState.ledger.get("greenhorn_costs", 0)) == 0, "no greenhorn costs for a lifer")
+
+
+func test_perks_and_history() -> void:
+	# Proof perk lands on Day 8 and gates a conversation path
+	GameState.new_run("mechanic", 500)
+	check(not GameState.has_perk("diagnostics_1"), "no perks at start")
+	while CalendarManager.day < 8:
+		CalendarManager.advance_day()
+		if not GameState.pending_breakdown.is_empty():
+			ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "resume" }])
+	check(GameState.has_perk("diagnostics_1"), "proof perk granted Day 8")
+	var roy_tree: Dictionary = DataLoader.get_dialogue("roy_talk")
+	var found_perk_option := false
+	for option in roy_tree.nodes.intro.get("options", []):
+		if option.get("requires", {}).get("perk", "") == "diagnostics_1":
+			found_perk_option = true
+	check(found_perk_option, "perk unlocks a conversation path, not a bonus")
+	# Run history round-trips with the comparison fields
+	var summary := GameState.run_summary()
+	check(summary.has("ending_title") and summary.has("strongest_income") and summary.has("largest_mistake"), "summary carries comparison fields")
+	var before := SaveManager.load_run_history().size()
+	SaveManager.record_run(summary)
+	var after := SaveManager.load_run_history()
+	check(after.size() == before + 1, "run recorded to history")
+	check(after.back().get("background", "") == "mechanic", "history preserves the run")

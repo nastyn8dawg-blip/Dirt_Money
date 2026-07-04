@@ -176,6 +176,10 @@ func _show_options() -> void:
 			continue
 		if req.has("not_flag") and GameState.has_flag(req.not_flag):
 			continue
+		# Perks unlock conversation paths, not percentages (Pillar 3).
+		# Hidden until earned — you don't see the doors you can't open.
+		if req.has("perk") and not GameState.has_perk(req.perk):
+			continue
 		var bg_req: String = req.get("background", "")
 		var gated := bg_req != "" and bg_req != GameState.background_id
 		var label: String = option.get("text", "")

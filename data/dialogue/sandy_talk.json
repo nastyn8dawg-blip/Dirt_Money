@@ -18,6 +18,13 @@
           "success": "timing_success",
           "failure": "timing_failure"
         },
+        {
+          "text": "[BLANK P-OS — perk option (Read the Land II): the player reads the weather in the fields and offers Sandy hauling timing no chart could give her. Awaiting Director.]",
+          "label": "[Read the Land]",
+          "requires": { "background": "old_school", "perk": "read_the_land_2" },
+          "goto": "land_read",
+          "effects": [{ "op": "rep_delta", "npc": "sandy", "value": 3 }, { "op": "flag_set", "flag": "perk_land_read_used" }]
+        },
         { "text": "[Ask how the line's been running.]", "goto": "chat" },
         { "text": "[Leave.]", "goto": "_end" }
       ]
@@ -42,6 +49,12 @@
         { "op": "county_delta", "value": -2 },
         { "op": "flag_set", "flag": "gossip_jammed_the_scale" }
       ]
+    },
+    "land_read": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "[BLANK P-OS-R — Sandy, surprised into respect: the old ways just beat her logbook. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "chat": {
       "speaker": "sandy",

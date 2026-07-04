@@ -14,10 +14,25 @@
         "equipment_subsystems": false,
         "qualitative_field_cues": true
       },
-      "exclusive_systems": ["read_the_land", "legacy_contracts", "weather_intuition"],
-      "starting_reputation": { "hollis": 20, "marge": 15, "patti": 15, "earl": 5, "roy": 5, "sandy": 10, "dee": 10, "gus": 0, "county": 10 },
+      "exclusive_systems": [
+        "read_the_land",
+        "legacy_contracts",
+        "weather_intuition"
+      ],
+      "starting_reputation": {
+        "hollis": 20,
+        "marge": 15,
+        "patti": 15,
+        "earl": 5,
+        "roy": 5,
+        "sandy": 10,
+        "dee": 10,
+        "gus": 0,
+        "county": 10
+      },
       "labor_cost_mult": 1.0,
-      "perk_tree": "old_school_tree"
+      "perk_tree": "old_school_tree",
+      "proof_perk": "read_the_land_2"
     },
     {
       "id": "it_nephew",
@@ -32,13 +47,29 @@
         "equipment_subsystems": false,
         "qualitative_field_cues": false
       },
-      "exclusive_systems": ["farm_dashboard", "arbitrage_checks", "automation", "trust_questline"],
-      "starting_reputation": { "hollis": -10, "marge": 0, "patti": 0, "earl": 5, "roy": 0, "sandy": 0, "dee": 5, "gus": -5, "county": -5 },
+      "exclusive_systems": [
+        "farm_dashboard",
+        "arbitrage_checks",
+        "automation",
+        "trust_questline"
+      ],
+      "starting_reputation": {
+        "hollis": -10,
+        "marge": 0,
+        "patti": 0,
+        "earl": 5,
+        "roy": 0,
+        "sandy": 0,
+        "dee": 5,
+        "gus": -5,
+        "county": -5
+      },
       "labor_cost_mult": 1.5,
       "greenhorn_mistake_chance": 0.35,
       "greenhorn_cost": 60,
       "greenhorn_delay_days": 1,
-      "perk_tree": "it_nephew_tree"
+      "perk_tree": "it_nephew_tree",
+      "proof_perk": "price_alerts"
     },
     {
       "id": "mechanic",
@@ -53,10 +84,25 @@
         "equipment_subsystems": true,
         "qualitative_field_cues": false
       },
-      "exclusive_systems": ["salvage_events", "restoration_flipping", "repair_contracts"],
-      "starting_reputation": { "hollis": 5, "marge": 5, "patti": 5, "earl": 0, "roy": 10, "sandy": 5, "dee": 0, "gus": 15, "county": 0 },
+      "exclusive_systems": [
+        "salvage_events",
+        "restoration_flipping",
+        "repair_contracts"
+      ],
+      "starting_reputation": {
+        "hollis": 5,
+        "marge": 5,
+        "patti": 5,
+        "earl": 0,
+        "roy": 10,
+        "sandy": 5,
+        "dee": 0,
+        "gus": 15,
+        "county": 0
+      },
       "labor_cost_mult": 1.0,
-      "perk_tree": "mechanic_tree"
+      "perk_tree": "mechanic_tree",
+      "proof_perk": "diagnostics_1"
     }
   ]
 }

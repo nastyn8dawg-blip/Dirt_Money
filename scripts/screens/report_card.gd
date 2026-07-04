@@ -7,6 +7,10 @@ extends ScreenBase
 func _ready() -> void:
 	add_background()
 	var summary := GameState.run_summary()
+	var history := SaveManager.load_run_history()
+	if not GameState.run_recorded:
+		GameState.run_recorded = true
+		SaveManager.record_run(summary)
 	var box := VBoxContainer.new()
 	box.set_anchors_preset(Control.PRESET_CENTER)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -49,11 +53,31 @@ func _ready() -> void:
 		gossip_label.custom_minimum_size.x = 600
 	box.add_child(HSeparator.new())
 
+	make_label(box, "Strongest income: %s   |   Largest mistake: %s" % [
+		summary.strongest_income.replace("_revenue", "").replace("_", " "),
+		summary.largest_mistake,
+	], 14)
 	var ending := DataLoader.pick_ending()
 	var title_label := make_label(box, "\"%s\"" % ending.get("title", "..."), 18, ACCENT)
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title_label.custom_minimum_size.x = 600
 	box.add_child(HSeparator.new())
+
+	# --- Run comparison: the replay hypothesis, on screen ---
+	if not history.is_empty():
+		make_label(box, "PREVIOUS RUNS THROUGH ASH CREEK", 16, ACCENT)
+		for prev in history.slice(max(0, history.size() - 4), history.size()):
+			var bg_label: String = DataLoader.get_background(prev.get("background", "")).get("name", "?")
+			var line := make_label(box, "%s — \"%s\" — $%d cash, %d/%d handshakes, county %d — %s" % [
+				bg_label, prev.get("ending_title", "?"), int(prev.get("cash", 0)),
+				int(prev.get("contracts_completed", 0)),
+				int(prev.get("contracts_completed", 0)) + int(prev.get("contracts_missed", 0)),
+				int(prev.get("reputation", {}).get("county", 0)),
+				prev.get("largest_mistake", ""),
+			], 13, Color(0.7, 0.68, 0.6))
+			line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			line.custom_minimum_size.x = 620
+		box.add_child(HSeparator.new())
 
 	var new_bg := make_button(box, "▶  TRY A NEW BACKGROUND  ◀", func(): go("character_select"))
 	new_bg.add_theme_font_size_override("font_size", 24)

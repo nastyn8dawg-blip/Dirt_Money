@@ -46,6 +46,13 @@
           "success": "audit_success",
           "failure": "audit_failure"
         },
+        {
+          "text": "[BLANK P-IT — perk option (Price Alerts): the player flags a price move coming before the co-op's posted rates catch it — useful to Marge, if she'll take data from him. Awaiting Director.]",
+          "label": "[Price Alerts]",
+          "requires": { "background": "it_nephew", "perk": "price_alerts" },
+          "goto": "data_read",
+          "effects": [{ "op": "rep_delta", "npc": "marge", "value": 3 }, { "op": "flag_set", "flag": "perk_data_read_used" }]
+        },
         { "text": "[Small talk — ask what's moving through the co-op this week.]", "goto": "chat" },
         { "text": "[Leave politely.]", "goto": "_end" }
       ]
@@ -72,6 +79,12 @@
         { "op": "rep_delta", "npc": "earl", "value": 2 },
         { "op": "flag_set", "flag": "gossip_spreadsheet_farmer" }
       ]
+    },
+    "data_read": {
+      "speaker": "marge",
+      "emotion": "neutral",
+      "text": "[BLANK P-IT-R — Marge checks his number against her gut, finds it holds, and gives the laptop kid an inch of real respect. Awaiting Director.]",
+      "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "chat": {
       "speaker": "marge",
