@@ -1,6 +1,6 @@
 {
-  "_schema": "Morning contact: Marge calls when a handshake is due within 2 days. Fires with a 3-day cooldown. Text is scratch placeholder awaiting Director wording (law 6). Blank MC1.",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "Morning contact: Marge calls when a handshake is due within 2 days. Fires with a 3-day cooldown.",
+  "_status": "director_approved (2026-07-03)",
   "id": "marge_deadline_call",
   "npc": "marge",
   "start": "intro",
@@ -8,7 +8,7 @@
     "intro": {
       "speaker": "marge",
       "emotion": "neutral",
-      "text": "[BLANK MC1 — Marge on the phone, clipped: your paper's due in two days, she's not calling to chat, she's calling because she'd rather remind you than fine you. Awaiting Director.]",
+      "text": "Paper's due Friday.\n\nI'm not chasing you. I'm reminding you once.",
       "options": [
         { "text": "\"It'll be there.\"", "goto": "_end" },
         { "text": "(Hang up and get moving)", "goto": "_end" }

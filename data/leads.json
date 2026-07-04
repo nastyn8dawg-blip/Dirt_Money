@@ -1,26 +1,34 @@
 {
-  "_schema": "Diner leads (Director: the diner is where the county becomes readable - a lead generator, not just gossip). Condition checked against live state; first match wins; 'nothing' is the fallback and that's fine - the diner should not always pay off. Lines are scratch placeholders awaiting Director wording (law 6). Blanks L1-L4.",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "Diner leads (Director: the diner is where the county becomes readable). Condition checked against live state; first match wins; nothing is the fallback and that is fine - the diner should not always pay off.",
+  "_status": "director_approved (2026-07-03)",
   "leads": [
     {
       "id": "board_lead",
       "condition": "contract_available",
-      "lines": ["[BLANK L1 — Patti mentions Marge has paper on the board with your name all but written on it. Awaiting Director.]"]
+      "lines": [
+        "Marge had a board slip sitting there nobody’s grabbed yet.\n\nMeans either it’s bad work or good money."
+      ]
     },
     {
       "id": "salvage_lead",
       "condition": "salvage_offer",
-      "lines": ["[BLANK L2 — somebody saw something come into the Weaver yard worth a look, and Gus doesn't hold things long. Awaiting Director.]"]
+      "lines": [
+        "Gus came in with rust on his sleeves and that quiet look he gets.\n\nSomething’s sitting in his yard."
+      ]
     },
     {
       "id": "price_lead",
       "condition": "market_rising",
-      "lines": ["[BLANK L3 — elevator whisper: corn's moving, and the folks who haul early tend to eat better. Awaiting Director.]"]
+      "lines": [
+        "Elevator boys were talking corn before their eggs got cold.\n\nMight be worth asking before you sell."
+      ]
     },
     {
       "id": "nothing",
       "condition": "",
-      "lines": ["[BLANK L4 — a slow day at the diner: no leads, just the county being itself. Flavor, not payoff. Awaiting Director.]"]
+      "lines": [
+        "Slow morning.\n\nOnly thing moving in here is coffee."
+      ]
     }
   ]
 }

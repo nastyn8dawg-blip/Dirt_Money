@@ -21,7 +21,6 @@ var _flavor: Label
 var _suggest: Label
 var _canvas: Control
 var _detail: PanelContainer = null
-var _pt_panel: PanelContainer = null
 
 
 func _ready() -> void:
@@ -192,7 +191,7 @@ func _building(label: String, rect: Rect2, color: Color, on_press: Callable) -> 
 	_canvas.add_child(b)
 
 
-# ---------- field detail panel ----------
+# ---------- side panel system (Director: stable, in-viewport, vertical) ----------
 
 func _close_detail() -> void:
 	if _detail:
@@ -200,107 +199,156 @@ func _close_detail() -> void:
 		_detail = null
 
 
-func _open_field_detail(field_id: String) -> void:
+func _open_side_panel(title: String) -> VBoxContainer:
+	# One stable right-side inspector for everything: fully inside the
+	# screen, actions stack vertically, long text wraps, clear close.
 	_close_detail()
+	_detail = make_panel(self)
+	_detail.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	_detail.offset_left = -420
+	_detail.offset_right = -12
+	_detail.offset_top = 12
+	_detail.offset_bottom = -12
+	var outer := VBoxContainer.new()
+	outer.add_theme_constant_override("separation", 8)
+	_detail.add_child(outer)
+	var head := HBoxContainer.new()
+	outer.add_child(head)
+	var t := make_label(head, title, 20, ACCENT)
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	make_button(head, "✕ Close", _close_detail)
+	outer.add_child(HSeparator.new())
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	outer.add_child(scroll)
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_theme_constant_override("separation", 6)
+	scroll.add_child(col)
+	return col
+
+
+func _wrap(parent: Control, text: String, size: int = 13, color: Color = CREAM) -> Label:
+	var l := make_label(parent, text, size, color)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size.x = 360
+	return l
+
+
+func _action(parent: Control, text: String, enabled: bool, cb: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.disabled = not enabled
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.pressed.connect(cb)
+	parent.add_child(b)
+	return b
+
+
+func _open_field_detail(field_id: String) -> void:
 	var f: Dictionary = GameState.fields[field_id]
 	var stage := GameState.field_stage_name(f)
-	_detail = make_panel(self)
-	_detail.set_anchors_preset(Control.PRESET_CENTER)
-	_detail.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_detail.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	_detail.add_child(col)
+	var col := _open_side_panel("%s FIELD" % field_id.to_upper())
 
-	make_label(col, "%s FIELD" % field_id.to_upper(), 20, ACCENT)
-	make_label(col, "Crop: %s   |   Stage: %s%s" % [
-		f.crop if f.get("crop", "") != "" else "none", stage,
-		"   |   %d day(s) to ready" % int(f.get("days_to_ready", 0)) if f.state == "growing" else "",
+	_wrap(col, "%s — %s%s" % [
+		f.crop if f.get("crop", "") != "" else "no crop", stage,
+		" — %d day(s) to ready" % int(f.get("days_to_ready", 0)) if f.state == "growing" else "",
 	], 14)
-	make_label(col, "Soil: %s   |   Weather risk: %s" % [
-		"fertility %d%%" % int(f.fertility) if f.get("tested", false) else "untested",
-		WeatherManager.display_name(WeatherManager.current) + (" — field is stressed" if f.get("stressed", false) else ""),
-	], 13)
-	if f.state == "growing":
-		make_label(col, "Weed/pest pressure: %s" % (
-			"%d%%%s" % [int(f.weeds), " — costing yield" if int(f.weeds) > 50 else ""] if f.get("scouted", false) else "unknown — scout to find out"
-		), 13, ScreenBase.WARN if f.get("scouted", false) and int(f.weeds) > 50 else CREAM)
-		make_label(col, "Expected yield: %d units%s" % [
-			GameState.field_yield_units(f),
-			"" if f.get("scouted", false) else " (assumes what you can see)",
-		], 13)
-	make_label(col, "Recommended: " + _recommend(f, stage), 13, ScreenBase.GOOD)
 	col.add_child(HSeparator.new())
+	_wrap(col, "Status", 13, ACCENT)
+	_wrap(col, "• Soil: %s" % ("tested" if f.get("tested", false) else "untested — $30 tells you"))
+	_wrap(col, "• Fertility: %s" % ("%d%%" % int(f.fertility) if f.get("tested", false) else "unknown"))
+	if f.state == "growing":
+		var weeds_known: bool = f.get("scouted", false)
+		_wrap(col, "• Weeds/pests: %s" % (
+			"%d%%%s" % [int(f.weeds), " — over 50% costs a fifth of the crop" if int(f.weeds) > 50 else ""] if weeds_known else "unknown — walk the field"
+		), 13, ScreenBase.WARN if weeds_known and int(f.weeds) > 50 else CREAM)
+		_wrap(col, "• Stress: %s" % ("storm-bitten — costing 10%" if f.get("stressed", false) else "none showing"),
+			13, ScreenBase.WARN if f.get("stressed", false) else CREAM)
+		_wrap(col, "• Expected yield: %d units%s" % [
+			GameState.field_yield_units(f), "" if weeds_known else " (going by looks)"])
+	col.add_child(HSeparator.new())
+	_wrap(col, "Recommendation", 13, ACCENT)
+	_wrap(col, _recommend(f, stage), 13, ScreenBase.GOOD)
+	_wrap(col, _ignore_cost(f, stage), 12, ScreenBase.MUTED)
+	col.add_child(HSeparator.new())
+	_wrap(col, "Actions", 13, ACCENT)
 
 	var acted := func(action: String):
 		GameState.field_action(field_id, action)
 		CalendarManager.spend_block()
 		_close_detail()
 		_refresh()
+	var plant := func(crop_id: String):
+		GameState.issue_field_order(field_id, crop_id, "plant")
+		_close_detail()
+		_refresh()
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	col.add_child(row)
 	if f.state == "fallow":
-		var planted_any := false
+		var window_open := false
 		for crop_id in DataLoader.crops.keys():
 			var crop: Dictionary = DataLoader.crops[crop_id]
 			if CalendarManager.day > int(crop.get("plant_by_day", 30)):
 				continue
-			planted_any = true
+			window_open = true
 			var order: Dictionary = crop.get("plant_order", {})
-			make_button(row, "Plant %s ($%d, by Day %d)" % [crop.name, order.get("cost", 0), crop.get("plant_by_day", 30)],
-				func():
-					GameState.issue_field_order(field_id, crop_id, "plant")
-					_close_detail()
-					_refresh())
-		if not f.get("tilled", false):
-			make_button(row, "Till ($40)", func(): acted.call("till"))
+			_action(col, "Plant %s — $%d — by Day %d (%d-day job)" % [
+				crop.name, order.get("cost", 0), crop.get("plant_by_day", 30), order.get("days", 1)],
+				GameState.cash >= int(order.get("cost", 0)), plant.bind(crop_id))
+		if not window_open:
+			_wrap(col, "Too late for corn. Soybeans would be a gamble this late.", 12, ScreenBase.MUTED)
 		if not f.get("tested", false):
-			make_button(row, "Soil test ($30)", func(): acted.call("soil_test"))
-		var row2 := HBoxContainer.new()
-		row2.add_theme_constant_override("separation", 8)
-		col.add_child(row2)
-		# Late-season choices (Director canon lines) — hay is never the default
-		if not planted_any:
-			make_label(row2, "Too late for corn. Soybeans would be a gamble this late.", 12, ScreenBase.MUTED)
-			var row3 := HBoxContainer.new()
-			row3.add_theme_constant_override("separation", 8)
-			col.add_child(row3)
-			make_button(row3, "Cover crop ($50)", func(): acted.call("cover_crop"))
-			make_label(row3, "improves next season's soil", 12, ScreenBase.MUTED)
-			if not f.get("limed", false):
-				make_button(row3, "Lime & prep ($40)", func(): acted.call("soil_prep"))
-			make_label(row3, "· Fallow preserves time but earns nothing.", 12, ScreenBase.MUTED)
-			if CalendarManager.day <= int(DataLoader.crops.get("hay", {}).get("plant_by_day", 18)):
-				make_button(row3, "Plant hay ($90)", func():
-					GameState.issue_field_order(field_id, "hay", "plant")
-					_close_detail()
-					_refresh())
+			_action(col, "Soil test — $30 — know before you spend", GameState.cash >= 30, func(): acted.call("soil_test"))
+		if not f.get("tilled", false):
+			_action(col, "Till — $40 + a block — +5%% yield when planted", GameState.cash >= 40, func(): acted.call("till"))
+		_action(col, "Cover crop — $50 + a block — improves next season's soil", GameState.cash >= 50, func(): acted.call("cover_crop"))
+		if not f.get("limed", false):
+			_action(col, "Lime & prep — $40 — fertility up for next planting", GameState.cash >= 40, func(): acted.call("soil_prep"))
+		_action(col, "Leave fallow — preserves time but earns nothing", true, _close_detail)
 	elif f.state == "growing":
 		if not f.get("scouted", false):
-			make_button(row, "Scout field (a block)", func(): acted.call("scout"))
+			_action(col, "Scout field — a time block — see the real weed number", true, func(): acted.call("scout"))
 		if not f.get("fertilized", false):
-			make_button(row, "Fertilize ($80)", func(): acted.call("fertilize"))
-		if f.get("scouted", false) and int(f.weeds) > 20:
-			make_button(row, "Treat weeds/pests ($60)", func(): acted.call("treat"))
+			_action(col, "Fertilize — $80 + a block — +10%% yield", GameState.cash >= 80, func(): acted.call("fertilize"))
+		_action(col, "Treat weeds/pests — $60 + a block — clears the pressure", GameState.cash >= 60, func(): acted.call("treat"))
 		if f.get("stressed", false):
-			make_button(row, "Repair storm damage ($20)", func(): acted.call("repair_field"))
+			_action(col, "Repair storm damage — $20 + a block — saves 10%% of the crop", GameState.cash >= 20, func(): acted.call("repair_field"))
 	elif f.state == "ready":
 		var crop2: Dictionary = DataLoader.crops.get(f.crop, {})
 		var h: Dictionary = crop2.get("harvest_order", {})
-		make_button(row, "HARVEST — %dd, $%d" % [h.get("days", 0), h.get("cost", 0)], func():
-			GameState.issue_field_order(field_id, f.crop, "harvest")
-			_close_detail()
-			_refresh())
-		make_label(row, "Then: sell at the elevator, or fill a contract at the Co-op.", 12, ScreenBase.MUTED)
+		_action(col, "HARVEST — $%d — %d day(s) of crew work" % [h.get("cost", 0), h.get("days", 1)],
+			GameState.cash >= int(h.get("cost", 0)), func():
+				GameState.issue_field_order(field_id, f.crop, "harvest")
+				_close_detail()
+				_refresh())
+		_wrap(col, "Then sell at the elevator, or fill a contract at the Co-op.", 12, ScreenBase.MUTED)
 	elif f.state == "working":
 		for o in GameState.field_orders:
 			if o.field == field_id:
-				make_label(row, "Crew %s — %d day(s) left%s" % [
-					o.kind, o.days_left, "  (BROKEN DOWN)" if o.get("paused", false) else ""],
+				_wrap(col, "Crew %s — %d day(s) left%s" % [
+					o.kind, o.days_left, "  (BROKEN DOWN — machine shed)" if o.get("paused", false) else ""],
 					13, ScreenBase.WARN if o.get("paused", false) else ScreenBase.INFO)
-	make_button(col, "Close", _close_detail)
+	elif f.state == "cover":
+		_wrap(col, "Cover crop's in. It pays next season, not this one.", 13, ScreenBase.MUTED)
+
+
+func _ignore_cost(f: Dictionary, stage: String) -> String:
+	# The Director's question: what happens if I ignore it?
+	if stage == "ready":
+		return "If you wait: the weather gets a vote on your harvest."
+	if f.get("stressed", false):
+		return "If you ignore it: storm damage takes 10% at harvest."
+	if f.state == "growing" and f.get("scouted", false) and int(f.weeds) > 40:
+		return "If you ignore it: weeds over 50% take a fifth of the crop."
+	if f.state == "growing" and not f.get("scouted", false):
+		return "If you don't look: whatever's out there works for free."
+	if f.state == "fallow" and CalendarManager.day > 18:
+		return "If you do nothing: no harm, no income. That can be a choice."
+	if f.state == "fallow":
+		return "If you wait: planting windows don't."
+	return "Nothing here punishes patience today."
 
 
 func _recommend(f: Dictionary, stage: String) -> String:
@@ -324,86 +372,47 @@ func _recommend(f: Dictionary, stage: String) -> String:
 # ---------- buildings ----------
 
 func _open_farmhouse() -> void:
-	_close_detail()
-	_detail = make_panel(self)
-	_detail.set_anchors_preset(Control.PRESET_CENTER)
-	_detail.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_detail.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 8)
-	_detail.add_child(col)
-	make_label(col, "FARMHOUSE", 20, ACCENT)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	col.add_child(row)
-	make_button(row, "Sleep → Next Day", func():
+	var col := _open_side_panel("FARMHOUSE")
+	_action(col, "Sleep → Next Day", true, func():
 		_close_detail()
 		CalendarManager.advance_day())
-	make_button(row, "Save", func(): SaveManager.save_game())
-	make_button(row, "End Run", func(): go("report_card"))
-	make_button(col, "Close", _close_detail)
+	_action(col, "Save game", true, func(): SaveManager.save_game())
+	_action(col, "End the run — face the county's verdict", true, func(): go("report_card"))
 
 
 func _open_barn() -> void:
-	_close_detail()
-	_detail = make_panel(self)
-	_detail.set_anchors_preset(Control.PRESET_CENTER)
-	_detail.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_detail.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	_detail.add_child(col)
-	make_label(col, "BARN", 20, ACCENT)
+	var col := _open_side_panel("BARN")
 	var any := false
 	for item in GameState.inventory.keys():
 		if GameState.inventory[item] > 0:
 			any = true
-			make_label(col, "%s — %d units" % [item, GameState.inventory[item]], 14)
+			_wrap(col, "%s — %d units" % [item, GameState.inventory[item]], 14)
 	if not any:
-		make_label(col, "Empty. Fields fix that.", 14, ScreenBase.MUTED)
-	make_label(col, "Sell at the Grain Elevator, or deliver against a contract at the Co-op.", 12, ScreenBase.MUTED)
-	make_button(col, "Close", _close_detail)
+		_wrap(col, "Empty. Fields fix that.", 14, ScreenBase.MUTED)
+	_wrap(col, "Sell at the Grain Elevator, or deliver against a contract at the Co-op.", 12, ScreenBase.MUTED)
 
 
 func _open_coop() -> void:
-	_close_detail()
-	_detail = make_panel(self)
-	_detail.set_anchors_preset(Control.PRESET_CENTER)
-	_detail.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_detail.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	_detail.add_child(col)
-	make_label(col, "CHICKEN COOP", 20, ACCENT)
-	make_label(col, "%d hens, laying daily. Eggs on hand: %d." % [GameState.chickens, GameState.inventory.get("eggs", 0)], 14)
-	make_button(col, "Close", _close_detail)
+	var col := _open_side_panel("CHICKEN COOP")
+	_wrap(col, "%d hens, laying daily. Eggs on hand: %d." % [GameState.chickens, GameState.inventory.get("eggs", 0)], 14)
 
 
 func _open_shed() -> void:
-	_close_detail()
-	_detail = make_panel(self)
-	_detail.set_anchors_preset(Control.PRESET_CENTER)
-	_detail.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_detail.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	_detail.add_child(col)
-	make_label(col, "MACHINE SHED", 20, ACCENT)
+	var col := _open_side_panel("MACHINE SHED")
 	for eq_id in DataLoader.equipment.keys():
 		var eq: Dictionary = DataLoader.equipment[eq_id]
-		make_label(col, eq.name, 14)
+		_wrap(col, eq.name, 14)
 		if GameState.interface_flag("equipment_subsystems", false):
 			var cond: Dictionary = eq.get("condition", {})
 			for sub in DataLoader.equipment_meta.get("subsystems", []):
 				if int(cond.get(sub, 0)) > 0:
-					make_label(col, "   %s: %d%%" % [sub, cond[sub]], 12,
+					_wrap(col, "   %s: %d%%" % [sub, cond[sub]], 12,
 						ScreenBase.WARN if int(cond[sub]) < 35 else ScreenBase.GOOD)
 	if not GameState.pending_breakdown.is_empty():
-		make_label(col, "⚠ Machine down in the field — Roy's shop is on the line.", 13, ScreenBase.WARN)
-		make_button(col, "Take the call", func():
+		_wrap(col, "⚠ Machine down in the field — Roy's shop is on the line.", 13, ScreenBase.WARN)
+		_action(col, "Take the call", true, func():
 			_close_detail()
 			EventBus.dialogue_started.emit("breakdown_choice"))
-	make_button(col, "Close", _close_detail)
 
 
 # ---------- suggestion + playtest (unchanged logic) ----------
@@ -437,44 +446,27 @@ func _suggestion() -> String:
 
 
 func _toggle_playtest_panel() -> void:
-	if _pt_panel:
-		_pt_panel.queue_free()
-		_pt_panel = null
+	if _detail:
+		_close_detail()
 		return
-	_pt_panel = make_panel(self)
-	_pt_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_pt_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_pt_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	_pt_panel.add_child(col)
-	make_label(col, "PLAYTEST PANEL (dev only)", 16, ACCENT)
+	var col := _open_side_panel("PLAYTEST (dev)")
 	var ledger_bits: Array[String] = []
 	for k in GameState.ledger.keys():
 		ledger_bits.append("%s: $%d" % [k, GameState.ledger[k]])
-	var l1 := make_label(col, "LEDGER — " + ("; ".join(ledger_bits) if not ledger_bits.is_empty() else "empty"), 12)
-	l1.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l1.custom_minimum_size.x = 560
-	var l2 := make_label(col, "FLAGS — " + (", ".join(GameState.flags.keys()) if not GameState.flags.is_empty() else "none"), 12)
-	l2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l2.custom_minimum_size.x = 560
+	_wrap(col, "LEDGER — " + ("; ".join(ledger_bits) if not ledger_bits.is_empty() else "empty"), 12)
+	_wrap(col, "FLAGS — " + (", ".join(GameState.flags.keys()) if not GameState.flags.is_empty() else "none"), 12)
 	var rep_bits: Array[String] = []
 	for npc_id in ReputationLedger.rep.keys():
 		rep_bits.append("%s %d (%s)" % [npc_id, ReputationLedger.get_rep(npc_id), ReputationLedger.tier(npc_id)])
-	var l3 := make_label(col, "PEOPLE — " + "; ".join(rep_bits) + " | county %d" % ReputationLedger.county, 12)
-	l3.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l3.custom_minimum_size.x = 560
-	make_label(col, "PERKS — " + (", ".join(GameState.perks) if not GameState.perks.is_empty() else "none yet"), 12)
-	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 8)
-	col.add_child(btns)
-	make_button(btns, "Restart (same background)", func():
+	_wrap(col, "PEOPLE — " + "; ".join(rep_bits) + " | county %d" % ReputationLedger.county, 12)
+	_wrap(col, "PERKS — " + (", ".join(GameState.perks) if not GameState.perks.is_empty() else "none yet"), 12)
+	col.add_child(HSeparator.new())
+	_action(col, "Restart (same background)", true, func():
 		GameState.new_run(GameState.background_id)
 		go("farm_hud"))
-	make_button(btns, "New background", func(): go("character_select"))
-	make_button(btns, "Export summary", func():
+	_action(col, "New background", true, func(): go("character_select"))
+	_action(col, "Export run summary", true, func():
 		var f := FileAccess.open("user://playtest_export.txt", FileAccess.WRITE)
 		if f:
 			f.store_string(JSON.stringify(GameState.run_summary(), "  "))
 		OS.shell_show_in_file_manager(ProjectSettings.globalize_path("user://")))
-	make_button(btns, "Close", _toggle_playtest_panel)
