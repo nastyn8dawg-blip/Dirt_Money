@@ -18,6 +18,7 @@ var _dialogue_layer: Control = null
 
 
 func _ready() -> void:
+	theme = ScreenBase.build_theme()
 	EventBus.screen_change_requested.connect(_on_screen_change)
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.event_triggered.connect(func(ev): EventBus.dialogue_started.emit(ev.dialogue_tree))

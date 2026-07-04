@@ -112,6 +112,14 @@ volunteered lines, NPC questions directed at the player. Canonical proofs:
 - Tight-credit Earl: "Bank doesn't lend to spreadsheets. / We lend to people. / People come with
   reputations." — no gossip mentioned, no villain, just how risk works here.
 
+## Perk doors sound like competence, not magic (Director, 2026-07-03)
+Old School reads fields. Mechanic reads machines. IT reads numbers. **Same county, different
+languages.** Canon proofs:
+- "That field's telling on itself before the leaves do." → "You still know how to listen."
+- "Kill it a second. I can hear where it's losing money." → "That's a mechanic sentence."
+- "Tomorrow's price is better. Not a guess. Pattern's there." → "Bring me one that pays."
+No glow, no chime, no ability names spoken aloud. The county just notices you know your language.
+
 ## Ending titles are verdicts, not badges (Director, 2026-07-03)
 An ending title must read like **something Patti could say out loud** without sounding like an
 achievement popup. Never gamey ("Reliable Farmer", "County Hero", "Bad Reputation").

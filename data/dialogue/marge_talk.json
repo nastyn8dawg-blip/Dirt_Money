@@ -47,7 +47,7 @@
           "failure": "audit_failure"
         },
         {
-          "text": "[BLANK P-IT — perk option (Price Alerts): the player flags a price move coming before the co-op's posted rates catch it — useful to Marge, if she'll take data from him. Awaiting Director.]",
+          "text": "\"Tomorrow's price is better. Not a guess. Pattern's there.\"",
           "label": "[Price Alerts]",
           "requires": { "background": "it_nephew", "perk": "price_alerts" },
           "goto": "data_read",
@@ -83,7 +83,7 @@
     "data_read": {
       "speaker": "marge",
       "emotion": "neutral",
-      "text": "[BLANK P-IT-R — Marge checks his number against her gut, finds it holds, and gives the laptop kid an inch of real respect. Awaiting Director.]",
+      "text": "County's full of guesses.\n\nBring me one that pays.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "chat": {

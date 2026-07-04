@@ -19,7 +19,7 @@
           "failure": "timing_failure"
         },
         {
-          "text": "[BLANK P-OS — perk option (Read the Land II): the player reads the weather in the fields and offers Sandy hauling timing no chart could give her. Awaiting Director.]",
+          "text": "\"That field's telling on itself before the leaves do.\"",
           "label": "[Read the Land]",
           "requires": { "background": "old_school", "perk": "read_the_land_2" },
           "goto": "land_read",
@@ -53,7 +53,7 @@
     "land_read": {
       "speaker": "sandy",
       "emotion": "neutral",
-      "text": "[BLANK P-OS-R — Sandy, surprised into respect: the old ways just beat her logbook. Awaiting Director.]",
+      "text": "Most folks wait till damage shows.\n\nYou still know how to listen.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "chat": {

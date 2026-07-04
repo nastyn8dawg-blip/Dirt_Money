@@ -33,10 +33,10 @@ func _ready() -> void:
 		var blurb := make_label(col, bg.get("blurb", ""), 14)
 		blurb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		col.add_child(HSeparator.new())
-		make_label(col, "You will see:", 13, Color(0.6, 0.85, 0.6))
+		make_label(col, "You will see:", 13, ScreenBase.GOOD)
 		for line in _sees(bg):
 			make_label(col, "  + " + line, 13)
-		make_label(col, "You won't see:", 13, Color(0.9, 0.55, 0.5))
+		make_label(col, "You won't see:", 13, ScreenBase.WARN)
 		for line in _blind(bg):
 			make_label(col, "  - " + line, 13)
 		col.add_child(Control.new())

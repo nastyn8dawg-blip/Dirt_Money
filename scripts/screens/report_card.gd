@@ -27,7 +27,7 @@ func _ready() -> void:
 	make_label(box, "Cash: $%d   |   Debt: $%d" % [summary.cash, summary.debt], 18)
 	make_label(box, "Handshakes kept: %d   |   Handshakes missed: %d" % [
 		summary.contracts_completed, summary.contracts_missed,
-	], 18, Color(0.6, 0.85, 0.6) if summary.contracts_missed == 0 else Color(0.9, 0.75, 0.4))
+	], 18, ScreenBase.GOOD if summary.contracts_missed == 0 else Color(0.72, 0.58, 0.32))
 	box.add_child(HSeparator.new())
 
 	# --- Trust ledger ---
@@ -42,13 +42,13 @@ func _ready() -> void:
 		elif int(reps[npc_id]) < 0:
 			cold.append(npc_name)
 	make_label(box, "Would vouch for you: %s" % (", ".join(vouchers) if not vouchers.is_empty() else "nobody yet"),
-		15, Color(0.6, 0.85, 0.6))
+		15, ScreenBase.GOOD)
 	make_label(box, "Answers your questions, nothing more: %s" % (", ".join(cold) if not cold.is_empty() else "nobody"),
-		15, Color(0.9, 0.6, 0.5))
+		15, ScreenBase.WARN)
 	make_label(box, "County standing: %d" % summary.reputation.get("county", 0), 15)
 	var talk := DataLoader.pick_gossip()
 	if talk != "":
-		var gossip_label := make_label(box, "Heard at the diner: \"%s\"" % talk.replace("\n\n", " "), 14, Color(0.75, 0.7, 0.6))
+		var gossip_label := make_label(box, "Heard at the diner: \"%s\"" % talk.replace("\n\n", " "), 14, Color(0.80, 0.75, 0.65))
 		gossip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		gossip_label.custom_minimum_size.x = 600
 	box.add_child(HSeparator.new())
@@ -74,7 +74,7 @@ func _ready() -> void:
 				int(prev.get("contracts_completed", 0)) + int(prev.get("contracts_missed", 0)),
 				int(prev.get("reputation", {}).get("county", 0)),
 				prev.get("largest_mistake", ""),
-			], 13, Color(0.7, 0.68, 0.6))
+			], 13, Color(0.80, 0.75, 0.65))
 			line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			line.custom_minimum_size.x = 620
 		box.add_child(HSeparator.new())
@@ -82,4 +82,4 @@ func _ready() -> void:
 	var new_bg := make_button(box, "▶  TRY A NEW BACKGROUND  ◀", func(): go("character_select"))
 	new_bg.add_theme_font_size_override("font_size", 24)
 	make_button(box, "Main Menu", func(): go("main_menu"))
-	make_label(box, "(Run comparison arrives in sprint 9)", 12, Color(0.5, 0.5, 0.5))
+	make_label(box, "(Run comparison arrives in sprint 9)", 12, ScreenBase.MUTED)

@@ -36,7 +36,7 @@
           "failure": "lemon_missed"
         },
         {
-          "text": "[BLANK P-ME — perk option (Stethoscope Ear): the player hears something in a machine on Roy's lot that Roy hasn't caught yet, and says so. Awaiting Director.]",
+          "text": "\"Kill it a second. I can hear where it's losing money.\"",
           "label": "[Stethoscope Ear]",
           "requires": { "background": "mechanic", "perk": "diagnostics_1" },
           "goto": "machine_read",
@@ -69,7 +69,7 @@
     "machine_read": {
       "speaker": "roy",
       "emotion": "neutral",
-      "text": "[BLANK P-ME-R — Roy stops mid-pitch, listens, hears it too. A professional just saved him a warranty headache. Awaiting Director.]",
+      "text": "That's not a customer sentence.\n\nThat's a mechanic sentence.",
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "browse": {

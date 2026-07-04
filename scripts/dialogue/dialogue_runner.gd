@@ -83,8 +83,12 @@ func _build_ui() -> void:
 	panel.offset_left = 60
 	panel.offset_right = -60
 	panel.offset_bottom = -30
+	# County paperwork, not RPG parchment: coffee stock, steel edge
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.13, 0.11)
+	style.bg_color = ScreenBase.PANEL_COLOR
+	style.border_color = ScreenBase.PANEL_BORDER
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(2)
 	style.set_content_margin_all(16)
 	panel.add_theme_stylebox_override("panel", style)
 	add_child(panel)
@@ -97,21 +101,31 @@ func _build_ui() -> void:
 	var portrait_col := VBoxContainer.new()
 	row.add_child(portrait_col)
 	_portrait = Panel.new()
-	_portrait.custom_minimum_size = Vector2(140, 160)
+	_portrait.custom_minimum_size = Vector2(150, 170)
+	# Framed and reserved for the painted busts (ART_DIRECTION approval
+	# pending) — gold frame on dark ground so the slot reads as intentional
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = ScreenBase.BG_COLOR
+	frame.border_color = ScreenBase.ACCENT
+	frame.set_border_width_all(2)
+	frame.set_corner_radius_all(2)
+	_portrait.add_theme_stylebox_override("panel", frame)
 	portrait_col.add_child(_portrait)
 	_portrait_letter = Label.new()
 	_portrait_letter.text = str(_npc.get("name", "?")).left(1)
 	_portrait_letter.add_theme_font_size_override("font_size", 80)
+	_portrait_letter.add_theme_color_override("font_color", Color(0.45, 0.40, 0.33))
 	_portrait_letter.set_anchors_preset(Control.PRESET_CENTER)
 	_portrait.add_child(_portrait_letter)
 	_jaw = ColorRect.new()
-	_jaw.color = Color(0.85, 0.72, 0.35)
+	_jaw.color = ScreenBase.ACCENT
 	_jaw.size = Vector2(40, 10)
-	_jaw.position = Vector2(50, 130)
+	_jaw.position = Vector2(55, 138)
 	_portrait.add_child(_jaw)
 	_speaker_label = Label.new()
 	_speaker_label.text = "%s — %s" % [_npc.get("name", "?"), _npc.get("role", "")]
 	_speaker_label.add_theme_font_size_override("font_size", 13)
+	_speaker_label.add_theme_color_override("font_color", ScreenBase.ACCENT)
 	portrait_col.add_child(_speaker_label)
 
 	var text_col := VBoxContainer.new()
@@ -121,6 +135,7 @@ func _build_ui() -> void:
 	_text_label = Label.new()
 	_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text_label.add_theme_font_size_override("font_size", 16)
+	_text_label.add_theme_color_override("font_color", ScreenBase.CREAM)
 	_text_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text_col.add_child(_text_label)
 	_options_box = VBoxContainer.new()

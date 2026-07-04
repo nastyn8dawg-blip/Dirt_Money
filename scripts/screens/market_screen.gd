@@ -37,9 +37,9 @@ func _refresh() -> void:
 	match GameState.background_id:
 		"old_school":
 			make_label(_list, "Sandy says: \"%s\"" % EconomyManager.gossip_line(), 15)
-			make_label(_list, "(You don't do charts. You do handshakes.)", 12, Color(0.5, 0.5, 0.5))
+			make_label(_list, "(You don't do charts. You do handshakes.)", 12, ScreenBase.MUTED)
 		"it_nephew":
-			make_label(_list, "MARKET TERMINAL", 15, Color(0.5, 0.9, 0.6))
+			make_label(_list, "MARKET TERMINAL", 15, ScreenBase.GOOD)
 			for cid in EconomyManager.prices.keys():
 				var h: Array = EconomyManager.history.get(cid, [])
 				var spark := ""
@@ -48,7 +48,7 @@ func _refresh() -> void:
 				make_label(_list, "%s  %s  (%s) → tomorrow $%.2f" % [
 					cid, spark, EconomyManager.trend(cid), EconomyManager.forecast_price(cid)], 13)
 		"mechanic":
-			make_label(_list, "(Board out front says:)", 12, Color(0.5, 0.5, 0.5))
+			make_label(_list, "(Board out front says:)", 12, ScreenBase.MUTED)
 
 	_list.add_child(HSeparator.new())
 	for cid in EconomyManager.prices.keys():

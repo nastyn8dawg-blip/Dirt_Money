@@ -48,7 +48,7 @@ func _refresh() -> void:
 			make_label(row, "ACTIVE: %d repair job(s) left — due %s (Day %d), $%d each" % [
 				contract.jobs_left, CalendarManager.weekday_of(contract.deadline_day),
 				contract.deadline_day, contract.pay_per_job,
-			], 15, Color(0.6, 0.85, 0.6))
+			], 15, ScreenBase.GOOD)
 			make_button(row, "Work a job (costs a time block)", func():
 				CalendarManager.spend_block()
 				GameState.work_repair_job()
@@ -58,7 +58,7 @@ func _refresh() -> void:
 		make_label(row, "ACTIVE: %d %s — due %s (Day %d) — you have %d" % [
 			contract.units, contract.commodity,
 			CalendarManager.weekday_of(contract.deadline_day), contract.deadline_day, have,
-		], 15, Color(0.6, 0.85, 0.6) if have >= contract.units else Color(0.9, 0.75, 0.4))
+		], 15, ScreenBase.GOOD if have >= contract.units else Color(0.72, 0.58, 0.32))
 		if have >= int(contract.units):
 			make_button(row, "DELIVER", func():
 				GameState.deliver_contract(contract.id)
@@ -88,7 +88,7 @@ func _refresh() -> void:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		_list.add_child(row)
-		var color := Color.WHITE if available else Color(0.45, 0.45, 0.45)
+		var color := ScreenBase.CREAM if available else Color(0.50, 0.47, 0.42)
 		var terms: Dictionary = contract.get("terms", {})
 		var desc: String = "[%s] %s" % [contract.type, contract.title]
 		if contract.type in ["delivery", "legacy"]:
@@ -107,4 +107,4 @@ func _refresh() -> void:
 				make_button(row, "Discuss with %s" % DataLoader.get_npc(offered_by).get("name", "..."),
 					func(): EventBus.dialogue_started.emit(tree_id))
 		else:
-			make_label(row, "— " + reason, 13, Color(0.6, 0.45, 0.4))
+			make_label(row, "— " + reason, 13, Color(0.66, 0.44, 0.36))

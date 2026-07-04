@@ -29,7 +29,7 @@ func _ready() -> void:
 	add_child(root)
 
 	make_label(root, "ASH CREEK COUNTY", 32, ACCENT)
-	make_label(root, "Travel costs $%d fuel and a time block. (Greybox — painted map comes later.)" % TRAVEL_FUEL_COST, 13, Color(0.6, 0.6, 0.6))
+	make_label(root, "Travel costs $%d fuel and a time block. (Greybox — painted map comes later.)" % TRAVEL_FUEL_COST, 13, ScreenBase.MUTED)
 
 	var grid := GridContainer.new()
 	grid.columns = 2

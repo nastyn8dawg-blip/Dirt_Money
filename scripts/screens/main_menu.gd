@@ -22,4 +22,4 @@ func _ready() -> void:
 	cont.disabled = not SaveManager.has_save()
 	make_button(box, "Quit", func(): get_tree().quit())
 
-	make_label(box, "greybox build — foundation session", 12, Color(0.5, 0.5, 0.5))
+	make_label(box, "greybox build — foundation session", 12, ScreenBase.MUTED)

@@ -29,8 +29,8 @@ func _ready() -> void:
 	var top_col := VBoxContainer.new()
 	top.add_child(top_col)
 	_status = make_label(top_col, "", 18, ACCENT)
-	_goal = make_label(top_col, "", 13, Color(0.75, 0.7, 0.6))
-	_suggest = make_label(top_col, "", 14, Color(0.6, 0.85, 0.6))
+	_goal = make_label(top_col, "", 13, Color(0.80, 0.75, 0.65))
+	_suggest = make_label(top_col, "", 14, ScreenBase.GOOD)
 
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -186,9 +186,9 @@ func _rebuild_fields() -> void:
 						GameState.issue_field_order(field_id, crop_id, "plant")
 						_refresh())
 			if not any_open:
-				make_label(row, "— planting windows closed for the season", 13, Color(0.6, 0.55, 0.45))
+				make_label(row, "— planting windows closed for the season", 13, ScreenBase.MUTED)
 		elif f.state == "growing":
-			make_label(row, "— ready in %d day(s)" % int(f.get("days_to_ready", 0)), 13, Color(0.7, 0.85, 0.6))
+			make_label(row, "— ready in %d day(s)" % int(f.get("days_to_ready", 0)), 13, ScreenBase.GOOD)
 		elif f.state == "ready":
 			var crop2: Dictionary = DataLoader.crops.get(f.crop, {})
 			var h: Dictionary = crop2.get("harvest_order", {})
@@ -200,9 +200,9 @@ func _rebuild_fields() -> void:
 			for o in GameState.field_orders:
 				if o.field == field_id:
 					if o.get("paused", false):
-						make_label(row, "→ BROKEN DOWN — %s stalled" % o.kind, 13, Color(0.95, 0.45, 0.35))
+						make_label(row, "→ BROKEN DOWN — %s stalled" % o.kind, 13, ScreenBase.WARN)
 					else:
-						make_label(row, "→ %s, %d day(s) left" % [o.kind, o.days_left], 13, Color(0.6, 0.8, 1.0))
+						make_label(row, "→ %s, %d day(s) left" % [o.kind, o.days_left], 13, ScreenBase.INFO)
 
 
 func _rebuild_info() -> void:
@@ -216,9 +216,9 @@ func _rebuild_info() -> void:
 				make_label(_info_col, today, 14)
 			var cue := WeatherManager.intuition_cue()
 			if cue != "":
-				make_label(_info_col, "Something in your bones: " + cue, 14, Color(0.85, 0.75, 0.5))
+				make_label(_info_col, "Something in your bones: " + cue, 14, Color(0.78, 0.60, 0.23))
 			make_label(_info_col, "At the diner: \"%s\"" % EconomyManager.gossip_line(), 14)
-			make_label(_info_col, "(No charts. No dashboards. You read people and sky.)", 12, Color(0.5, 0.5, 0.5))
+			make_label(_info_col, "(No charts. No dashboards. You read people and sky.)", 12, ScreenBase.MUTED)
 		"it_nephew":
 			make_label(_info_col, "FARM DASHBOARD v0.1", 16, ACCENT)
 			var fc: Array = WeatherManager.forecast(int(GameState.interface_flag("weather_forecast_days", 0)))
@@ -231,7 +231,7 @@ func _rebuild_info() -> void:
 					cid, EconomyManager.prices[cid], EconomyManager.trend(cid),
 					EconomyManager.forecast_price(cid),
 				], 14)
-			make_label(_info_col, "(All the data. None of the trust.)", 12, Color(0.5, 0.5, 0.5))
+			make_label(_info_col, "(All the data. None of the trust.)", 12, ScreenBase.MUTED)
 		"mechanic":
 			make_label(_info_col, "EQUIPMENT STATUS", 16, ACCENT)
 			for eq_id in DataLoader.equipment.keys():
@@ -241,5 +241,5 @@ func _rebuild_info() -> void:
 				for sub in DataLoader.equipment_meta.get("subsystems", []):
 					if int(cond.get(sub, 0)) > 0:
 						make_label(_info_col, "   %s: %d%%" % [sub, cond[sub]], 12,
-							Color(0.9, 0.4, 0.3) if int(cond[sub]) < 35 else Color(0.7, 0.85, 0.6))
-			make_label(_info_col, "(Crops? They look... fine?)", 12, Color(0.5, 0.5, 0.5))
+							ScreenBase.WARN if int(cond[sub]) < 35 else ScreenBase.GOOD)
+			make_label(_info_col, "(Crops? They look... fine?)", 12, ScreenBase.MUTED)
