@@ -37,12 +37,12 @@ func _refresh() -> void:
 		c.queue_free()
 
 	# Post-purchase confirmation: the player must never buy a machine and
-	# wonder where it went. [Claude-drafted strings — pending Director pass]
+	# wonder where it went. Director canon (wording pass 2026-07-04).
 	if _just_bought != "":
 		var conf := VBoxContainer.new()
 		_list.add_child(conf)
-		make_label(conf, "BOUGHT: %s" % _just_bought, 16, ScreenBase.GOOD)
-		make_label(conf, "It's a project at your machine shed now. Restore it there (or right here), then truck it to Roy.", 13)
+		make_label(conf, "Bought from Gus.", 16, ScreenBase.GOOD)
+		make_label(conf, "Project moved to the machine shed.", 13)
 		_list.add_child(HSeparator.new())
 
 	# Your projects — same panel the machine shed shows

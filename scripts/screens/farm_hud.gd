@@ -121,9 +121,9 @@ func _rebuild_canvas() -> void:
 	if not GameState.pending_breakdown.is_empty():
 		shed_note = "⚠ BREAKDOWN"
 	elif GameState.salvage_ready_to_sell():
-		shed_note = "● salvage READY — Roy buys"
+		shed_note = "Salvage ready"
 	elif not GameState.salvage_projects.is_empty():
-		shed_note = "salvage project inside"
+		shed_note = "Salvage inside"
 	_building("MACHINE SHED\n%s" % shed_note, Rect2(565, 375, 135, 95), Color("46464a"), _open_shed)
 	# The county road
 	_building("COUNTY ROAD →\ninto town", Rect2(730, 10, 180, 90), Color("3d3a35"), func(): go("world_map"))
@@ -243,6 +243,25 @@ func _wrap(parent: Control, text: String, size: int = 13, color: Color = CREAM) 
 	return l
 
 
+func _note_prompt(col: Control, cost: int, cost_line: String, on_confirm: Callable) -> void:
+	# Canon credit prompt (Director wording pass 2026-07-04). "Note", never
+	# "credit balance" — Ash Creek, not software. One helper so harvest and
+	# emergency repair can't drift apart.
+	_wrap(col, cost_line, 13, ScreenBase.WARN)
+	_wrap(col, "Cash isn't there.", 13, ScreenBase.WARN)
+	if not GameState.can_finance(cost):
+		_wrap(col, "Earl won't carry any more.", 13, ScreenBase.WARN)
+		_wrap(col, "Not until something gets paid down.", 12, ScreenBase.MUTED)
+		return
+	var charge := GameState.finance_charge(cost)
+	if charge > cost:
+		_wrap(col, "Earl will carry it, but not clean.", 13, ScreenBase.MUTED)
+		_action(col, "Charge to credit — $%d with fee" % charge, true, on_confirm)
+	else:
+		_wrap(col, "Charge it to the note?", 13, ScreenBase.MUTED)
+		_action(col, "Charge to credit — $%d" % charge, true, on_confirm)
+
+
 func _action(parent: Control, text: String, enabled: bool, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
@@ -322,7 +341,17 @@ func _open_field_detail(field_id: String) -> void:
 			_action(col, "Fertilize — $80 + a block — +10%% yield", GameState.cash >= 80, func(): acted.call("fertilize"))
 		_action(col, "Treat weeds/pests — $60 + a block — clears the pressure", GameState.cash >= 60, func(): acted.call("treat"))
 		if f.get("stressed", false):
-			_action(col, "Repair storm damage — $20 + a block — saves 10%% of the crop", GameState.cash >= 20, func(): acted.call("repair_field"))
+			# Emergency repair protects an active crop → financeable (ruling
+			# 2026-07-04). Cost line follows the Director's harvest pattern —
+			# flag for his confirm.
+			if GameState.cash >= 20:
+				_action(col, "Repair storm damage — $20 + a block — saves 10%% of the crop", true, func(): acted.call("repair_field"))
+			else:
+				_note_prompt(col, 20, "Repair cost is $20.", func():
+					GameState.field_action(field_id, "repair_field", true)
+					CalendarManager.spend_block()
+					_close_detail()
+					_refresh())
 	elif f.state == "ready":
 		var crop2: Dictionary = DataLoader.crops.get(f.crop, {})
 		var h: Dictionary = crop2.get("harvest_order", {})
@@ -334,20 +363,8 @@ func _open_field_detail(field_id: String) -> void:
 		if GameState.cash >= hcost:
 			_action(col, "HARVEST — $%d — %d day(s) of crew work" % [hcost, h.get("days", 1)],
 				true, do_harvest.bind(false))
-		elif GameState.can_finance(hcost):
-			# Director ruling 2026-07-04: cash shortage is pressure, not a
-			# dead end. Revenue work goes on Earl's note instead of blocking.
-			var charge := GameState.finance_charge(hcost)
-			_wrap(col, "Harvest cost $%d. Cash unavailable." % hcost, 13, ScreenBase.WARN)
-			_action(col, "Charge harvest cost to credit — $%d onto the note" % charge,
-				true, do_harvest.bind(true))
-			_wrap(col, "%d day(s) of crew work. Debt goes to $%d.%s" % [
-				h.get("days", 1), GameState.debt + charge,
-				" Earl's terms — credit is tight, $%d fee included." % (charge - hcost) if charge > hcost else "",
-			], 12, ScreenBase.MUTED)
 		else:
-			_wrap(col, "Harvest cost $%d. Cash unavailable — and Earl won't extend the note past $%d." % [
-				hcost, GameState.CREDIT_LIMIT], 13, ScreenBase.WARN)
+			_note_prompt(col, hcost, "Harvest cost is $%d." % hcost, do_harvest.bind(true))
 		_wrap(col, "Then sell at the elevator, or fill a contract at the Co-op.", 12, ScreenBase.MUTED)
 	elif f.state == "working":
 		for o in GameState.field_orders:
@@ -466,9 +483,9 @@ func _suggestion() -> String:
 			return "%s field took weather damage — click it." % field_id.capitalize()
 	for i in range(GameState.salvage_projects.size()):
 		if GameState.salvage_ready_to_sell(i):
-			return "Your salvage is restored — truck it to Roy for the check."
+			return "That salvage project is ready for Roy."
 	if not GameState.salvage_projects.is_empty():
-		return "Your salvage project is waiting at the machine shed — put in a work session."
+		return "That salvage project is waiting in the shed."
 	for field_id in GameState.fields.keys():
 		var f: Dictionary = GameState.fields[field_id]
 		if f.state == "fallow" and GameState.cash >= 90 and CalendarManager.day <= 18:

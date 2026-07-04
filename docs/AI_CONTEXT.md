@@ -33,13 +33,14 @@ DIAGNOSTIC ONLY). Goal: prove three runs through the same county feel different 
 - UI: county office paperwork, not parchment, not slick. Palette in ART_DIRECTION.md.
 
 ## Current status (one paragraph)
-Farm view shipped: clickable field parcels + buildings, stable right-side inspector panel
-(status / recommendation / what-if-ignored / vertical actions with costs). Field care live.
-Morning contacts live. Diner is a lead generator. 2026-07-04 playtest fixes shipped: salvage
-projects fully legible (shared block at shed + yard: status/where/parts/time/buyer/next
-action, purchase confirmation) and harvest chargeable to Earl's note when cash is short
-(tight credit fees, $12k ceiling — placeholders; planting stays cash-only). New UI strings
-are Claude-drafted placeholders pending Director pass. Awaiting Director verdict on both.
+Farm view shipped: clickable field parcels + buildings, stable right-side inspector panel.
+Field care, morning contacts, diner leads live. 2026-07-04: salvage fully legible (shared
+project block at shed + yard, purchase confirmation, badges — Director canon wording) and
+credit-on-the-note live per Director ruling: harvest + crop-protecting emergency repair
+financeable ($12k ceiling, tight-credit fee — placeholder numbers); NEVER planting/salvage/
+speculation. Language law: "note", not "credit balance". Canon prompts share _note_prompt()
+in farm_hud. Verdict "right direction"; awaiting next playtest + confirm on one adapted line
+("Repair cost is $20.").
 
 ## Do not waste time rediscovering
 - Balance harness: `godot --headless --path . res://tests/autoplay.tscn` (drift + ledger +

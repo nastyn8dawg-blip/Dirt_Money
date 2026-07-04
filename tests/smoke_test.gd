@@ -476,3 +476,18 @@ func test_harvest_on_credit() -> void:
 	GameState.cash = 0
 	check(not GameState.can_finance(80), "maxed note leaves no credit room")
 	check(not GameState.issue_field_order("east", "hay", "harvest", true), "maxed note refuses new credit")
+	# Emergency repair protects an active crop — financeable (ruling 2026-07-04)
+	GameState.new_run("old_school", 803)
+	var f4: Dictionary = GameState.fields["north"]
+	f4.state = "growing"
+	f4.crop = "corn"
+	f4.days_to_ready = 5
+	f4.stressed = true
+	GameState.cash = 0
+	var debt3 := GameState.debt
+	check(not GameState.field_action("north", "repair_field"), "broke repair blocked without asking for credit")
+	check(GameState.field_action("north", "repair_field", true), "storm repair goes on the note")
+	check(GameState.debt == debt3 + 20, "repair cost lands on debt")
+	check(not GameState.fields["north"].stressed, "financed repair still clears stress")
+	GameState.cash = 0
+	check(not GameState.field_action("north", "treat", true), "optional care is never financeable")

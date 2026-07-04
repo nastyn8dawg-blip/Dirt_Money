@@ -31,3 +31,11 @@
 - 2026-07-04 — Salvage legibility law: after any purchase the player always sees what was
   bought, where it sits, its status, parts/time estimate, buyer, and next action — at both
   the yard and the machine shed. Never buy a thing and wonder where it went.
+- 2026-07-04 — Financeable actions locked: harvest YES; contract-linked hauling YES (when
+  hauling exists); emergency repair YES only when it protects an active crop/contract/deadline.
+  NEVER: planting, salvage buys, upgrades, optional repairs, equipment, livestock, speculation.
+  "Credit rescues production in motion, not gambles." Pressure → note → door closes.
+- 2026-07-04 — Language law: "note", never "credit balance." Ash Creek, not software.
+  ("Earl will carry it, but not clean" — not "credit surcharge applied.")
+- 2026-07-04 — Director wording pass delivered: salvage confirmation/badge/suggestion/panel
+  + all three credit prompts are canon, wired verbatim.

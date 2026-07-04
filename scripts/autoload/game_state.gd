@@ -255,16 +255,29 @@ const FIELD_ACTIONS := {
 }
 
 
-func field_action(field_id: String, action: String) -> bool:
+func field_action(field_id: String, action: String, on_credit: bool = false) -> bool:
 	# Simple versions first (Director): the field needs to feel alive, not deep.
 	if not fields.has(field_id) or not FIELD_ACTIONS.has(action):
 		return false
 	var f: Dictionary = fields[field_id]
 	var spec: Array = FIELD_ACTIONS[action]
-	if not f.state in spec[1] or cash < int(spec[0]):
+	var cost := int(spec[0])
+	# Financeable ruling (Director 2026-07-04): emergency repair protecting an
+	# active crop can go on the note. Optional care and prep stay cash-only —
+	# credit rescues production in motion, it doesn't fund gambles.
+	var financed := on_credit and action == "repair_field" and can_finance(cost)
+	if not f.state in spec[1] or (cash < cost and not financed):
 		return false
-	if int(spec[0]) > 0:
-		add_cash(-int(spec[0]), "field_care")
+	if cost > 0:
+		if financed:
+			var charge := finance_charge(cost)
+			debt += charge
+			ledger["orders_financed"] = int(ledger.get("orders_financed", 0)) - cost
+			if charge > cost:
+				ledger["financing_fees"] = int(ledger.get("financing_fees", 0)) - (charge - cost)
+			EventBus.money_changed.emit(cash, debt)
+		else:
+			add_cash(-cost, "field_care")
 	match action:
 		"soil_test": f.tested = true
 		"till": f.tilled = true

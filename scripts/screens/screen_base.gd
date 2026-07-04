@@ -97,14 +97,13 @@ func go(screen_id: String, payload: Dictionary = {}) -> void:
 
 
 func add_salvage_project_block(parent: Control, idx: int, wrap_width: int, on_change: Callable) -> void:
-	# Director required fix (2026-07-04): after buying salvage the player must
-	# always see what they own, where it sits, what it needs, and who buys it.
-	# One renderer, shown identically at Gus's yard and the machine shed.
-	# [Claude-drafted strings — placeholder pending Director pass]
+	# Salvage legibility law (Director 2026-07-04): after buying, the player
+	# always sees what they own, where it sits, its status, parts, buyer, and
+	# next action. One renderer, identical at Gus's yard and the machine shed.
+	# All strings Director canon (wording pass 2026-07-04).
 	var p: Dictionary = GameState.salvage_projects[idx]
 	var deal: Dictionary = GameState.salvage_deal(p.deal_id)
 	var needed: int = int(deal.restore_blocks) + int(p.extra_blocks)
-	var left: int = maxi(0, needed - int(p.blocks_done))
 	var ready := GameState.salvage_ready_to_sell(idx)
 	var tier := GameState.roy_pricing_tier()
 	var offer := int(round(float(deal.base_sale_value) * float(tier.mult)))
@@ -115,29 +114,29 @@ func add_salvage_project_block(parent: Control, idx: int, wrap_width: int, on_ch
 		if wrap_width > 0:
 			l.custom_minimum_size.x = wrap_width
 
-	line.call("%s — bought from Gus, $%d" % [deal.name, int(deal.buy_price)], 15, ACCENT)
-	var status := "restored — ready to sell"
+	line.call(String(deal.name), 15, ACCENT)
+	line.call("Source: Bought from Gus", 13, CREAM)
+	line.call("Where: Machine shed", 13, CREAM)
+	var status := "Ready to sell"
 	if not ready:
-		status = "unrestored" if int(p.blocks_done) == 0 else "restoring — %d of %d sessions done" % [int(p.blocks_done), needed]
+		status = "Unrestored" if int(p.blocks_done) == 0 else "Restoring — %d of %d sessions done" % [int(p.blocks_done), needed]
 	line.call("Status: %s" % status, 13, GOOD if ready else CREAM)
-	line.call("Where: your machine shed", 13, CREAM)
 	if p.hidden_hit:
 		line.call("Found the painted-over problem. Parts and time both got worse.", 13, WARN)
-	if GameState.background_id == "mechanic":
-		line.call("Estimated parts: %s%s" % [
-			deal.get("mechanic_read", {}).get("parts_range", "?"),
-			" — already paid" if p.parts_paid else ""], 13, INFO)
-	else:
-		line.call("Parts: %s" % ("paid" if p.parts_paid else "unknown till you open it up"), 13, INFO)
-	if not ready:
-		line.call("Time: %d work session(s) left, one time block each" % left, 13, INFO)
-	line.call("Buyer: Roy — his offer today: $%d (%s pricing)" % [offer, tier.tier], 13, INFO)
+	if not p.parts_paid:
+		if GameState.background_id == "mechanic":
+			line.call("Estimated parts: %s" % deal.get("mechanic_read", {}).get("parts_range", "?"), 13, INFO)
+		else:
+			line.call("Parts: unknown until you open it up", 13, INFO)
+	line.call("Buyer: Roy", 13, INFO)
+	# Roy's number is real once the machine is ready; until then he's a plan
+	line.call(("Roy offer: $%d" % offer) if ready else "Roy will look at it.", 13, INFO)
 	if ready:
-		make_button(parent, "Next action: truck it to Roy — $%d" % offer, func():
+		make_button(parent, "Truck it to Roy", func():
 			GameState.sell_salvage(idx)
 			on_change.call())
 	else:
-		make_button(parent, "Next action: put in a work session — costs a time block", func():
+		make_button(parent, "Work on it", func():
 			CalendarManager.spend_block()
 			GameState.work_salvage(idx)
 			on_change.call())

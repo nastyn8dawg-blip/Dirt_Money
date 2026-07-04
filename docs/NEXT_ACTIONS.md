@@ -1,11 +1,9 @@
 # NEXT ACTIONS — priority order (update at end of every session)
 
-1. **Await Director playtest verdict** on the 2026-07-04 fixes: salvage project panel
-   (shed + yard) and harvest-on-credit flow — plus the field inspector panel and the four
-   scripted runs in PLAYTEST_SCRIPT_PHASE_1.md. Playtest notes outrank everything below.
-1b. Director pass on new Claude-drafted UI strings (salvage block, credit prompts) — tagged
-   placeholder per law 6. Also his call: should hauling/emergency-repair costs join harvest
-   as financeable? (He said "maybe" — only harvest is wired.)
+1. **Await Director playtest verdict** on the canon-worded salvage panel + credit prompts
+   (his wording, wired verbatim), the field inspector panel, and the four scripted runs in
+   PLAYTEST_SCRIPT_PHASE_1.md. Playtest notes outrank everything below.
+   One-line confirm needed: "Repair cost is $20." (his harvest pattern, adapted).
 2. Multi-seed balance harness runs (5+ seeds) — single seed gave IT zero timing opportunities.
 3. Director decision: image-generation path (subscription vs. commission) → then Hollis portrait
    board prompt pack from ART_DIRECTION.md.

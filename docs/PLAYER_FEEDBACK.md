@@ -1,5 +1,13 @@
 # PLAYER FEEDBACK LOG (append; newest first; never delete — trends matter)
 
+## 2026-07-04 — Director, verdict on salvage/credit fixes
+- "Good fix. This is the right direction."
+- Ruled the financeable list (harvest / contract hauling / crop-protecting emergency repair;
+  never planting, salvage, upgrades, speculation) → repair_field wired; hauling logged for
+  when it exists.
+- Delivered full wording pass (salvage panel, confirmation, badges, credit prompts) → wired
+  verbatim. Language law: "note", never "credit balance."
+
 ## 2026-07-04 — Director, salvage + harvest cash blocker playtest
 - Bought salvage (Mechanic run), then couldn't tell what he owned, where it went, or how to
   turn it into money → FIXED: post-purchase confirmation at the yard; salvage project panel
