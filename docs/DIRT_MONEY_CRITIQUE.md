@@ -85,6 +85,13 @@ loop → 3) IT practical-incompetence cost or starting-debt pressure → 4) IT m
   suspicion CONFIRMED — without the edge he undershoots); ME −22% ≈ salvage flip. The harness
   reads clean. Next per Director order: flip loop → IT pressure → IT timing → re-run.
 
+- **2026-07-03 (flip live)** — Salvage loop shipped per Director ruling: two deals (honest rake,
+  painted-over mower trap), Friday hold windows, plain-language reads for everyone + wrench-eye
+  detail for Mechanic, hidden damage surfacing mid-restoration, Roy's tier pricing the sale.
+  Harness: Mechanic −3% (flip NET $780 vs model $750), wrench income $2,150 vs crops $1,367 —
+  identity complete without touching his crops. Remaining drift: OS legacy premium (trust climb),
+  IT timing edge (next per Director order: IT pressure, then IT timing).
+
 ## Open questions (unresolved, need director ruling)
 - Telemetry implementation for demo (local opt-in file vs none) — decide in Phase 2 planning.
 - gdUnit4 vs lightweight custom test runner — start custom, adopt gdUnit4 when test count justifies (tech spec §6); revisit at sprint 3.

@@ -27,10 +27,11 @@
     },
     {
       "id": "salvage_auction_notice",
-      "title": "Estate Auction at the Weaver Yard",
+      "title": "Something Came Into the Weaver Yard",
       "trigger": { "min_day": 6, "background": "mechanic", "weight": 15, "once": true },
-      "dialogue_tree": "gus_auction",
-      "notes": "Mechanic-only scripted auction event (full auction system is Phase 3)."
+      "dialogue_tree": "gus_yard_deal",
+      "action": "salvage_offers",
+      "notes": "Mechanic-only: opens the two salvage deals with a hold-until-Friday window (full auction system is Phase 3)."
     }
   ]
 }

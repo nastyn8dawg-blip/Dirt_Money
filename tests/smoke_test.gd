@@ -19,6 +19,7 @@ func _ready() -> void:
 	test_endings()
 	test_one_cycle_season()
 	test_repair_contracts()
+	test_salvage_flip()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -285,3 +286,35 @@ func test_repair_contracts() -> void:
 	check(GameState.contracts_completed == 1, "repair contract counts as a kept handshake")
 	check(GameState.has_flag("repair_contract_done"), "county hears the wrench")
 	check(int(GameState.ledger.get("repair_salvage_revenue", 0)) > earned_before, "wrench income lands in its own ledger line")
+
+
+func test_salvage_flip() -> void:
+	GameState.new_run("mechanic", 300)
+	CalendarManager.day = 6
+	GameState.create_salvage_offers()
+	check(GameState.salvage_offers.size() == 2, "two deals on the lot")
+	var hold: int = GameState.salvage_offers[0].hold_until_day
+	check(CalendarManager.weekday_of(hold) == "Friday", "Gus holds until Friday")
+	check(GameState.buy_salvage("hay_rake"), "rake purchase goes through")
+	check(int(GameState.ledger.get("salvage_purchase_cost", 0)) == -400, "purchase categorized")
+	var sessions := 0
+	while not GameState.salvage_ready_to_sell() and sessions < 12:
+		GameState.work_salvage()
+		sessions += 1
+	check(GameState.salvage_ready_to_sell(), "restoration completes")
+	check(int(GameState.ledger.get("parts_cost", 0)) < 0, "parts categorized")
+	var sale := GameState.sell_salvage()
+	check(sale > 0, "Roy writes a check")
+	check(GameState.salvage_projects.is_empty(), "project leaves the shop")
+	var net: int = GameState.salvage_stats.sold - GameState.salvage_stats.bought - GameState.salvage_stats.parts
+	if net > 0:
+		check(GameState.has_flag("gus_respects_eye"), "profitable flip earns Gus's respect")
+	else:
+		check(GameState.has_flag("salvage_flip_bust"), "losing flip becomes a story")
+	# Hold expires: offers vanish after Friday
+	GameState.new_run("mechanic", 301)
+	CalendarManager.day = 6
+	GameState.create_salvage_offers()
+	CalendarManager.day = GameState.salvage_offers[0].hold_until_day + 1
+	GameState.expire_salvage_offers()
+	check(GameState.salvage_offers.is_empty(), "unclaimed machines leave the yard")

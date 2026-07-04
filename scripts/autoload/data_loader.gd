@@ -16,6 +16,7 @@ var dialogue_trees: Dictionary = {}
 var strings: Dictionary = {}
 var gossip_banks: Array = []
 var endings: Array = []
+var salvage_deals: Array = []
 
 
 func pick_ending() -> Dictionary:
@@ -97,6 +98,7 @@ func load_all() -> void:
 	strings = _read_json("res://data/strings.json")
 	gossip_banks = _read_json("res://data/gossip.json").get("banks", [])
 	endings = _read_json("res://data/endings.json").get("endings", [])
+	salvage_deals = _read_json("res://data/salvage.json").get("deals", [])
 	_load_dialogue_dir("res://data/dialogue")
 
 

@@ -11,7 +11,7 @@ const NODES := [
 	{"id": "diner", "name": "The Diner", "tree": "patti_talk"},
 	{"id": "neighbor_farm", "name": "Hollis's Place", "tree": "hollis_baler"},
 	{"id": "vet", "name": "Vet / Livestock Supply", "tree": "dee_talk"},
-	{"id": "salvage", "name": "Weaver Salvage Yard", "tree": "gus_talk"},
+	{"id": "salvage", "name": "Weaver Salvage Yard", "screen": "salvage_yard"},
 	{"id": "grange", "name": "Grange Hall"},
 ]
 const TRAVEL_FUEL_COST := 8

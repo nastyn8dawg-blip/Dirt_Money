@@ -24,6 +24,11 @@ var ledger: Dictionary = {}
 var harvest_log: Dictionary = {}         # crop -> total units harvested
 var downtime_days: int = 0               # working days lost to breakdowns
 
+# Salvage flip loop (Director ruling: judgment, not guaranteed profit)
+var salvage_offers: Array = []           # {deal_id, hold_until_day}
+var salvage_projects: Array = []         # {deal_id, blocks_done, parts_paid, hidden_hit, extra_blocks}
+var salvage_stats := {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
+
 const STARTING_CASH := 1200
 const STARTING_DEBT := 8000
 const DEBT_DAILY_INTEREST := 0.004
@@ -53,6 +58,9 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	ledger = {}
 	harvest_log = {}
 	downtime_days = 0
+	salvage_offers = []
+	salvage_projects = []
+	salvage_stats = {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
 	ReputationLedger.init_from_background(bg_id)
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
@@ -207,6 +215,120 @@ func resolve_breakdown(mode: String) -> void:
 				order.days_left = int(order.days_left) + 2
 				downtime_days += 2
 	pending_breakdown = {}
+
+
+func salvage_deal(deal_id: String) -> Dictionary:
+	for d in DataLoader.salvage_deals:
+		if d.get("id", "") == deal_id:
+			return d
+	return {}
+
+
+func create_salvage_offers() -> void:
+	# Gus holds machines until Friday. After that, someone else brings a check.
+	var wd := (CalendarManager.day - 1) % 7   # 0 = Monday, 4 = Friday
+	var delta := (4 - wd + 7) % 7
+	if delta < 2:
+		delta += 7
+	for d in DataLoader.salvage_deals:
+		salvage_offers.append({"deal_id": d.id, "hold_until_day": CalendarManager.day + delta})
+
+
+func expire_salvage_offers() -> void:
+	var gone: Array = []
+	for o in salvage_offers:
+		if CalendarManager.day > int(o.hold_until_day):
+			gone.append(o)
+	for o in gone:
+		salvage_offers.erase(o)
+
+
+func buy_salvage(deal_id: String) -> bool:
+	var deal := salvage_deal(deal_id)
+	if deal.is_empty():
+		return false
+	var offer: Dictionary = {}
+	for o in salvage_offers:
+		if o.deal_id == deal_id:
+			offer = o
+	if offer.is_empty() or cash < int(deal.buy_price):
+		return false
+	salvage_offers.erase(offer)
+	add_cash(-int(deal.buy_price), "salvage_purchase_cost")
+	salvage_stats.bought += int(deal.buy_price)
+	salvage_projects.append({
+		"deal_id": deal_id, "blocks_done": 0, "parts_paid": false,
+		"hidden_hit": false, "extra_blocks": 0,
+	})
+	return true
+
+
+func work_salvage() -> Dictionary:
+	# One block of shop time. Parts get real on the first session; the
+	# painted-over problem (if any) surfaces on the second.
+	if salvage_projects.is_empty():
+		return {}
+	var p: Dictionary = salvage_projects[0]
+	var deal := salvage_deal(p.deal_id)
+	p.blocks_done = int(p.blocks_done) + 1
+	salvage_stats.blocks += 1
+	if not p.parts_paid:
+		p.parts_paid = true
+		add_cash(-int(deal.true_parts_cost), "parts_cost")
+		salvage_stats.parts += int(deal.true_parts_cost)
+	if int(p.blocks_done) == 2 and not p.hidden_hit:
+		if _breakdown_rng.randf() < float(deal.get("hidden_damage_chance", 0.0)):
+			p.hidden_hit = true
+			p.extra_blocks = 2
+			add_cash(-int(deal.get("hidden_damage_cost", 0)), "parts_cost")
+			salvage_stats.parts += int(deal.get("hidden_damage_cost", 0))
+	return {
+		"blocks_done": int(p.blocks_done),
+		"blocks_needed": int(deal.restore_blocks) + int(p.extra_blocks),
+		"hidden_hit": p.hidden_hit,
+	}
+
+
+func salvage_ready_to_sell() -> bool:
+	if salvage_projects.is_empty():
+		return false
+	var p: Dictionary = salvage_projects[0]
+	var deal := salvage_deal(p.deal_id)
+	return int(p.blocks_done) >= int(deal.restore_blocks) + int(p.extra_blocks)
+
+
+func roy_pricing_tier() -> Dictionary:
+	# How Roy has you filed decides the check he writes.
+	if has_flag("roy_marks_you_retail"):
+		return {"tier": "retail", "mult": 0.85}
+	if has_flag("roy_shows_real_stock") or ReputationLedger.get_rep("roy") >= 20:
+		return {"tier": "respect", "mult": 1.15}
+	return {"tier": "neutral", "mult": 1.0}
+
+
+func sell_salvage() -> int:
+	if not salvage_ready_to_sell():
+		return 0
+	var p: Dictionary = salvage_projects[0]
+	var deal := salvage_deal(p.deal_id)
+	var tier := roy_pricing_tier()
+	var sale := int(round(float(deal.base_sale_value) * float(tier.mult)))
+	add_cash(sale, "repair_salvage_revenue")
+	salvage_stats.sold += sale
+	salvage_projects.erase(p)
+	var net: int = salvage_stats.sold - salvage_stats.bought - salvage_stats.parts
+	if net > 0:
+		ReputationLedger.apply_effects([
+			{"op": "rep_delta", "npc": "gus", "value": 4},
+			{"op": "rep_delta", "npc": "roy", "value": 2},
+			{"op": "flag_set", "flag": "salvage_flip_success"},
+			{"op": "flag_set", "flag": "gus_respects_eye"},
+		])
+	else:
+		ReputationLedger.apply_effects([
+			{"op": "flag_set", "flag": "salvage_flip_bust"},
+		])
+	return sale
 
 
 func find_contract_template(contract_id: String) -> Dictionary:

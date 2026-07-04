@@ -1,0 +1,24 @@
+{
+  "_schema": "Gus flags you down: something came into the yard. Fires the salvage offers; the inspection/buy flow lives on the salvage yard screen. Gus does three-word sentences. Text is scratch placeholder awaiting Director wording (law 6). Blanks GY1-GY2.",
+  "_status": "placeholder_awaiting_director",
+  "id": "gus_yard_deal",
+  "npc": "gus",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "speaker": "gus",
+      "emotion": "neutral",
+      "text": "[BLANK GY1 — Gus, minimal words: something came in, worth a look, he can hold it till Friday. He doesn't sell it; he just states it exists. Awaiting Director.]",
+      "options": [
+        { "text": "\"I'll come look.\"", "goto": "closer" },
+        { "text": "\"Not this week, Gus.\"", "goto": "_end" }
+      ]
+    },
+    "closer": {
+      "speaker": "gus",
+      "emotion": "neutral",
+      "text": "[BLANK GY2 — Gus's entire sales pitch, three words or fewer. Awaiting Director.]",
+      "options": [{ "text": "(Head to the yard)", "goto": "_end" }]
+    }
+  }
+}

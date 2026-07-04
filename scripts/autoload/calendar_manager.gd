@@ -54,8 +54,9 @@ func advance_day() -> void:
 	GameState.add_inventory("eggs", GameState.chickens)
 	day += 1
 	block = 0
-	# 7. Contract deadlines checked against the new day
+	# 7. Contract deadlines checked against the new day; Gus's hold expires
 	GameState.check_contract_deadlines()
+	GameState.expire_salvage_offers()
 	EventBus.day_advanced.emit(day)
 	EventBus.time_block_changed.emit(block)
 	if day > RUN_LENGTH_DAYS:
@@ -93,5 +94,7 @@ func _schedule_event() -> void:
 			continue
 		if t.get("once", false):
 			GameState.set_flag("event_fired_" + ev.get("id", ""))
+		if ev.get("action", "") == "salvage_offers":
+			GameState.create_salvage_offers()
 		EventBus.event_triggered.emit(ev)
 		return

@@ -14,7 +14,7 @@ const SPREADSHEET_TARGETS := {
 const MISSING_SYSTEMS := {
 	"old_school": "legacy contract premium rarely reachable by bot (Marge >= 40); weather intuition has no mechanical value yet",
 	"it_nephew": "market-timing edge (model prices 1.15x), automation perks, trust questline, incompetence costs beyond labor mult",
-	"mechanic": "salvage/auction flip (~$750 in model), cheaper self-repair, restoration income; repair contracts LIVE as of 2026-07-03",
+	"mechanic": "cheaper self-repair on own equipment; repair contracts + salvage flip BOTH LIVE as of 2026-07-03 - identity complete",
 }
 const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
 const COST_KEYS := ["order_seed_fuel", "labor_premium", "repair_costs", "penalties", "travel_fuel"]
@@ -54,6 +54,12 @@ func _ready() -> void:
 		for crop in r.harvests.keys():
 			harvest_bits.append("%s %d" % [crop, r.harvests[crop]])
 		print("  harvested: " + (" | ".join(harvest_bits) if not harvest_bits.is_empty() else "nothing") + "  (untracked: missed-opportunity cost)")
+		var s: Dictionary = r.salvage
+		if int(s.get("bought", 0)) > 0:
+			print("  salvage:  bought $%d | parts $%d | gross sale $%d | NET $%d | blocks %d | Roy tier: %s | Gus respect: %s" % [
+				s.bought, s.parts, s.sold, int(s.sold) - int(s.bought) - int(s.parts),
+				s.blocks, r.roy_tier, "yes" if r.gus_respect else "no",
+			])
 		print("  MISSING SYSTEMS: " + MISSING_SYSTEMS.get(bg, ""))
 	print("")
 	get_tree().quit(failures)
@@ -75,6 +81,9 @@ func _run_sim(bg: String) -> Dictionary:
 		"ledger": GameState.ledger.duplicate(),
 		"harvests": GameState.harvest_log.duplicate(),
 		"downtime": GameState.downtime_days,
+		"salvage": GameState.salvage_stats.duplicate(),
+		"roy_tier": GameState.roy_pricing_tier().tier,
+		"gus_respect": GameState.has_flag("gus_respects_eye"),
 	}
 
 
@@ -120,6 +129,15 @@ func _bot_act() -> void:
 		if GameState.has_flag("baler_fixed") and GameState.active_contract("baler_repair").is_empty() and not GameState.has_flag("repair_contract_done"):
 			GameState.accept_contract("baler_repair")
 		GameState.work_repair_job()
+		# Judgment call, botted: buy the straight-framed rake, walk away
+		# from the painted-over mower
+		for o in GameState.salvage_offers.duplicate():
+			if o.deal_id == "hay_rake":
+				GameState.buy_salvage("hay_rake")
+		if GameState.salvage_ready_to_sell():
+			GameState.sell_salvage()
+		elif not GameState.salvage_projects.is_empty():
+			GameState.work_salvage()
 	# Sell whatever's left at today's prices
 	for commodity in GameState.inventory.keys():
 		var units: int = GameState.inventory[commodity]
