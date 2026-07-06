@@ -3,7 +3,7 @@ extends Control
 ## Shared UI base. Dress-pass rules (Director, 2026-07-03): readability first,
 ## Ash Creek tone second, style third, animation last. County office paperwork,
 ## farm ledger, co-op board — worn, practical, legible. Never parchment,
-## never slick, never cute. Palette: docs/DIRT_MONEY_ART_DIRECTION.md.
+## never slick, never cute. Palette: docs/archive/DIRT_MONEY_ART_DIRECTION.md.
 
 const BG_COLOR := Color("241c14")        # deep coffee — the desk
 const PANEL_COLOR := Color("362a1e")     # coffee — the paperwork
