@@ -39,3 +39,21 @@
 - No sense of progression or guidance; "I'm lost" → grow-time bug fixed, goal/suggestion lines.
 - Dialogue tone wrong ("swallows" line) → Director now writes all prose (law).
 - Wants visuals/flowcharts over text explanations.
+
+## 2026-07-06 — Director, playtest of the (untested) depth pass — HARSH, and right
+- Played old_school to Day 30: ended $525 cash, note still $6560. "I couldn't notice anything you
+  did other than take away the pictures." The systems were real but invisible + buggy.
+- "Why can't I fix the equipment here in the field where it says it's down?" → breakdown popup was
+  hidden behind open panels; field panel had no fix action. FIXED: popup evicts any panel; fix
+  actions in the field inspector too.
+- "I can't fertilize... figured I'd put it on credit. No situation where farmers are not fertilizing."
+  → FIXED: input financing (fertilize/treat/repair/plant/harvest all on the note).
+- "Day 21 and there is literally nothing I can do in the field." → FIXED: Grange jobs board + county
+  work fills the mid-game; morning report shows what's worth doing.
+- "What does it mean that the field took storm damage? That seems like that's all that happens." →
+  FIXED: storm vs drought read differently; more weather texture surfaced. (Deeper weather variety
+  is still thin — flagged.)
+- "Day 26, hay says 6 days to ready — no way that gets harvested." → FIXED: the calendar can't lie now.
+- Equipment felt purposeless / no good-better-best → condition drives everything now + Roy's floor
+  sells better iron. Verdict pending re-play.
+- Full reins granted for the flesh-out. All new prose is AI-drafted, awaiting his curation pass.

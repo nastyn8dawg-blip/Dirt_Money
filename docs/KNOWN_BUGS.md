@@ -1,22 +1,26 @@
 # KNOWN BUGS & ROUGH EDGES (update every session; delete only when verified fixed)
 
 ## Open
-- **UNTESTED ON THIS DEV BOX (2026-07-06):** the entire equipment/debt/breakdown pass was written
-  on the Mac, which has no Godot install. Every changed file is GDScript-parse-clean (gdtoolkit)
-  and logic-reviewed, but NOT run. First Windows action: `godot --headless res://tests/autoplay.tscn`
-  (must complete 30 days for all three backgrounds) and `res://tests/smoke_test.tscn`, then hand-play
-  a breakdown and a debt paydown.
-- **BALANCE FLAG (needs Director call):** `baler_rusty` starts at `engine: 0` → once condition drives
-  breakdowns, hay orders (baler-serviced) carry a high failure chance from day one, for OLD SCHOOL too
-  (east field = hay), not just Mechanic. This is "the dead baler is a project" by design, but may make
-  old_school hay feel punishing. Options: start the baler less-dead, gate hay behind a baler fix, or
-  give non-Mechanics a functional baler. Deferred to Phase 5 economy re-derivation.
-- Save/load does not persist `equipment_owned` (condition/neglect) — a loaded game reads all iron as
-  "fine" with no breakdown history until a fresh run reseeds. No crash (accessors degrade to neutral),
-  but mid-run saves lose equipment state. Same known gap class as salvage/event_last.
-- The old `breakdown_choice.json` Roy dialogue is now unreachable (calendar no longer routes to it;
-  the in-HUD breakdown panel replaced it). Left in /data for possible reuse as post-"Call Dealer"
-  flavor — not wired. Delete or repurpose later.
+- **BALANCE FLAG (needs Director call):** `baler_rusty` starts near-dead → hay orders carry a high
+  early breakdown chance, for OLD SCHOOL too (east = hay), not just Mechanic. By design ("dead baler
+  = the Mechanic's project") but may feel punishing for a lifer. Options: less-dead start, gate hay
+  behind a baler fix, or buy the working baler on Roy's floor ($1600, stocked). Decide in re-derivation.
+- Bot spread is still deeply negative (NET ~−4500 to −5600 from −6800). Expected — the bot plays
+  sensibly not optimally, and numbers are placeholder. It's the re-derivation's input, not a bug.
+- Old `breakdown_choice.json` Roy dialogue is unreachable now (in-HUD panel replaced it). Left in
+  /data unused; delete or repurpose as post-"Call Dealer" flavor later.
+
+## Fixed 2026-07-06 (flesh-out pass, verified on Godot 4.7 — both suites exit 0)
+- Breakdown popup never surfaced (hidden behind any open panel) → `_detail_kind`, force-open/evict.
+- One breakdown stamped "machine down" on every field → `_field_warning` filters by field.
+- Literal `%%` in field-care buttons → `%`.
+- Hay regrew into a window it could never harvest → `can_finish_by_season` guard; doomed plants unoffered.
+- Cash-starved by day 4, couldn't fertilize → input financing on the note.
+- Grange charged fuel for nothing → jobs board.
+- "Storm damage" was one flat note → data-driven per-cause stress language.
+- Day-to-day changes invisible → Morning Report.
+- Save/load dropped equipment/ledger/salvage/etc. → save v2 (v1 still loads).
+- Condition 0 read as "failing" for machines that lack a subsystem → 0 = N/A, excluded from math.
 - Marge's deadline call says "Friday" (canon line) but a contract accepted late can land on
   another weekday. Cosmetic; revisit if playtests notice.
 - IT timing diagnostics show 0 holds on the single harness seed — need multi-seed runs before

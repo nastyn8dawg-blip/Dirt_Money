@@ -13,9 +13,10 @@ Headline feature: **County Memory — "Ash Creek remembers."** Distillation: *Fr
 enthusiasm. Friendship is time.* Pacing law: no mechanic expands faster than county memory.
 
 ## Phase
-Phase 1 vertical slice. **SCOPE FREEZE ACTIVE**: no new crops, NPCs, locations, livestock, or
-economic identities without explicit Director approval. No background rebalancing (numbers are
-DIAGNOSTIC ONLY). Goal: prove three runs through the same county feel different enough to replay.
+Phase 1 vertical slice. **SCOPE FREEZE LIFTED 2026-07-06** for the depth/flesh-out pass (this WAS the
+post-freeze work). Numbers still DIAGNOSTIC/PLACEHOLDER until the economy re-derivation. Goal: prove
+three runs through the same county feel different enough to replay — and now, that choices move the
+outcome (debt, iron, jobs).
 
 ## Backgrounds (identities, not stat sheets)
 - Old School: trust + steady farming; legacy contracts; reads fields/weather; starts liked, poor.
@@ -23,7 +24,9 @@ DIAGNOSTIC ONLY). Goal: prove three runs through the same county feel different 
 - Mechanic: machines earn (repair contracts + salvage flips), never crop superiority.
 
 ## Hard rules (full text in CLAUDE.md — these are the ones sessions forget)
-- Director authors every player-facing word. Claude ships structure + numbered [BLANK]s.
+- Prose: AI may now DRAFT player-facing text at build time (ruling 2026-07-06), tagged
+  `ai_draft_needs_director_curation` — Director still curates every word before it's final. Runtime
+  stays zero-AI/offline (law #1 intact).
 - One-cycle season: plant windows corn D6 / soy D10 / hay D18 (3 cuts max). Missing = strategy.
 - Conversations: situation → choice → check → result → reputation → gossip. Failures are content.
 - Relationship grammar: distrusted 1-2 sentences … friend initiates. Length IS warmth.
@@ -32,7 +35,18 @@ DIAGNOSTIC ONLY). Goal: prove three runs through the same county feel different 
 - Perk doors sound like competence, not magic.
 - UI: county office paperwork, not parchment, not slick. Palette in ART_DIRECTION.md.
 
-## Current status (one paragraph)
+## Current status (2026-07-06 flesh-out pass — RUN + GREEN on Godot 4.7)
+Branch `feedback-depth-stakes-life`. The Director's two playtest rounds are addressed AND executed
+(smoke + autoplay exit 0; Godot 4.7 now installed on the Mac via brew). Shipped: debt is payable
+(`pay_debt`/`net_worth`), equipment condition drives breakdowns/yield/cost, breakdown is an in-HUD
+popup from the machine, the calendar can't lie (no doomed plants/regrows), input financing on Earl's
+note, a **Morning Report** (the legibility keystone), a **Grange jobs board** + shed maintenance for
+the mid-game, **Roy's dealer floor** (buy/trade iron), consumables, finished dialogue + gossip banks,
+and UI motion. ALL new prose is `ai_draft_needs_director_curation`. Next: Director hand-play +
+curation, then the economy re-derivation (numbers are still placeholder; bot NET spread ~−4500/−5300/
+−4900 from −6800 start — the spread exists, tuning it toward net-positive is the remaining lever).
+
+## (prior) Current status (one paragraph)
 Farm view shipped: clickable field parcels + buildings, stable right-side inspector panel.
 Field care, morning contacts, diner leads live. 2026-07-04: salvage fully legible (shared
 project block at shed + yard, purchase confirmation, badges — Director canon wording) and
@@ -44,7 +58,7 @@ in farm_hud. Verdict "right direction"; awaiting next playtest + confirm on one 
 
 ## Do not waste time rediscovering
 - Balance harness: `godot --headless --path . res://tests/autoplay.tscn` (drift + ledger +
-  identity diagnostics). Smoke: `res://tests/smoke_test.tscn`. Godot at
+  identity diagnostics). Smoke: `res://tests/smoke_test.tscn`. Godot 4.7 runs on the Mac now (brew --cask godot) AND at
   `%LOCALAPPDATA%\Microsoft\WinGet\Links\godot_console.exe`.
 - Drift is expected: OS −24% (legacy premium unreached by bot), IT −28% (care costs + zero
   timing holds on harness seed), ME −5% (identity complete). Field-care costs are unmodeled in

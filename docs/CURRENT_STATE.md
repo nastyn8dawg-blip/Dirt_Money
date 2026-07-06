@@ -1,23 +1,39 @@
 # CURRENT STATE — 2026-07-06 (update at end of every session)
 
-## NEW: Depth/stakes pass (2026-07-06 — freeze lifted; PARSE-CLEAN, NOT YET RUN on Windows)
-Branch `feedback-depth-stakes-life`. Addresses the Director's six-part playtest feedback. All files
-gdtoolkit-parse-clean + logic-reviewed on the Mac (no Godot here) — **must be run on Windows before
-trusting** (see KNOWN_BUGS top).
-- **Debt is fightable now.** `pay_debt()` bridges cash→note (was un-payable — only ever grew);
-  paying reduces future interest. `net_worth()` (starts −6800) surfaced on HUD status + report card;
-  verdict reframed as the win, note as pressure. Farmhouse panel = "pay down the note" UI.
-- **Equipment finally matters.** Condition (mutable `equipment_owned`, seeded each run) drives:
-  breakdown odds + severity, field yield (`field_yield_units`), and work cost (single source
-  `order_cost()` — HUD + charge can't drift). Daily `tick_equipment_wear()` on machines used.
-- **Breakdowns are a popup from the machine** (auto-opening farm_hud panel, NOT a Roy call):
-  Keep Running / Call Dealer / Fix It Yourself (+ salvaged part). Cheap/mid/expensive tiers with
-  distinct cost+downtime+damage. "Keep running" compounds damage + `neglect_streak`; 3 ignores →
-  forced expensive failure. (Built in-HUD, not the separate modal the plan specced — risk call.)
-- **Salvage has a purpose:** restored-but-unsold project → strip for a cheap repair part
-  (`yields_parts_for`, `has/consume_salvaged_part`), sell-vs-parts tension; the dead baler loop.
-- Harness (`autoplay.gd`) updated: net worth + debt-paid reporting, bot pays down note when flush,
-  bot resolves breakdowns via new dealer/wait modes. Numbers still PLACEHOLDER (Phase 5 re-derive).
+## DEPTH + FLESH-OUT PASS (2026-07-06 — freeze lifted; RUN + GREEN on Godot 4.7, Mac)
+Branch `feedback-depth-stakes-life`. Two rounds of the Director's playtest feedback, now actually
+executed: `godot --headless res://tests/{smoke_test,autoplay}.tscn` both exit 0. Godot 4.7 installed
+on the Mac (`brew --cask godot`), so everything RAN, not just parsed. 4 bisectable commits. Every
+AI-authored string tagged `ai_draft_needs_director_curation`.
+
+**Spine (debt, iron, calendar):**
+- **Debt is fightable.** `pay_debt()` bridges cash→note (was un-payable). `net_worth()` (starts
+  −6800) on HUD + report card; verdict is the win, note is pressure. Flags note_under_6000/4000/
+  cleared feed gossip + Earl.
+- **Equipment matters.** Mutable `equipment_owned` condition drives breakdown odds+severity, yield,
+  work cost (`order_cost()` single source). Daily wear on used machines. Condition 0 = "no such
+  subsystem" (baler has no engine) — excluded from all math.
+- **Breakdown = popup from the machine** that EVICTS any open panel (the bug that hid it is fixed);
+  also actionable from the field panel. 3 severity tiers; keep-running compounds → forced expensive
+  failure after 3 ignores.
+- **Calendar is honest:** doomed plants aren't offered; hay stops regrowing when the next cut can't
+  land. Storm vs drought read differently (data-driven stress causes).
+
+**Starve + void fixes:**
+- **Input financing:** plant/harvest/fertilize/treat/repair ride Earl's note (ruling reversed); prep
+  + speculation stay cash. Day-4 wall gone.
+- **Morning Report:** auto-narrates money/interest/crops/iron/warnings daily — the legibility keystone.
+- **Grange jobs board** (`data/jobs.json`) + shed **maintenance** habit loop: the mid-game void pays now.
+- **Roy's dealer floor** (`roy_dealer.gd`): buy/trade better iron, replace-in-slot. Good/better/best real.
+- **Consumables** (`data/items.json`): 4 items, each one term in an existing chain (roll-then-scale).
+- **Dialogue:** placeholder trees finished in voice; 7 flag-keyed gossip banks; text_rules inline lines.
+- **UI motion:** crossfades, day-card beat, panel fade, press feedback, parcel hover.
+
+**Harness spread (3 seeds/bg, end NET = cash − note; started −6800):**
+old_school −5160/−4598/−4441 · it_nephew −5640/−5298/−4861 · mechanic −4945/−4937/−4817.
+Spread EXISTS now (choices move it); bot claws ~$1.5–2.4k net back + pays real debt. Still negative
+because the bot plays sensibly-not-optimally AND numbers are PLACEHOLDER. **Economy re-derivation
+(skilled run → approaches net-positive) is the remaining big lever — deferred, see NEXT_ACTIONS.**
 
 ## Shipped and working (all tests green, pushed to main)
 - Farm view: clickable parcels (stage-colored) + farmhouse/barn/coop/shed + road/diner/Hollis

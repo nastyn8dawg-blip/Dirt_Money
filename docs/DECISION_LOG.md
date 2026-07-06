@@ -68,3 +68,25 @@
 - 2026-07-06 — Salvage yard given a purpose: a RESTORED-but-unsold project can be stripped for a
   cheap repair part (yields_parts_for) — sell-for-cash vs. keep-for-parts tension. Ties salvage ↔
   equipment ↔ breakdowns into one loop (the dead baler is the Mechanic's project).
+- 2026-07-06 (playtest 2) — Full creative reins granted ("you know what I want; flesh it out").
+  Root of the bad playtest: the depth systems were INVISIBLE (no morning legibility) and buggy
+  (breakdown popup hidden behind panels, one breakdown flagged every field, hay lied about regrow,
+  cash-starved by day 4). Fixed all; added the missing loops.
+- 2026-07-06 — Input financing: ALL production inputs ride Earl's note (plant, harvest, fertilize,
+  treat, repair) — reverses the 2026-07-04 planting-stays-cash rule. Director: "no situation where
+  farmers are not fertilizing." Speculation (salvage, prep, upgrades, consumables) stays cash.
+  Revert switch = FINANCEABLE_ACTIONS list + the kind check in issue_field_order.
+- 2026-07-06 — The calendar never lies: no plant/regrow is offered that can't finish by Day 30
+  (can_finish_by_season). Hard block, not a warning.
+- 2026-07-06 — Morning Report adopted as the legibility keystone: every day narrates money, interest,
+  crops, iron, and warnings. The answer to "I couldn't notice anything you did."
+- 2026-07-06 — Grange Hall is a day-labor jobs board (was non-functional); downtime becomes choosing
+  which work. Shed maintenance (grease & service) is the equipment-care habit loop.
+- 2026-07-06 — Roy sells equipment: buy better iron, trade-in MANDATORY, replace-in-slot (no fleets,
+  no parts-mules). Financeable on the note (it's production). equipment.json condition 0 = subsystem
+  not applicable to that machine (baler has no engine), excluded from all condition math.
+- 2026-07-06 — AI authored player-facing prose this pass (jobs, items, stress language, morning-report
+  templates, finished dialogue trees, gossip banks) — ALL tagged ai_draft_needs_director_curation.
+  Build-time only; shipped game still offline/deterministic (law #1 intact).
+- 2026-07-06 — Godot 4.7 installed on the Mac dev box; the pass is RUN-verified (smoke + autoplay
+  exit 0), ending the parse-only-on-Mac risk from the first depth pass.
