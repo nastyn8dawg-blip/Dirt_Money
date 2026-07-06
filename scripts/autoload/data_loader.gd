@@ -18,6 +18,9 @@ var gossip_banks: Array = []
 var endings: Array = []
 var salvage_deals: Array = []
 var leads: Array = []
+var jobs: Array = []
+var items: Array = []
+var equipment_dealer_stock: Array = []
 
 
 func pick_lead() -> String:
@@ -106,6 +109,11 @@ func load_all() -> void:
 	}
 	for e in d.get("equipment", []):
 		equipment[e.id] = e
+	equipment_dealer_stock = d.get("dealer_stock", [])
+	# Dealer stock is also equipment (once bought) — register templates so
+	# condition/summary math works the moment a machine changes hands
+	for e in equipment_dealer_stock:
+		equipment[e.id] = e
 	market = _read_json("res://data/market.json")
 	d = _read_json("res://data/perks.json")
 	for t in d.get("trees", []):
@@ -118,6 +126,8 @@ func load_all() -> void:
 	for b in d.get("backgrounds", []):
 		backgrounds[b.id] = b
 	strings = _read_json("res://data/strings.json")
+	jobs = _read_json("res://data/jobs.json").get("jobs", [])
+	items = _read_json("res://data/items.json").get("items", [])
 	gossip_banks = _read_json("res://data/gossip.json").get("banks", [])
 	endings = _read_json("res://data/endings.json").get("endings", [])
 	salvage_deals = _read_json("res://data/salvage.json").get("deals", [])

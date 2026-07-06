@@ -22,6 +22,12 @@ var _breakdown_rng := RandomNumberGenerator.new()
 # repairs) and feeds breakdown odds, yield, and work cost. neglect_streak tracks
 # "keep running" abuse so ignoring a failure compounds.
 var equipment_owned: Dictionary = {}     # eq_id -> {condition:{subsystem->0-100}, neglect_streak:int}
+# Which machine fills each working slot — Roy's floor swaps these (replace-in-
+# slot, no fleets: trade-in is mandatory on purchase, Director 2026-07-06)
+var equipment_slots: Dictionary = {"tractor": "tractor_old", "baler": "baler_rusty", "truck": "truck_farm"}
+var jobs_worked: Dictionary = {}         # job_id -> times worked (Grange day labor)
+var jobs_done_today: Array = []          # job_ids already worked today
+var items_owned: Dictionary = {}         # item_id -> count (consumables)
 
 # Diagnostic ledger: every cash movement is categorized at the source so the
 # balance harness can separate bad balance from incomplete identity.
@@ -68,13 +74,21 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	contracts_missed = 0
 	perks = []
 	pending_breakdown = {}
+	# You start with the inherited iron, one machine per slot — Roy's floor
+	# holds the rest (dealer stock shares the template registry, so seed from
+	# the slots, not the whole catalog)
+	equipment_slots = {"tractor": "tractor_old", "baler": "baler_rusty", "truck": "truck_farm"}
 	equipment_owned = {}
-	for eq_id in DataLoader.equipment.keys():
-		var tmpl: Dictionary = DataLoader.equipment[eq_id]
+	for slot in equipment_slots.keys():
+		var eq_id: String = equipment_slots[slot]
+		var tmpl: Dictionary = DataLoader.equipment.get(eq_id, {})
 		equipment_owned[eq_id] = {
 			"condition": (tmpl.get("condition", {}) as Dictionary).duplicate(true),
 			"neglect_streak": 0,
 		}
+	jobs_worked = {}
+	jobs_done_today = []
+	items_owned = {}
 	_breakdown_rng.seed = run_seed + 7
 	ledger = {}
 	harvest_log = {}
@@ -215,6 +229,10 @@ func progress_field_orders() -> void:
 				var sub: String = _equipment_worst_subsystem(eq_id)[0]
 				order.paused = true
 				pending_breakdown = {"order": order, "equipment": eq_id, "severity": sev, "subsystem": sub}
+				# A spare parts kit lowered the odds; when the machine quits
+				# anyway, the box gets opened (consumed).
+				if int(items_owned.get("spare_parts_kit", 0)) > 0:
+					items_owned["spare_parts_kit"] = int(items_owned["spare_parts_kit"]) - 1
 				EventBus.breakdown_triggered.emit(eq_id, sev)
 				continue
 		order.days_left -= 1
@@ -274,14 +292,23 @@ func tick_growth() -> void:
 		var f: Dictionary = fields[field_id]
 		if f.state == "growing":
 			f.days_to_ready = int(f.get("days_to_ready", 1)) - 1
-			# The field pushes back: weeds creep daily, bad weather stresses
-			f.weeds = mini(100, int(f.get("weeds", 0)) + _breakdown_rng.randi_range(4, 8))
+			# The field pushes back: weeds creep daily, bad weather stresses.
+			# Determinism rule: always ROLL the rng, then scale — never branch
+			# around an _rng call, or seeded runs stop being comparable.
+			var creep := _breakdown_rng.randi_range(4, 8)
+			if f.get("weed_shielded", false):
+				creep = int(round(creep * 0.5))   # pre-emergent (items.json)
+			f.weeds = mini(100, int(f.get("weeds", 0)) + creep)
 			if WeatherManager.current in ["storm", "drought"]:
-				f.stressed = true
-				# Remember WHAT hit it — storm and drought read differently
-				# in the field (playtest fix: "storm damage" was all one note)
-				if not f.has("stress_cause") or f.get("stress_cause", "") == "":
-					f.stress_cause = WeatherManager.current
+				if f.get("tarped", false):
+					# Row tarps eat one weather hit, then they're spent
+					f.tarped = false
+				else:
+					f.stressed = true
+					# Remember WHAT hit it — storm and drought read differently
+					# in the field (playtest fix: "storm damage" was one note)
+					if not f.has("stress_cause") or f.get("stress_cause", "") == "":
+						f.stress_cause = WeatherManager.current
 			if f.days_to_ready <= 0:
 				f.state = "ready"
 
@@ -372,6 +399,8 @@ func field_yield_units(f: Dictionary) -> int:
 		units *= 0.80
 	if f.get("stressed", false):
 		units *= 0.90
+	if f.get("premium_applied", false):
+		units *= 1.05   # premium blend (items.json) — one more term, same chain
 	units *= _equipment_condition_factor(_equipment_for_field_kind(f.get("crop", ""), "harvest"))
 	return int(round(units))
 
@@ -381,27 +410,38 @@ func field_yield_units(f: Dictionary) -> int:
 # until the Phase 5 economy re-derivation; the shapes are the point, not the
 # exact coefficients.
 
+func _applicable_subsystems(eq_id: String) -> Array:
+	# A template value of 0 means the machine doesn't HAVE that subsystem
+	# (the baler has no engine, the truck no hydraulics) — excluded from all
+	# condition math, damage, and repair.
+	var tmpl: Dictionary = DataLoader.equipment.get(eq_id, {}).get("condition", {})
+	var out: Array = []
+	for k in tmpl.keys():
+		if int(tmpl[k]) > 0:
+			out.append(k)
+	return out
+
+
 func _equipment_avg_condition(eq_id: String) -> float:
-	var owned: Dictionary = equipment_owned.get(eq_id, {})
-	var cond: Dictionary = owned.get("condition", {})
-	if cond.is_empty():
+	var cond: Dictionary = equipment_owned.get(eq_id, {}).get("condition", {})
+	var subs := _applicable_subsystems(eq_id)
+	if subs.is_empty():
 		return 100.0
 	var total := 0.0
-	for v in cond.values():
-		total += float(v)
-	return total / float(cond.size())
+	for k in subs:
+		total += float(cond.get(k, 100))
+	return total / float(subs.size())
 
 
 func _equipment_worst_subsystem(eq_id: String) -> Array:
-	# Returns [subsystem_name, value] of the worst-off subsystem (drives the
-	# summary label and which part is most likely to fail next).
-	var owned: Dictionary = equipment_owned.get(eq_id, {})
-	var cond: Dictionary = owned.get("condition", {})
+	# Returns [subsystem_name, value] of the worst-off APPLICABLE subsystem
+	# (drives the summary label and which part is most likely to fail next).
+	var cond: Dictionary = equipment_owned.get(eq_id, {}).get("condition", {})
 	var worst := ""
 	var worst_v := 101.0
-	for k in cond.keys():
-		if float(cond[k]) < worst_v:
-			worst_v = float(cond[k])
+	for k in _applicable_subsystems(eq_id):
+		if float(cond.get(k, 100)) < worst_v:
+			worst_v = float(cond.get(k, 100))
 			worst = k
 	return [worst, int(worst_v)] if worst != "" else ["", 100]
 
@@ -436,8 +476,8 @@ func _equipment_for_field_kind(crop_id: String, kind: String) -> String:
 	# when hauling contracts land.)
 	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
 	if kind == "harvest" and crop.get("multi_cut", false):
-		return "baler_rusty"
-	return "tractor_old"
+		return str(equipment_slots.get("baler", "baler_rusty"))
+	return str(equipment_slots.get("tractor", "tractor_old"))
 
 
 func _equipment_work_cost_mult(eq_id: String) -> float:
@@ -460,7 +500,8 @@ func _breakdown_chance(eq_id: String) -> float:
 	var worst: int = _equipment_worst_subsystem(eq_id)[1]
 	var cond_mult := 1.0 + (100.0 - float(worst)) * 0.02   # worst 100 ->1.0, 0 ->3.0
 	var neglect_mult := 1.0 + 0.35 * float(neglect)
-	return clampf(base * cond_mult * neglect_mult, 0.0, 0.9)
+	var kit_mult := 0.75 if int(items_owned.get("spare_parts_kit", 0)) > 0 else 1.0
+	return clampf(base * cond_mult * neglect_mult * kit_mult, 0.0, 0.9)
 
 
 func _roll_breakdown_severity(eq_id: String) -> String:
@@ -497,11 +538,12 @@ func _repair_subsystem(eq_id: String, sub: String, to_value: int) -> void:
 
 
 func _damage_subsystem(eq_id: String, sub: String, amount: int) -> void:
-	if sub == "" or not equipment_owned.has(eq_id):
+	if sub == "" or not equipment_owned.has(eq_id) or not sub in _applicable_subsystems(eq_id):
 		return
 	var cond: Dictionary = equipment_owned[eq_id].get("condition", {})
 	if cond.has(sub):
-		cond[sub] = maxi(0, int(cond[sub]) - amount)
+		# Floor at 1, not 0 — 0 is reserved for "machine doesn't have this part"
+		cond[sub] = maxi(1, int(cond[sub]) - amount)
 		EventBus.equipment_condition_changed.emit(eq_id, sub, int(cond[sub]))
 
 
@@ -517,12 +559,197 @@ func tick_equipment_wear() -> void:
 		if not equipment_owned.has(eq_id):
 			continue
 		var cond: Dictionary = equipment_owned[eq_id].get("condition", {})
-		var subs: Array = cond.keys()
+		var subs := _applicable_subsystems(eq_id)
 		if subs.is_empty():
 			continue
 		var sub: String = subs[_breakdown_rng.randi_range(0, subs.size() - 1)]
-		cond[sub] = maxi(0, int(cond[sub]) - 1)
+		cond[sub] = maxi(1, int(cond.get(sub, 100)) - 1)
 		EventBus.equipment_condition_changed.emit(eq_id, sub, int(cond[sub]))
+
+
+# ---------- Roy's floor: good/better/best made purchasable ----------
+
+func trade_in_value(eq_id: String) -> int:
+	# Roy pays scrap-plus, filed by how he has you filed. PLACEHOLDER
+	# coefficients pending the economy re-derivation.
+	if not equipment_owned.has(eq_id):
+		return 0
+	var slot: String = DataLoader.equipment.get(eq_id, {}).get("slot", "tractor")
+	var per_point := 8 if slot == "tractor" else 4
+	var tier := roy_pricing_tier()
+	return int(round(_equipment_avg_condition(eq_id) * per_point * float(tier.mult)))
+
+
+func dealer_stock_available() -> Array:
+	# What's on Roy's floor that you don't already own.
+	var out: Array = []
+	for stock in DataLoader.equipment_dealer_stock:
+		if not equipment_owned.has(stock.get("id", "")):
+			out.append(stock)
+	return out
+
+
+func buy_equipment(stock_id: String, on_credit: bool = false) -> bool:
+	# Replace-in-slot, trade-in mandatory (Director ruling 2026-07-06: no
+	# fleets, no parts-mules — you run one machine per job). Financeable:
+	# iron that works is a production input; the note ceiling is the guardrail.
+	var stock: Dictionary = {}
+	for s in DataLoader.equipment_dealer_stock:
+		if s.get("id", "") == stock_id:
+			stock = s
+	if stock.is_empty() or equipment_owned.has(stock_id):
+		return false
+	var slot: String = stock.get("slot", "")
+	var old_id: String = equipment_slots.get(slot, "")
+	if old_id == "" or not equipment_owned.has(old_id):
+		return false
+	var net: int = maxi(0, int(stock.get("price", 0)) - trade_in_value(old_id))
+	var financed: bool = on_credit and bool(stock.get("financeable", false)) and can_finance(net)
+	if cash < net and not financed:
+		return false
+	if financed:
+		var charge := finance_charge(net)
+		debt += charge
+		ledger["orders_financed"] = int(ledger.get("orders_financed", 0)) - net
+		if charge > net:
+			ledger["financing_fees"] = int(ledger.get("financing_fees", 0)) - (charge - net)
+	else:
+		add_cash(-int(stock.get("price", 0)), "equipment_purchase")
+		add_cash(trade_in_value(old_id), "equipment_trade_in")
+	# The old machine leaves on Roy's trailer; the new one takes the slot
+	equipment_owned.erase(old_id)
+	equipment_owned[stock_id] = {
+		"condition": (stock.get("condition", {}) as Dictionary).duplicate(true),
+		"neglect_streak": 0,
+	}
+	equipment_slots[slot] = stock_id
+	set_flag("bought_better_iron")
+	ReputationLedger.apply_effects([{"op": "rep_delta", "npc": "roy", "value": 2}])
+	EventBus.money_changed.emit(cash, debt)
+	return true
+
+
+# ---------- Consumables: small purchases, real hedges ----------
+
+func item_def(item_id: String) -> Dictionary:
+	for item in DataLoader.items:
+		if item.get("id", "") == item_id:
+			return item
+	return {}
+
+
+func buy_item(item_id: String) -> bool:
+	# Supplies are cash-only — the note is for production, not comforts
+	# (Director ruling 2026-07-06).
+	var item := item_def(item_id)
+	if item.is_empty() or cash < int(item.get("price", 0)):
+		return false
+	add_cash(-int(item.get("price", 0)), "item_costs")
+	items_owned[item_id] = int(items_owned.get(item_id, 0)) + 1
+	return true
+
+
+func use_item_on_field(item_id: String, field_id: String) -> bool:
+	if int(items_owned.get(item_id, 0)) <= 0 or not fields.has(field_id):
+		return false
+	var item := item_def(item_id)
+	var f: Dictionary = fields[field_id]
+	match item.get("effect_type", ""):
+		"yield_mult":
+			if f.get("premium_applied", false) or f.state != "growing":
+				return false
+			f.premium_applied = true
+		"stress_protection":
+			if f.get("tarped", false) or f.state != "growing":
+				return false
+			f.tarped = true
+		"weed_protection":
+			if f.get("weed_shielded", false) or f.state != "growing":
+				return false
+			f.weed_shielded = true
+		_:
+			return false
+	items_owned[item_id] = int(items_owned[item_id]) - 1
+	return true
+
+
+# ---------- Grange day labor: downtime becomes choosing which work ----------
+
+func available_jobs() -> Array:
+	# Today's board: right weekday, past min_day, not already worked today.
+	var out: Array = []
+	var today := CalendarManager.weekday_name()
+	for job in DataLoader.jobs:
+		if CalendarManager.day < int(job.get("min_day", 1)):
+			continue
+		if not today in job.get("days_available", []):
+			continue
+		if job.get("id", "") in jobs_done_today:
+			continue
+		out.append(job)
+	return out
+
+
+func job_pay(job: Dictionary) -> int:
+	# Your rate depends on who you are: a mechanic in Roy's shop, a lifer on
+	# a fence line, the nephew in Marge's ledger.
+	var mult := float(job.get("background_mult", {}).get(background_id, 1.0))
+	return int(round(float(job.get("pay", 0)) * mult))
+
+
+func work_job(job_id: String) -> Dictionary:
+	# A block of honest work: cash today, a handshake remembered. Caller
+	# spends the time block.
+	for job in DataLoader.jobs:
+		if job.get("id", "") != job_id:
+			continue
+		if not job in available_jobs():
+			return {}
+		var pay := job_pay(job)
+		add_cash(pay, "job_wages")
+		jobs_done_today.append(job_id)
+		jobs_worked[job_id] = int(jobs_worked.get(job_id, 0)) + 1
+		var effects: Array = []
+		var rep: Dictionary = job.get("rep", {})
+		if rep.has("npc"):
+			effects.append({"op": "rep_delta", "npc": rep.npc, "value": int(rep.get("delta", 1))})
+		if job.get("flag_set", "") != "":
+			effects.append({"op": "flag_set", "flag": job.flag_set})
+		ReputationLedger.apply_effects(effects)
+		var total := 0
+		for k in jobs_worked.keys():
+			total += int(jobs_worked[k])
+		if total >= 3:
+			set_flag("county_hand")   # the county notices a worker (gossip hook)
+		return {"pay": pay, "done_line": job.get("done_line", "")}
+	return {}
+
+
+func service_equipment(eq_id: String) -> bool:
+	# Grease and go over it: cheap upkeep that keeps small problems small.
+	# Raises the two worst subsystems, walks back one notch of neglect.
+	# Once per machine per day. Caller spends the block.
+	if not equipment_owned.has(eq_id) or cash < 25:
+		return false
+	var owned: Dictionary = equipment_owned[eq_id]
+	if int(owned.get("serviced_day", 0)) == CalendarManager.day:
+		return false
+	add_cash(-25, "maintenance_costs")
+	owned["serviced_day"] = CalendarManager.day
+	owned["neglect_streak"] = maxi(0, int(owned.get("neglect_streak", 0)) - 1)
+	var cond: Dictionary = owned.get("condition", {})
+	for i in range(2):
+		var worst := ""
+		var worst_v := 101
+		for sub in _applicable_subsystems(eq_id):
+			if int(cond.get(sub, 100)) < worst_v:
+				worst_v = int(cond.get(sub, 100))
+				worst = sub
+		if worst != "" and worst_v < 100:
+			cond[worst] = mini(100, int(cond[worst]) + 6)
+			EventBus.equipment_condition_changed.emit(eq_id, worst, int(cond[worst]))
+	set_flag("serviced_iron")
+	return true
 
 
 func has_salvaged_parts(subsystem: String) -> bool:

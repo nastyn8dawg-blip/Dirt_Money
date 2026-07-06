@@ -7,12 +7,12 @@ const NODES := [
 	{"id": "elevator", "name": "Grain Elevator", "screen": "market"},
 	{"id": "coop", "name": "Co-op / Feed Store", "screen": "contracts"},
 	{"id": "bank", "name": "Ash Creek Savings", "tree": "earl_talk"},
-	{"id": "dealer", "name": "Carver Equipment", "tree": "roy_talk"},
+	{"id": "dealer", "name": "Carver Equipment", "screen": "roy_dealer"},
 	{"id": "diner", "name": "The Diner", "tree": "patti_talk"},
 	{"id": "neighbor_farm", "name": "Hollis's Place", "tree": "hollis_baler"},
 	{"id": "vet", "name": "Vet / Livestock Supply", "tree": "dee_talk"},
 	{"id": "salvage", "name": "Weaver Salvage Yard", "screen": "salvage_yard"},
-	{"id": "grange", "name": "Grange Hall"},
+	{"id": "grange", "name": "Grange Hall", "screen": "grange"},
 ]
 const TRAVEL_FUEL_COST := 8
 
@@ -42,6 +42,8 @@ func _ready() -> void:
 		var b := make_button(grid, node.name, _travel_to.bind(node))
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Background-flavored map annotations (UI_SPEC: maps differ per background)
+		if node.id == "grange" and not GameState.available_jobs().is_empty():
+			b.text += "   [work posted]"
 		match GameState.background_id:
 			"old_school":
 				if node.id == "diner":

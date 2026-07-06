@@ -1,5 +1,5 @@
 {
-  "_schema": "Equipment. 6 condition subsystems (0-100). Mechanic sees all six; other backgrounds see summary_state derived from the worst subsystem (fine >60, worn >35, rough >15, failing <=15). Condition now DRIVES gameplay: breakdown odds (worse iron quits more), breakdown severity, field yield, and work cost. breakdown_profile weights the failure tier and its consequences. ALL NUMBERS PLACEHOLDER — Phase 5 economy re-derivation locks them (2026-07-06 freeze lift).",
+  "_schema": "Equipment. 6 condition subsystems (1-100; a template value of 0 means NOT APPLICABLE to that machine — the baler has no engine, the truck has no hydraulics — and is excluded from all condition math). Mechanic sees all applicable subsystems; other backgrounds see summary_state from the worst (fine >60, worn >35, rough >15, failing <=15). Condition DRIVES gameplay: breakdown odds, breakdown severity, field yield, and work cost. slot = which working role the machine fills (Roy's floor swaps within a slot, trade-in mandatory). dealer_stock = what Carver Equipment has on the floor. ALL NUMBERS PLACEHOLDER — economy re-derivation locks them (2026-07-06 freeze lift).",
   "subsystems": ["engine", "hydraulics", "transmission", "tires", "electrical", "attachments"],
   "summary_thresholds": { "fine": 60, "worn": 35, "rough": 15 },
   "breakdown_profile": {
@@ -10,22 +10,48 @@
   },
   "equipment": [
     {
-      "id": "tractor_old", "name": "The 2010 (inherited Harvestall)",
+      "id": "tractor_old", "name": "The 2010 (inherited Harvestall)", "slot": "tractor",
       "condition": { "engine": 55, "hydraulics": 40, "transmission": 62, "tires": 30, "electrical": 48, "attachments": 50 },
       "breakdown_base_chance": 0.08,
       "fuel_per_order_day": 45
     },
     {
-      "id": "baler_rusty", "name": "Rust-Belt Baler",
+      "id": "baler_rusty", "name": "Rust-Belt Baler", "slot": "baler",
       "condition": { "engine": 0, "hydraulics": 35, "transmission": 40, "tires": 55, "electrical": 20, "attachments": 45 },
       "breakdown_base_chance": 0.15,
       "fuel_per_order_day": 15
     },
     {
-      "id": "truck_farm", "name": "Farm Truck",
+      "id": "truck_farm", "name": "Farm Truck", "slot": "truck",
       "condition": { "engine": 70, "hydraulics": 0, "transmission": 65, "tires": 50, "electrical": 60, "attachments": 0 },
       "breakdown_base_chance": 0.04,
       "fuel_per_order_day": 20
+    }
+  ],
+  "dealer_stock": [
+    {
+      "id": "tractor_used_2014", "name": "2014 workhorse (honest hours)", "slot": "tractor",
+      "price": 2600, "financeable": true,
+      "condition": { "engine": 70, "hydraulics": 62, "transmission": 72, "tires": 60, "electrical": 66, "attachments": 64 },
+      "breakdown_base_chance": 0.05,
+      "fuel_per_order_day": 42,
+      "roy_line": "Not pretty. Pulls straight."
+    },
+    {
+      "id": "tractor_used_2018", "name": "2018 Harvestall (one owner)", "slot": "tractor",
+      "price": 4200, "financeable": true,
+      "condition": { "engine": 85, "hydraulics": 80, "transmission": 88, "tires": 70, "electrical": 82, "attachments": 78 },
+      "breakdown_base_chance": 0.03,
+      "fuel_per_order_day": 40,
+      "roy_line": "One owner, church on Sundays. I'd run it myself."
+    },
+    {
+      "id": "baler_solid", "name": "Field-ready round baler", "slot": "baler",
+      "price": 1600, "financeable": true,
+      "condition": { "engine": 0, "hydraulics": 75, "transmission": 70, "tires": 80, "electrical": 65, "attachments": 80 },
+      "breakdown_base_chance": 0.06,
+      "fuel_per_order_day": 15,
+      "roy_line": "It bales. That's the whole review."
     }
   ]
 }

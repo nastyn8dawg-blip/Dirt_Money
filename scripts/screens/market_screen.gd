@@ -63,3 +63,20 @@ func _refresh() -> void:
 			make_button(row, "Sell all", func():
 				EconomyManager.sell(cid, have)
 				_refresh())
+
+	# Sandy's shelf: supplies, cash only (items.json, 2026-07-06)
+	_list.add_child(HSeparator.new())
+	make_label(_list, "SANDY'S SHELF — supplies, cash only", 14, ACCENT)
+	for item in DataLoader.items:
+		if item.get("sold_at", "") != "market":
+			continue
+		var irow := HBoxContainer.new()
+		irow.add_theme_constant_override("separation", 10)
+		_list.add_child(irow)
+		make_label(irow, "%s — $%d — %s (you have %d)" % [
+			item.get("name", "?"), int(item.get("price", 0)), item.get("blurb", ""),
+			int(GameState.items_owned.get(item.get("id", ""), 0))], 13)
+		if GameState.cash >= int(item.get("price", 0)):
+			make_button(irow, "Buy", func():
+				GameState.buy_item(item.get("id", ""))
+				_refresh())

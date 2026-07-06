@@ -11,6 +11,8 @@ const SCREENS := {
 	"contracts": "res://scripts/screens/contracts_screen.gd",
 	"report_card": "res://scripts/screens/report_card.gd",
 	"salvage_yard": "res://scripts/screens/salvage_yard.gd",
+	"grange": "res://scripts/screens/grange_jobs.gd",
+	"roy_dealer": "res://scripts/screens/roy_dealer.gd",
 }
 
 var _current: Control = null

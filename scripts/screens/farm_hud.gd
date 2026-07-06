@@ -101,11 +101,10 @@ func _refresh() -> void:
 			var worst := 101
 			var worst_name := ""
 			for eq_id in GameState.equipment_owned.keys():
-				var cond: Dictionary = GameState.equipment_owned[eq_id].get("condition", {})
-				for sub in cond.keys():
-					if int(cond[sub]) < worst:
-						worst = int(cond[sub])
-						worst_name = "%s %s" % [DataLoader.equipment.get(eq_id, {}).get("name", eq_id), sub]
+				var pair: Array = GameState._equipment_worst_subsystem(eq_id)
+				if pair[0] != "" and int(pair[1]) < worst:
+					worst = int(pair[1])
+					worst_name = "%s %s" % [DataLoader.equipment.get(eq_id, {}).get("name", eq_id), pair[0]]
 			_flavor.text = "Shop ear: worst iron is %s at %d%%. You'd hear it going before anyone." % [worst_name, worst]
 	_suggest.text = "▶ " + _suggestion()
 	_rebuild_canvas()
@@ -400,6 +399,17 @@ func _open_field_detail(field_id: String) -> void:
 		_action_or_note(col, "Treat weeds/pests — $60 + a block — clears the pressure",
 			60, "Treatment runs $60.",
 			func(): acted.call("treat"), acted_credit.bind("treat"))
+		# Supplies from the barn (items.json): each is one button when held
+		var use_item := func(item_id: String):
+			GameState.use_item_on_field(item_id, field_id)
+			_close_detail()
+			_refresh()
+		if int(GameState.items_owned.get("premium_blend", 0)) > 0 and not f.get("premium_applied", false):
+			_action(col, "Spread the premium blend — from the barn — +5% yield", true, use_item.bind("premium_blend"))
+		if int(GameState.items_owned.get("row_tarps", 0)) > 0 and not f.get("tarped", false):
+			_action(col, "Tarp the rows — from the barn — absorbs one storm", true, use_item.bind("row_tarps"))
+		if int(GameState.items_owned.get("pre_emergent", 0)) > 0 and not f.get("weed_shielded", false):
+			_action(col, "Lay down pre-emergent — from the barn — slows the weeds", true, use_item.bind("pre_emergent"))
 		if f.get("stressed", false):
 			# Emergency repair protects an active crop → financeable (ruling
 			# 2026-07-04). "Patch runs" — canon, field-damage register.
@@ -525,6 +535,16 @@ func _open_barn() -> void:
 	if not any:
 		_wrap(col, "Empty. Fields fix that.", 14, ScreenBase.MUTED)
 	_wrap(col, "Sell at the Grain Elevator, or deliver against a contract at the Co-op.", 12, ScreenBase.MUTED)
+	# Supplies on the shelf (items.json) — used from the field inspector
+	var any_items := false
+	for item_id in GameState.items_owned.keys():
+		if int(GameState.items_owned[item_id]) > 0:
+			if not any_items:
+				col.add_child(HSeparator.new())
+				_wrap(col, "SUPPLIES", 13, ACCENT)
+				any_items = true
+			_wrap(col, "%s × %d — use it from a growing field's panel" % [
+				GameState.item_def(item_id).get("name", item_id), int(GameState.items_owned[item_id])], 13)
 
 
 func _open_coop() -> void:
@@ -547,10 +567,18 @@ func _open_shed() -> void:
 			ScreenBase.WARN if state in ["rough", "failing"] else CREAM)
 		if GameState.interface_flag("equipment_subsystems", false):
 			var cond: Dictionary = GameState.equipment_owned[eq_id].get("condition", {})
-			for sub in DataLoader.equipment_meta.get("subsystems", []):
+			for sub in GameState._applicable_subsystems(eq_id):
 				if cond.has(sub):
 					_wrap(col, "   %s: %d%%" % [sub, int(cond[sub])], 12,
 						ScreenBase.WARN if int(cond[sub]) < 35 else ScreenBase.GOOD)
+		# Grease and go over it — upkeep keeps small problems small (2026-07-06)
+		if int(GameState.equipment_owned[eq_id].get("serviced_day", 0)) == CalendarManager.day:
+			_wrap(col, "   Serviced today.", 12, ScreenBase.MUTED)
+		else:
+			_action(col, "Grease & service — $25 + a block", GameState.cash >= 25, func():
+				GameState.service_equipment(eq_id)
+				CalendarManager.spend_block()
+				_open_shed())
 	if not GameState.pending_breakdown.is_empty():
 		_wrap(col, "⚠ Something's down in the field.", 13, ScreenBase.WARN)
 		_action(col, "See to it", true, _open_breakdown_panel)

@@ -56,9 +56,11 @@ func advance_day() -> void:
 	GameState.add_inventory("eggs", GameState.chickens)
 	day += 1
 	block = 0
-	# 7. Contract deadlines checked against the new day; Gus's hold expires
+	# 7. Contract deadlines checked against the new day; Gus's hold expires;
+	# the Grange board turns over
 	GameState.check_contract_deadlines()
 	GameState.expire_salvage_offers()
+	GameState.jobs_done_today = []
 	# 8. Perk proof: each background earns its signature eye on Day 8
 	# (full perk trees are sprint 8; this is the unlocks-dialogue proof)
 	if day == 8:

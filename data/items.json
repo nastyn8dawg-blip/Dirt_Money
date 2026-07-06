@@ -1,0 +1,46 @@
+{
+  "_schema": "Purchasable consumables. effect_type is a CLOSED enum, each mapped to exactly one existing modifier site: yield_mult -> field_yield_units (field key premium_applied); stress_protection -> tick_growth (field key tarped, absorbs ONE storm/drought hit then consumed); weed_protection -> tick_growth creep (field key weed_shielded, halves creep for the cycle); breakdown_chance_mult -> _breakdown_chance (equipment-wide while a kit is owned; a kit is consumed when a breakdown fires anyway). sold_at: market (Sandy) | dealer (Roy). Cash only — supplies are optional, the note is for production (Director ruling 2026-07-06). Numbers PLACEHOLDER pending economy re-derivation.",
+  "_status": "ai_draft_needs_director_curation (2026-07-06)",
+  "items": [
+    {
+      "id": "premium_blend",
+      "name": "Premium fertilizer blend",
+      "price": 45,
+      "sold_at": "market",
+      "effect_type": "yield_mult",
+      "value": 1.05,
+      "target": "field",
+      "blurb": "Sandy swears by it. Sandy also sells it."
+    },
+    {
+      "id": "row_tarps",
+      "name": "Row tarps",
+      "price": 35,
+      "sold_at": "market",
+      "effect_type": "stress_protection",
+      "value": 1,
+      "target": "field",
+      "blurb": "One storm's worth of not losing sleep."
+    },
+    {
+      "id": "pre_emergent",
+      "name": "Pre-emergent herbicide",
+      "price": 40,
+      "sold_at": "market",
+      "effect_type": "weed_protection",
+      "value": 0.5,
+      "target": "field",
+      "blurb": "Weeds come anyway. Slower."
+    },
+    {
+      "id": "spare_parts_kit",
+      "name": "Spare parts kit",
+      "price": 60,
+      "sold_at": "dealer",
+      "effect_type": "breakdown_chance_mult",
+      "value": 0.75,
+      "target": "equipment",
+      "blurb": "The box you hope stays shut."
+    }
+  ]
+}

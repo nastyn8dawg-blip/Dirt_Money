@@ -1,0 +1,84 @@
+{
+  "_schema": "County day-labor posted at the Grange Hall. Rotation is weekday-driven (days_available uses CalendarManager weekday names) — deterministic, no RNG. pay is base cash; background_mult keys by background id (a mechanic is worth more in Roy's shop, a lifer on a fence line). rep = the handshake credit with the giver. Each job is once per day. blurb shows on the board; done_line shows after the work. Working 3+ total jobs sets county_hand (gossip hook).",
+  "_status": "ai_draft_needs_director_curation (2026-07-06 — voice-locked to VOICE_GUIDE: dry, plainspoken, no exclamation marks)",
+  "jobs": [
+    {
+      "id": "haul_feed",
+      "name": "Haul feed sacks for Sandy",
+      "giver": "sandy",
+      "pay": 55,
+      "background_mult": { "old_school": 1.2 },
+      "rep": { "npc": "sandy", "delta": 1 },
+      "min_day": 2,
+      "days_available": ["Monday", "Wednesday", "Friday"],
+      "flag_set": "worked_for_sandy",
+      "blurb": "Fifty-pound sacks off the truck and onto the pallet. Sandy counts them twice.",
+      "done_line": "Grain dust in your collar. Sandy pays out of the till and doesn't make you ask."
+    },
+    {
+      "id": "fence_hollis",
+      "name": "Fence posts at Hollis's place",
+      "giver": "hollis",
+      "pay": 60,
+      "background_mult": { "old_school": 1.25 },
+      "rep": { "npc": "hollis", "delta": 1 },
+      "min_day": 4,
+      "days_available": ["Tuesday", "Thursday", "Saturday"],
+      "flag_set": "worked_for_hollis",
+      "blurb": "The line along the creek's been leaning since spring. Hollis digs slow these days.",
+      "done_line": "Hollis holds each post while you tamp. Doesn't say much. Doesn't need to."
+    },
+    {
+      "id": "shop_help_roy",
+      "name": "Shop help at Carver Equipment",
+      "giver": "roy",
+      "pay": 70,
+      "background_mult": { "mechanic": 1.4 },
+      "rep": { "npc": "roy", "delta": 1 },
+      "min_day": 3,
+      "days_available": ["Monday", "Tuesday", "Thursday"],
+      "flag_set": "worked_for_roy",
+      "blurb": "Roy's backed up on service calls. He'd rather pay you than tell a customer no.",
+      "done_line": "Roy watches you work for a while, then stops watching. That's his whole review."
+    },
+    {
+      "id": "sort_parts_gus",
+      "name": "Sort the parts wall for Gus",
+      "giver": "gus",
+      "pay": 45,
+      "background_mult": { "mechanic": 1.3 },
+      "rep": { "npc": "gus", "delta": 1 },
+      "min_day": 2,
+      "days_available": ["Wednesday", "Friday", "Saturday"],
+      "flag_set": "worked_for_gus",
+      "blurb": "Forty years of hydraulic fittings in coffee cans. Gus knows where everything is. Nobody else does.",
+      "done_line": "Gus looks at the sorted wall a long time. \"Huh,\" he says. That's a compliment."
+    },
+    {
+      "id": "books_marge",
+      "name": "Untangle the Co-op's books",
+      "giver": "marge",
+      "pay": 65,
+      "background_mult": { "it_nephew": 1.5 },
+      "rep": { "npc": "marge", "delta": 1 },
+      "min_day": 5,
+      "days_available": ["Tuesday", "Friday"],
+      "flag_set": "worked_for_marge",
+      "blurb": "The delivery ledger hasn't matched the scale tickets since March. Marge wants a second set of eyes.",
+      "done_line": "You find the double-entry from the wet week in April. Marge nods once and fixes it in pen."
+    },
+    {
+      "id": "eggs_dee",
+      "name": "Morning rounds with Dee",
+      "giver": "dee",
+      "pay": 50,
+      "background_mult": { "old_school": 1.1 },
+      "rep": { "npc": "dee", "delta": 1 },
+      "min_day": 6,
+      "days_available": ["Sunday", "Monday"],
+      "flag_set": "worked_for_dee",
+      "blurb": "Dee's got three farms to hit before noon and two hands. Yours make four.",
+      "done_line": "You hold the gate, the flashlight, and one annoyed goat. Dee calls it even and pays cash."
+    }
+  ]
+}
