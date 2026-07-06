@@ -1,6 +1,6 @@
 {
   "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_status": "placeholder_awaiting_director; intro/hub variants and text_rules added ai_draft_needs_director_curation (2026-07-06)",
   "id": "roy_talk",
   "npc": "roy",
   "start": "intro",
@@ -14,18 +14,37 @@
       "speaker": "roy",
       "emotion": "excited",
       "text": "Let's find you something that'll fit the budget.",
+      "variants": [
+        "Budget's a good word.\n\nLet's respect it.",
+        "Got a couple units priced to move.\n\nMoving's the important part."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "intro_respect": {
       "speaker": "roy",
       "emotion": "neutral",
       "text": "Alright.\n\nLet's skip the sales pitch.\n\nWhat are you actually looking for?",
+      "variants": [
+        "What's broke, and what's the timeline?",
+        "Talk to me straight and I'll quote you straight.\n\nThat's the good rate."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "intro": {
       "speaker": "roy",
       "emotion": "excited",
       "text": "[Situation — Big Roy, loud and friendly, steering you toward a 'one-owner' baler out front before you've said a word.]",
+      "variants": [
+        "There he is.\n\nCome look at this baler before somebody smarter does.",
+        "You picked a fine day to look at iron, friend.",
+        "One owner on that swather out front.\n\nChurch mileage.",
+        "You buying today, or building up to it?\n\nEither way, walk with me.",
+        "Everything on this lot runs.\n\nHow long is between you and the Lord."
+      ],
+      "text_rules": [
+        { "if_flag": "bought_better_iron", "text": "How's the new machine treating you?\n\nDon't answer — I sold it to you. I know exactly how it's treating you." },
+        { "if_flag": "breakdown_paid_shop", "text": "Caleb says you settled up before he was out of the driveway.\n\nI remember who pays like that." }
+      ],
       "options": [
         {
           "text": "[Mechanic option — look past the fresh paint and read the machine's real condition.]",

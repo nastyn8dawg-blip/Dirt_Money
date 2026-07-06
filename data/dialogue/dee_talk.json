@@ -1,31 +1,97 @@
 {
-  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "6-beat structure per CLAUDE.md law 5. Prose drafted from placeholders.",
+  "_status": "ai_draft_needs_director_curation (2026-07-06) — all prose is AI draft",
   "id": "dee_talk",
   "npc": "dee",
   "start": "intro",
+  "entry": [
+    { "if_rep_below": { "npc": "dee", "value": 0 }, "goto": "intro_cold" },
+    { "if_rep_at_least": { "npc": "dee", "value": 40 }, "goto": "intro_trusted" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_cold": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "Feed's on the shelf.\n\nRegister's up front.",
+      "variants": [
+        "If it's urgent, say so.\n\nOtherwise I'm elbow-deep in inventory."
+      ],
+      "options": [
+        { "text": "(Buy what you came for and go)", "goto": "_end" }
+      ]
+    },
     "intro": {
       "speaker": "dee",
       "emotion": "neutral",
-      "text": "[Situation — Dee restocking shelves, practical as ever. She clocks your boots and guesses your problem before you speak.]",
+      "text": "Boots say chickens.\n\nAm I close?",
+      "variants": [
+        "Let me guess — something's off its feed and you waited three days to come in.",
+        "Grab what you need.\n\nHoller if a label doesn't make sense; half of them don't.",
+        "Afternoon.\n\nIf you're here about layer feed, buy the plain one. The fancy bag is the same feed with a sunset on it."
+      ],
+      "text_rules": [
+        { "if_flag": "worked_for_dee", "text": "There's coffee on in the back if you want it.\n\nStill owe you for that weekend you helped me worm the Kessler herd — that was a two-person job I'd been pretending was a one-person job." }
+      ],
       "options": [
-        { "text": "[Ask her to look over your flock.]", "goto": "checkup" },
-        { "text": "[Buy feed and chat.]", "goto": "chat" },
-        { "text": "[Leave.]", "goto": "_end" }
+        { "text": "\"Would you look over my flock when you get a minute?\"", "goto": "checkup" },
+        {
+          "text": "\"Can you carry the feed bill till my check clears?\"",
+          "check": { "skill": "reputation", "difficulty": 35, "odds": 0.6 },
+          "success": "bill_carried",
+          "failure": "bill_refused"
+        },
+        { "text": "\"How's the county's animals doing?\"", "goto": "chat" },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
+    "intro_trusted": {
+      "speaker": "dee",
+      "emotion": "excited",
+      "text": "Good, you're here.\n\nI set aside a bag of the good layer feed before the price went up — it's under the counter with your name on it, literally, in marker.\n\nHow're the birds?\n\nAnd don't say fine, tell me actual things.",
+      "variants": [
+        "Sit a minute.\n\nI've been on four farms since sunup and you're the first person today whose animals I'm not worried about.\n\nThat's a compliment, take it.\n\nCoffee's fresh-ish."
+      ],
+      "options": [
+        { "text": "\"Laying steady. One hen's gone broody.\"", "goto": "checkup" },
+        { "text": "\"What's going around the county?\"", "goto": "chat" },
+        { "text": "(Leave)", "goto": "_end" }
       ]
     },
     "checkup": {
       "speaker": "dee",
       "emotion": "neutral",
-      "text": "[Result — honest read on your chickens: kind delivery, no sugarcoating. Sets up the egg-contract relationship.]",
+      "text": "Birds look decent.\n\nOne hen's carrying a wing low — keep her out of the mud for a week and she'll sort herself.\n\nCheaper than calling me later, and I say that as the person you'd be calling.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [{ "op": "rep_delta", "npc": "dee", "value": 2 }]
+    },
+    "bill_carried": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "Till the fifteenth.\n\nI've carried worse for people I liked less.",
+      "options": [{ "text": "(Take the feed)", "goto": "_end" }],
+      "on_enter_effects": [
+        { "op": "flag_set", "flag": "dee_carries_bill" },
+        { "op": "rep_delta", "npc": "dee", "value": 1 }
+      ]
+    },
+    "bill_refused": {
+      "speaker": "dee",
+      "emotion": "neutral",
+      "text": "Can't this month.\n\nFeed man doesn't carry me, so I can't carry you.\n\nIt ain't personal.",
+      "options": [{ "text": "(Leave it for now)", "goto": "_end" }],
+      "on_enter_effects": [{ "op": "rep_delta", "npc": "dee", "value": -1 }]
     },
     "chat": {
       "speaker": "dee",
       "emotion": "neutral",
-      "text": "[Flavor — one working line about the season's animal troubles around the county.]",
+      "text": "Scours went through two dairies north of town.\n\nContained now, but wash your boots if you've been up that way.",
+      "variants": [
+        "Foot rot season.\n\nEverybody's pasture is soup and everybody's surprised, same as last year.",
+        "Kesslers lost a calf Tuesday.\n\nNothing anybody did wrong. Some springs are just like that.",
+        "Somebody's dog has been running stock out past the creek.\n\nIf it's yours, this is me telling you nicely, once.",
+        "Fly counts are up early.\n\nGet your tags on before it costs you weight."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     }
   }

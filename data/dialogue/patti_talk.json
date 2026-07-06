@@ -1,6 +1,6 @@
 {
   "_schema": "Patti — the gossip surface. Director-authored text (2026-07-03), verbatim. The gossip node pulls from data/gossip.json: flagged banks (things YOU did) outrank general county talk.",
-  "_status": "director_approved",
+  "_status": "director_approved; intro variants and text_rules added ai_draft_needs_director_curation (2026-07-06)",
   "id": "patti_talk",
   "npc": "patti",
   "start": "intro",
@@ -11,7 +11,14 @@
       "text": "County's been talking. Question is whether they're talking good or talking interesting.",
       "variants": [
         "You keep giving people stories and I'll keep serving pie.",
-        "Ash Creek runs on coffee and speculation."
+        "Ash Creek runs on coffee and speculation.",
+        "Sit anywhere.\n\nNews finds you either way.",
+        "Coffee's fresh.\n\nSo's the gossip.",
+        "You want the special, or the speculation?\n\nOne of them's free."
+      ],
+      "text_rules": [
+        { "if_flag": "county_hand", "text": "There he is.\n\nHalf the county's had you on their place this month.\n\nFolks are starting to argue over who gets your Saturdays." },
+        { "if_flag": "breakdown_kept_running", "text": "Heard that tractor of yours before I saw you.\n\nWhole diner's got opinions about it. Two of them are even kind." }
       ],
       "options": [
         { "text": "\"What are people saying?\"", "goto": "gossip" },

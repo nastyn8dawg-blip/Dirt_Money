@@ -1,32 +1,59 @@
 {
-  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "6-beat structure per CLAUDE.md law 5. Prose drafted from placeholders. Gus stays terse at every tier; trust shows as him volunteering one useful thing.",
+  "_status": "ai_draft_needs_director_curation (2026-07-06) — all prose is AI draft",
   "id": "gus_talk",
   "npc": "gus",
   "start": "intro",
+  "entry": [
+    { "if_flag": "gus_respects_eye", "goto": "intro_eye" },
+    { "goto": "intro" }
+  ],
   "nodes": {
     "intro": {
       "speaker": "gus",
       "emotion": "neutral",
-      "text": "[Situation — Gus in a lawn chair among the wrecks. He watches you look. Says nothing first.]",
+      "text": "Yeah?",
+      "variants": [
+        "Look all you want.",
+        "Hm.",
+        "Gate was open."
+      ],
+      "text_rules": [
+        { "if_flag": "salvage_parts_used", "text": "Heard my parts are still running.\n\nGood." }
+      ],
       "options": [
         {
-          "text": "[Mechanic option — name the one machine in the yard worth saving, and lowball him.]",
+          "text": "\"The swather in row three. I'll give you scrap-plus for it.\"",
           "label": "[Mechanic]",
           "requires": { "background": "mechanic" },
           "check": { "skill": "mechanic", "difficulty": 40, "odds": 0.6 },
           "success": "haggle_success",
           "failure": "haggle_failure"
         },
-        { "text": "[Ask what's come in lately.]", "goto": "browse" },
-        { "text": "[Leave.]", "goto": "_end" }
+        { "text": "\"Anything come in lately?\"", "goto": "browse" },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
+    "intro_eye": {
+      "speaker": "gus",
+      "emotion": "neutral",
+      "text": "Mm.\n\nCombine came in Tuesday.\n\nInjection pump's good. Nobody else knows that yet.",
+      "variants": [
+        "You again.\n\nRow five.\n\nBefore Saturday."
+      ],
+      "text_rules": [
+        { "if_flag": "salvage_parts_used", "text": "Your fix holding?\n\nFigured.\n\nCombine in Tuesday. Pump's good." }
+      ],
+      "options": [
+        { "text": "\"Appreciate it.\"", "goto": "browse" },
+        { "text": "(Leave)", "goto": "_end" }
       ]
     },
     "haggle_success": {
       "speaker": "gus",
       "emotion": "neutral",
-      "text": "[Result — you priced it fair-for-you and he knows it. Respect, not offense. He'll hold the good stuff for you now.]",
-      "options": [{ "text": "(Leave)", "goto": "_end" }],
+      "text": "That the number?\n\n...Load it up.",
+      "options": [{ "text": "(Shake on it)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "gus", "value": 4 },
         { "op": "flag_set", "flag": "gus_holds_stock" }
@@ -35,7 +62,7 @@
     "haggle_failure": {
       "speaker": "gus",
       "emotion": "neutral",
-      "text": "[Good failure — you praised the wrong machine. He nods slow, files it away, and quotes you tourist prices from now on.]",
+      "text": "That one?\n\nHm.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "gus", "value": -2 },
@@ -45,8 +72,13 @@
     "browse": {
       "speaker": "gus",
       "emotion": "neutral",
-      "text": "[Flavor — three words about new inventory. Gus doesn't do paragraphs.]",
-      "options": [{ "text": "(Leave)", "goto": "_end" }]
+      "text": "Rowed up out back.\n\nCash.",
+      "variants": [
+        "Two balers.\n\nOne's parts.",
+        "Nothing worth your time this week.",
+        "Truck axle. Some tin.\n\nThat's it."
+      ],
+      "options": [{ "text": "(Go look)", "goto": "_end" }]
     }
   }
 }

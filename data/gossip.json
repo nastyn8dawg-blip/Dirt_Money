@@ -1,6 +1,6 @@
 {
   "_schema": "County gossip banks — Director-authored (2026-07-03), verbatim. A bank with requires_flag only surfaces after that flag is set (this is the county remembering what you did). Flagged banks outrank general ones. Surfaced at the diner (Patti) and anywhere gossip_source nodes appear.",
-  "_status": "director_approved",
+  "_status": "director_approved; banks breakdown_kept_running, note_under_6000, note_cleared, bought_better_iron, county_hand, salvage_parts_used, serviced_iron appended ai_draft_needs_director_curation (2026-07-06)",
   "banks": [
     {
       "id": "baler_fixed",
@@ -53,6 +53,70 @@
       "requires_flag": "salvage_flip_bust",
       "lines": [
         "Heard you bought fresh paint with old trouble underneath."
+      ]
+    },
+    {
+      "id": "breakdown_kept_running",
+      "requires_flag": "breakdown_kept_running",
+      "lines": [
+        "Somebody's been running that 2010 broke.\n\nYou can hear it from the road.",
+        "Machines don't get quieter on their own.",
+        "Heard the 2010 clear from the co-op lot.\n\nThat ain't a compliment."
+      ]
+    },
+    {
+      "id": "note_under_6000",
+      "requires_flag": "note_under_6000",
+      "lines": [
+        "Earl's been almost pleasant lately.\n\nSomebody's paying their note.",
+        "Folks notice who walks into the bank and who drives past it.",
+        "Word is a certain ledger's looking friendlier out your way."
+      ]
+    },
+    {
+      "id": "note_cleared",
+      "requires_flag": "note_cleared",
+      "lines": [
+        "Heard somebody paid the note off entire.\n\nEarl had to sit down.",
+        "Free and clear.\n\nCounty hasn't seen that in a while.",
+        "Paid off the bank.\n\nPatti's been telling it like weather news.",
+        "A farm around here owing nothing.\n\nPeople keep saying it out loud just to hear it."
+      ]
+    },
+    {
+      "id": "bought_better_iron",
+      "requires_flag": "bought_better_iron",
+      "lines": [
+        "New iron on the county road this week.",
+        "Saw the tractor.\n\nWhole diner saw the tractor.",
+        "New paint turns heads.\n\nPayments turn stomachs."
+      ]
+    },
+    {
+      "id": "county_hand",
+      "requires_flag": "county_hand",
+      "lines": [
+        "Seen you working half the county lately.",
+        "Folks say you'll show up wherever the work is.\n\nThat travels.",
+        "You've been on more farms than the feed truck."
+      ]
+    },
+    {
+      "id": "salvage_parts_used",
+      "requires_flag": "salvage_parts_used",
+      "lines": [
+        "Fixed his own with parts out of Gus's yard.\n\nCounty respects that kind of stubborn.",
+        "Some folks buy new.\n\nSome folks buy rust and make it run.",
+        "Gus don't sell to just anybody twice."
+      ]
+    },
+    {
+      "id": "serviced_iron",
+      "requires_flag": "serviced_iron",
+      "lines": [
+        "You never hear that tractor coming.\n\nThat's grease, not luck.",
+        "Some machines get run.\n\nYours get kept.",
+        "Quiet equipment says more than new equipment."
       ]
     },
     {

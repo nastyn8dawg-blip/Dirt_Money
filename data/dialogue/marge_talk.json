@@ -1,6 +1,6 @@
 {
   "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_status": "placeholder_awaiting_director; chat node prose is ai_draft_needs_director_curation (2026-07-06)",
   "id": "marge_talk",
   "npc": "marge",
   "start": "intro",
@@ -89,7 +89,17 @@
     "chat": {
       "speaker": "marge",
       "emotion": "neutral",
-      "text": "[Flavor — one working detail about co-op traffic this week; should reference the season/day rhythm.]",
+      "text": "Seed's going out, twine's coming back.\n\nSame as every spring, just two weeks compressed into one.",
+      "variants": [
+        "Board filled up Monday, emptied by Wednesday.\n\nThat's what a dry forecast does around here.",
+        "Everybody wants delivery Saturday.\n\nNobody wants to be the truck behind the truck.",
+        "Fertilizer's on allocation again.\n\nOrder early or order twice.",
+        "Quiet week.\n\nI don't trust it either."
+      ],
+      "text_rules": [
+        { "if_flag": "contract_delivered", "text": "Your last haul landed the day you said it would.\n\nI keep a second list for people like that.\n\nIt doesn't get posted on the board." },
+        { "if_flag": "contract_missed", "text": "Board's full.\n\nAfter last time, your jobs get posted with a buffer week built in." }
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     }
   }
