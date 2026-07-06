@@ -1,6 +1,22 @@
 # KNOWN BUGS & ROUGH EDGES (update every session; delete only when verified fixed)
 
 ## Open
+- **UNTESTED ON THIS DEV BOX (2026-07-06):** the entire equipment/debt/breakdown pass was written
+  on the Mac, which has no Godot install. Every changed file is GDScript-parse-clean (gdtoolkit)
+  and logic-reviewed, but NOT run. First Windows action: `godot --headless res://tests/autoplay.tscn`
+  (must complete 30 days for all three backgrounds) and `res://tests/smoke_test.tscn`, then hand-play
+  a breakdown and a debt paydown.
+- **BALANCE FLAG (needs Director call):** `baler_rusty` starts at `engine: 0` → once condition drives
+  breakdowns, hay orders (baler-serviced) carry a high failure chance from day one, for OLD SCHOOL too
+  (east field = hay), not just Mechanic. This is "the dead baler is a project" by design, but may make
+  old_school hay feel punishing. Options: start the baler less-dead, gate hay behind a baler fix, or
+  give non-Mechanics a functional baler. Deferred to Phase 5 economy re-derivation.
+- Save/load does not persist `equipment_owned` (condition/neglect) — a loaded game reads all iron as
+  "fine" with no breakdown history until a fresh run reseeds. No crash (accessors degrade to neutral),
+  but mid-run saves lose equipment state. Same known gap class as salvage/event_last.
+- The old `breakdown_choice.json` Roy dialogue is now unreachable (calendar no longer routes to it;
+  the in-HUD breakdown panel replaced it). Left in /data for possible reuse as post-"Call Dealer"
+  flavor — not wired. Delete or repurpose later.
 - Marge's deadline call says "Friday" (canon line) but a contract accepted late can land on
   another weekday. Cosmetic; revisit if playtests notice.
 - IT timing diagnostics show 0 holds on the single harness seed — need multi-seed runs before

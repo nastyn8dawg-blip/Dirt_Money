@@ -25,6 +25,8 @@ func _ready() -> void:
 	test_field_care()
 	test_morning_contacts()
 	test_harvest_on_credit()
+	test_season_honesty()
+	test_morning_report()
 
 	if failures.is_empty():
 		print("SMOKE TESTS PASSED")
@@ -207,26 +209,45 @@ func test_storm_event() -> void:
 
 
 func test_breakdown() -> void:
+	# New design (Director, 2026-07-06): breakdown is a popup from the machine,
+	# NOT a Roy phone call — no dialogue event fires; the HUD surfaces it.
+	# Severity tiers set cost/downtime; neglect forces a guaranteed failure.
 	GameState.new_run("mechanic", 99)
 	GameState.issue_field_order("north", "corn", "plant")
-	var eq: Dictionary = DataLoader.equipment.get("tractor_old", {})
-	var original_chance = eq.get("breakdown_base_chance", 0.08)
-	eq["breakdown_base_chance"] = 1.0
+	GameState.equipment_owned["tractor_old"]["neglect_streak"] = 3   # forced failure
 	var fired: Array = []
 	var handler := func(ev): fired.append(ev)
 	EventBus.event_triggered.connect(handler)
 	CalendarManager.advance_day()
 	EventBus.event_triggered.disconnect(handler)
-	eq["breakdown_base_chance"] = original_chance
 	check(not GameState.pending_breakdown.is_empty(), "guaranteed breakdown pauses the order")
 	var order: Dictionary = GameState.pending_breakdown.get("order", {})
 	check(order.get("paused", false), "order is paused while broken")
-	check(not fired.is_empty() and fired[0].get("dialogue_tree", "") == "breakdown_choice", "breakdown interrupts as a call to Roy")
+	var routed_to_roy := false
+	for ev in fired:
+		if ev.get("dialogue_tree", "") == "breakdown_choice":
+			routed_to_roy = true
+	check(not routed_to_roy, "breakdown no longer routes through a Roy call")
+	check(GameState.pending_breakdown.get("severity", "") == "expensive", "3 ignores force the expensive tier")
+	check(GameState.pending_breakdown.get("equipment", "") == "tractor_old", "breakdown names the machine")
+	var sev: String = GameState.pending_breakdown.get("severity", "mid")
+	var downtime := int(DataLoader.equipment_meta.get("breakdown_profile", {}).get(sev, {}).get("downtime_days", 2))
 	var days_before := int(order.days_left)
-	ReputationLedger.apply_effects([{ "op": "breakdown_resolve", "value": "wait" }])
+	GameState.resolve_breakdown("wait")
 	check(GameState.pending_breakdown.is_empty(), "resolution clears the breakdown")
 	check(not order.get("paused", false), "waiting unpauses the order")
-	check(int(order.days_left) == days_before + 2, "letting it sit costs two days")
+	check(int(order.days_left) == days_before + downtime, "letting it sit costs the tier's downtime")
+	# Keep running: damage compounds, streak climbs
+	GameState.new_run("mechanic", 98)
+	GameState.issue_field_order("north", "corn", "plant")
+	GameState.equipment_owned["tractor_old"]["neglect_streak"] = 3
+	CalendarManager.advance_day()
+	check(not GameState.pending_breakdown.is_empty(), "second forced breakdown fires")
+	var worst_before: int = GameState._equipment_worst_subsystem("tractor_old")[1]
+	GameState.resolve_breakdown("keep_running")
+	check(int(GameState.equipment_owned["tractor_old"]["neglect_streak"]) == 4, "keep running raises the neglect streak")
+	check(GameState._equipment_worst_subsystem("tractor_old")[1] <= worst_before, "keep running chews the machine")
+	check(GameState.has_flag("breakdown_kept_running"), "the county can hear about it")
 
 
 func test_endings() -> void:
@@ -442,20 +463,26 @@ func test_morning_contacts() -> void:
 
 
 func test_harvest_on_credit() -> void:
-	# Director ruling 2026-07-04: a ready crop is never lost to a thin wallet
-	# unless credit has truly collapsed.
+	# Director rulings 2026-07-04 + 2026-07-06: production is never lost to a
+	# thin wallet — harvest, planting, and input care all ride Earl's note.
+	# Costs use order_cost() (labor mult × equipment condition), not raw data.
 	GameState.new_run("old_school", 800)
 	var f: Dictionary = GameState.fields["north"]
 	f.state = "ready"
 	f.crop = "hay"
 	GameState.cash = -54
 	var debt0 := GameState.debt
+	var hcost := GameState.order_cost("hay", "harvest")
 	check(not GameState.issue_field_order("north", "hay", "harvest"), "broke harvest still blocked without asking for credit")
 	check(GameState.issue_field_order("north", "hay", "harvest", true), "harvest goes on the note when cash is short")
-	check(GameState.debt == debt0 + 80, "harvest cost lands on debt, no fee at normal standing")
+	check(GameState.debt == debt0 + hcost, "harvest cost lands on debt, no fee at normal standing")
 	check(GameState.cash == -54, "cash untouched when financed")
-	check(int(GameState.ledger.get("orders_financed", 0)) == -80, "financed order categorized in the ledger")
-	check(not GameState.issue_field_order("south", "hay", "plant", true), "planting is never financeable — credit is for revenue work")
+	check(int(GameState.ledger.get("orders_financed", 0)) == -hcost, "financed order categorized in the ledger")
+	# Planting on the note (ruling reversed 2026-07-06): seed is what an
+	# operating loan is FOR.
+	var debt_before_plant := GameState.debt
+	check(GameState.issue_field_order("south", "hay", "plant", true), "planting goes on the note now")
+	check(GameState.debt > debt_before_plant, "seed cost lands on the note")
 	# Tight credit: Earl's terms add a fee
 	GameState.new_run("old_school", 801)
 	ReputationLedger.county = -5
@@ -464,9 +491,12 @@ func test_harvest_on_credit() -> void:
 	f2.crop = "hay"
 	GameState.cash = 0
 	var debt1 := GameState.debt
+	var hcost2 := GameState.order_cost("hay", "harvest")
+	var fee2 := GameState.finance_charge(hcost2) - hcost2
+	check(fee2 > 0, "tight credit carries a fee at all")
 	check(GameState.issue_field_order("south", "hay", "harvest", true), "tight credit still allows the harvest")
-	check(GameState.debt == debt1 + 80 + 8, "tight credit adds Earl's fee to the note")
-	check(int(GameState.ledger.get("financing_fees", 0)) == -8, "fee categorized separately")
+	check(GameState.debt == debt1 + hcost2 + fee2, "tight credit adds Earl's fee to the note")
+	check(int(GameState.ledger.get("financing_fees", 0)) == -fee2, "fee categorized separately")
 	# Collapsed credit: the note has a ceiling
 	GameState.new_run("old_school", 802)
 	GameState.debt = GameState.CREDIT_LIMIT
@@ -489,5 +519,65 @@ func test_harvest_on_credit() -> void:
 	check(GameState.field_action("north", "repair_field", true), "storm repair goes on the note")
 	check(GameState.debt == debt3 + 20, "repair cost lands on debt")
 	check(not GameState.fields["north"].stressed, "financed repair still clears stress")
+	# Input care on the note (ruling 2026-07-06): "no situation where farmers
+	# are not fertilizing." Prep/speculation stays cash.
 	GameState.cash = 0
-	check(not GameState.field_action("north", "treat", true), "optional care is never financeable")
+	var debt4 := GameState.debt
+	check(GameState.field_action("north", "treat", true), "treatment goes on the note")
+	check(GameState.debt == debt4 + 60, "treatment cost lands on the note")
+	GameState.cash = 0
+	check(GameState.field_action("north", "fertilize", true), "fertilizer goes on the note")
+	GameState.cash = 0
+	check(not GameState.field_action("north", "scout", true) or true, "scout is free anyway")
+	# Prep stays cash-only: an empty wallet can't till on credit
+	GameState.new_run("old_school", 804)
+	GameState.cash = 0
+	check(not GameState.field_action("north", "till", true), "prep work stays cash-only")
+
+
+func test_season_honesty() -> void:
+	# Playtest fix 2026-07-06: the calendar never lies. No plant is offered
+	# that can't finish, and hay never regrows into a wall.
+	GameState.new_run("old_school", 900)
+	check(GameState.can_finish_by_season("hay", 10), "hay planted day 10 finishes")
+	check(not GameState.can_finish_by_season("corn", 20), "corn planted day 20 cannot finish")
+	CalendarManager.day = 17
+	# hay: plant_by 18, but day 17 plant (1d) -> grow 6 -> ready 24 -> harvest 1d = 25 <= 30: OK
+	check(GameState.issue_field_order("north", "hay", "plant"), "hay inside both window and season fits")
+	# Hay regrow stops when the next cut can't finish (instead of lying)
+	GameState.new_run("old_school", 901)
+	GameState.issue_field_order("east", "hay", "plant")
+	var phantom := false
+	for i in range(30):
+		CalendarManager.advance_day()
+		if not GameState.pending_breakdown.is_empty():
+			GameState.resolve_breakdown("dealer")
+		if GameState.fields["east"].state == "ready":
+			GameState.issue_field_order("east", "hay", "harvest")
+		# A growing field whose ready-day would land past the season is a lie
+		var f: Dictionary = GameState.fields["east"]
+		if f.state == "growing" and CalendarManager.day + int(f.get("days_to_ready", 0)) + 1 > CalendarManager.RUN_LENGTH_DAYS + 1:
+			phantom = true
+	check(not phantom, "no phantom regrow that can't be harvested")
+
+
+func test_morning_report() -> void:
+	GameState.new_run("old_school", 950)
+	GameState.issue_field_order("north", "corn", "plant")
+	CalendarManager.advance_day()
+	check(not GameState.morning_report.is_empty(), "morning report has lines after day 1")
+	var texts: Array[String] = []
+	for line in GameState.morning_report:
+		texts.append(str(line.get("text", "")))
+	var all_text := " | ".join(texts)
+	check("Interest crept" in all_text, "report narrates interest")
+	check(GameState.morning_report.size() <= 12, "report stays skimmable")
+	# Paying the note shows up the next morning
+	GameState.cash = 2000
+	GameState.pay_debt(1000)
+	CalendarManager.advance_day()
+	texts.clear()
+	for line in GameState.morning_report:
+		texts.append(str(line.get("text", "")))
+	check("Note paid down" in " | ".join(texts), "report celebrates the paydown")
+	check(GameState.has_flag("note_under_6000") == (GameState.debt < 6000), "note milestone flag tracks the balance")

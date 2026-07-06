@@ -21,6 +21,8 @@ var _flavor: Label
 var _suggest: Label
 var _canvas: Control
 var _detail: PanelContainer = null
+var _detail_kind := ""   # which panel is open ("breakdown" outranks everything)
+var _report_day := 0     # last day the morning report was shown
 
 
 func _ready() -> void:
@@ -55,17 +57,20 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	_status.text = "Day %d of %d (%s) — %s | %s | Cash: $%d | Debt: $%d%s" % [
+	_status.text = "Day %d of %d (%s) — %s | %s | Cash: $%d | Note: $%d | Net: $%d%s" % [
 		CalendarManager.day, CalendarManager.RUN_LENGTH_DAYS,
 		CalendarManager.weekday_name(), CalendarManager.block_name(),
 		WeatherManager.display_name(WeatherManager.current), GameState.cash, GameState.debt,
+		GameState.net_worth(),
 		" ⚠ credit tight" if GameState.credit_tight() else "",
 	]
 	var inv_bits: Array[String] = []
 	for item in GameState.inventory.keys():
 		if GameState.inventory[item] > 0:
 			inv_bits.append("%s %d" % [item, GameState.inventory[item]])
-	_goal.text = "GOAL: end Day %d solvent.   Barn: %d chickens%s" % [
+	# Verdict is the win (thesis: can people depend on you?); the note shrinking
+	# is the money story underneath it. [Prose wants a Director voice pass.]
+	_goal.text = "GOAL: earn the county's word by Day %d — and leave the note smaller than you found it.   Barn: %d chickens%s" % [
 		CalendarManager.RUN_LENGTH_DAYS, GameState.chickens,
 		" | " + " · ".join(inv_bits) if not inv_bits.is_empty() else "",
 	]
@@ -93,17 +98,27 @@ func _refresh() -> void:
 				px.append("%s $%.2f→$%.2f" % [cid, EconomyManager.prices.get(cid, 0.0), EconomyManager.forecast_price(cid)])
 			_flavor.text = "Forecast: %s   |   %s" % [" / ".join(fc_names), "  ".join(px)]
 		"mechanic":
-			var worst := 100
+			var worst := 101
 			var worst_name := ""
-			for eq_id in DataLoader.equipment.keys():
-				var cond: Dictionary = DataLoader.equipment[eq_id].get("condition", {})
+			for eq_id in GameState.equipment_owned.keys():
+				var cond: Dictionary = GameState.equipment_owned[eq_id].get("condition", {})
 				for sub in cond.keys():
-					if int(cond[sub]) > 0 and int(cond[sub]) < worst:
+					if int(cond[sub]) < worst:
 						worst = int(cond[sub])
-						worst_name = "%s %s" % [DataLoader.equipment[eq_id].name, sub]
+						worst_name = "%s %s" % [DataLoader.equipment.get(eq_id, {}).get("name", eq_id), sub]
 			_flavor.text = "Shop ear: worst iron is %s at %d%%. You'd hear it going before anyone." % [worst_name, worst]
 	_suggest.text = "▶ " + _suggestion()
 	_rebuild_canvas()
+	# Interrupt priority (playtest fix 2026-07-06): a machine down in your field
+	# OUTRANKS whatever panel is open — it evicts it. The morning report comes
+	# next, once per day, after any breakdown is dealt with.
+	if not GameState.pending_breakdown.is_empty():
+		if _detail_kind != "breakdown":
+			_open_breakdown_panel()
+	elif CalendarManager.day > 1 and _report_day != CalendarManager.day \
+			and not GameState.morning_report.is_empty() and _detail == null:
+		_report_day = CalendarManager.day
+		_open_morning_report()
 
 
 func _rebuild_canvas() -> void:
@@ -151,7 +166,7 @@ func _parcel(field_id: String, rect: Rect2) -> void:
 	b.add_theme_stylebox_override("pressed", style)
 	b.add_theme_color_override("font_color", CREAM)
 	b.add_theme_font_size_override("font_size", 15)
-	var warn := _field_warning(f, stage)
+	var warn := _field_warning(field_id, f, stage)
 	b.text = "%s FIELD\n%s%s%s" % [
 		field_id.to_upper(),
 		stage if f.get("crop", "") == "" else "%s — %s" % [f.crop, stage],
@@ -164,17 +179,27 @@ func _parcel(field_id: String, rect: Rect2) -> void:
 	_canvas.add_child(b)
 
 
-func _field_warning(f: Dictionary, stage: String) -> String:
+func _field_warning(field_id: String, f: Dictionary, stage: String) -> String:
 	if stage == "ready":
 		return "● READY"
 	if f.get("stressed", false):
-		return "▲ STRESSED"
+		# Cause-specific label (storm-lodged vs heat-bitten), not generic noise
+		return "▲ " + str(_stress_info(f).get("label", "stressed")).to_upper()
 	if f.state == "growing" and not f.get("scouted", false) and int(f.get("days_to_ready", 9)) <= 6:
 		return "? needs scouting"
+	# Only the field whose order actually broke gets the warning (playtest fix
+	# 2026-07-06: one breakdown used to stamp every field)
 	for o in GameState.field_orders:
-		if o.get("paused", false):
+		if o.get("paused", false) and o.get("field", "") == field_id:
 			return "⚠ machine down"
 	return ""
+
+
+func _stress_info(f: Dictionary) -> Dictionary:
+	# Cause-specific stress language from data (storm = lodged, drought = heat).
+	var cause: String = f.get("stress_cause", "storm")
+	var bank: Dictionary = DataLoader.strings.get("field_stress", {})
+	return bank.get(cause, bank.get("storm", {}))
 
 
 func _building(label: String, rect: Rect2, color: Color, on_press: Callable) -> void:
@@ -204,12 +229,14 @@ func _close_detail() -> void:
 	if _detail:
 		_detail.queue_free()
 		_detail = null
+	_detail_kind = ""
 
 
-func _open_side_panel(title: String) -> VBoxContainer:
+func _open_side_panel(title: String, kind: String = "") -> VBoxContainer:
 	# One stable right-side inspector for everything: fully inside the
 	# screen, actions stack vertically, long text wraps, clear close.
 	_close_detail()
+	_detail_kind = kind
 	_detail = make_panel(self)
 	_detail.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
 	_detail.offset_left = -420
@@ -262,6 +289,17 @@ func _note_prompt(col: Control, cost: int, cost_line: String, on_confirm: Callab
 		_action(col, "Charge to credit — $%d" % charge, true, on_confirm)
 
 
+func _action_or_note(col: Control, label: String, cost: int, cost_line: String,
+		on_cash: Callable, on_credit: Callable) -> void:
+	# Cash if you have it; Earl's note if you don't (Director ruling 2026-07-06:
+	# production inputs are financeable — "no situation where farmers are not
+	# fertilizing"). Wraps the canon _note_prompt so wording can't drift.
+	if GameState.cash >= cost:
+		_action(col, label, true, on_cash)
+	else:
+		_note_prompt(col, cost, cost_line, on_credit)
+
+
 func _action(parent: Control, text: String, enabled: bool, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
@@ -291,8 +329,12 @@ func _open_field_detail(field_id: String) -> void:
 		_wrap(col, "• Weeds/pests: %s" % (
 			"%d%%%s" % [int(f.weeds), " — over 50% costs a fifth of the crop" if int(f.weeds) > 50 else ""] if weeds_known else "unknown — walk the field"
 		), 13, ScreenBase.WARN if weeds_known and int(f.weeds) > 50 else CREAM)
-		_wrap(col, "• Stress: %s" % ("storm-bitten — costing 10%" if f.get("stressed", false) else "none showing"),
-			13, ScreenBase.WARN if f.get("stressed", false) else CREAM)
+		if f.get("stressed", false):
+			var si := _stress_info(f)
+			_wrap(col, "• Stress: %s — costing 10%%" % str(si.get("label", "weather-hit")), 13, ScreenBase.WARN)
+			_wrap(col, "   %s" % str(si.get("detail", "")), 12, ScreenBase.MUTED)
+		else:
+			_wrap(col, "• Stress: none showing", 13, CREAM)
 		_wrap(col, "• Expected yield: %d units%s" % [
 			GameState.field_yield_units(f), "" if weeds_known else " (going by looks)"])
 	col.add_child(HSeparator.new())
@@ -307,8 +349,13 @@ func _open_field_detail(field_id: String) -> void:
 		CalendarManager.spend_block()
 		_close_detail()
 		_refresh()
-	var plant := func(crop_id: String):
-		GameState.issue_field_order(field_id, crop_id, "plant")
+	var acted_credit := func(action: String):
+		GameState.field_action(field_id, action, true)
+		CalendarManager.spend_block()
+		_close_detail()
+		_refresh()
+	var plant := func(crop_id: String, on_credit: bool):
+		GameState.issue_field_order(field_id, crop_id, "plant", on_credit)
 		_close_detail()
 		_refresh()
 
@@ -318,18 +365,27 @@ func _open_field_detail(field_id: String) -> void:
 			var crop: Dictionary = DataLoader.crops[crop_id]
 			if CalendarManager.day > int(crop.get("plant_by_day", 30)):
 				continue
+			# Futility guard (playtest fix 2026-07-06): never offer a plant
+			# that can't finish before the season ends.
+			if not GameState.can_finish_by_season(crop_id, CalendarManager.day):
+				_wrap(col, "%s won't finish before month's end. Not worth the seed." % crop.name,
+					12, ScreenBase.MUTED)
+				continue
 			window_open = true
 			var order: Dictionary = crop.get("plant_order", {})
-			var pcost := int(round(float(order.get("cost", 0)) * float(GameState.background().get("labor_cost_mult", 1.0))))
-			_action(col, "Plant %s — $%d — by Day %d (%d-day job)" % [
-				crop.name, pcost, crop.get("plant_by_day", 30), order.get("days", 1)],
-				GameState.cash >= pcost, plant.bind(crop_id))
+			var pcost := GameState.order_cost(crop_id, "plant")
+			# Production inputs go on the note now (Director ruling 2026-07-06)
+			_action_or_note(col,
+				"Plant %s — $%d — by Day %d (%d-day job)" % [
+					crop.name, pcost, crop.get("plant_by_day", 30), order.get("days", 1)],
+				pcost, "Seed and crew run $%d." % pcost,
+				plant.bind(crop_id, false), plant.bind(crop_id, true))
 		if not window_open:
-			_wrap(col, "Too late for corn. Soybeans would be a gamble this late.", 12, ScreenBase.MUTED)
+			_wrap(col, "Planting season's past for this field. The county still pays for work.", 12, ScreenBase.MUTED)
 		if not f.get("tested", false):
 			_action(col, "Soil test — $30 — know before you spend", GameState.cash >= 30, func(): acted.call("soil_test"))
 		if not f.get("tilled", false):
-			_action(col, "Till — $40 + a block — +5%% yield when planted", GameState.cash >= 40, func(): acted.call("till"))
+			_action(col, "Till — $40 + a block — +5% yield when planted", GameState.cash >= 40, func(): acted.call("till"))
 		_action(col, "Cover crop — $50 + a block — improves next season's soil", GameState.cash >= 50, func(): acted.call("cover_crop"))
 		if not f.get("limed", false):
 			_action(col, "Lime & prep — $40 — fertility up for next planting", GameState.cash >= 40, func(): acted.call("soil_prep"))
@@ -338,23 +394,23 @@ func _open_field_detail(field_id: String) -> void:
 		if not f.get("scouted", false):
 			_action(col, "Scout field — a time block — see the real weed number", true, func(): acted.call("scout"))
 		if not f.get("fertilized", false):
-			_action(col, "Fertilize — $80 + a block — +10%% yield", GameState.cash >= 80, func(): acted.call("fertilize"))
-		_action(col, "Treat weeds/pests — $60 + a block — clears the pressure", GameState.cash >= 60, func(): acted.call("treat"))
+			_action_or_note(col, "Fertilize — $80 + a block — +10% yield",
+				80, "Fertilizer runs $80.",
+				func(): acted.call("fertilize"), acted_credit.bind("fertilize"))
+		_action_or_note(col, "Treat weeds/pests — $60 + a block — clears the pressure",
+			60, "Treatment runs $60.",
+			func(): acted.call("treat"), acted_credit.bind("treat"))
 		if f.get("stressed", false):
 			# Emergency repair protects an active crop → financeable (ruling
 			# 2026-07-04). "Patch runs" — canon, field-damage register.
-			if GameState.cash >= 20:
-				_action(col, "Repair storm damage — $20 + a block — saves 10%% of the crop", true, func(): acted.call("repair_field"))
-			else:
-				_note_prompt(col, 20, "Patch runs $20.", func():
-					GameState.field_action(field_id, "repair_field", true)
-					CalendarManager.spend_block()
-					_close_detail()
-					_refresh())
+			var fix_verb: String = str(_stress_info(f).get("fix", "Repair the damage"))
+			_action_or_note(col, "%s — $20 + a block — recovers the lost 10%%" % fix_verb,
+				20, "Patch runs $20.",
+				func(): acted.call("repair_field"), acted_credit.bind("repair_field"))
 	elif f.state == "ready":
 		var crop2: Dictionary = DataLoader.crops.get(f.crop, {})
 		var h: Dictionary = crop2.get("harvest_order", {})
-		var hcost := int(round(float(h.get("cost", 0)) * float(GameState.background().get("labor_cost_mult", 1.0))))
+		var hcost := GameState.order_cost(f.crop, "harvest")
 		var do_harvest := func(on_credit: bool):
 			GameState.issue_field_order(field_id, f.crop, "harvest", on_credit)
 			_close_detail()
@@ -368,9 +424,17 @@ func _open_field_detail(field_id: String) -> void:
 	elif f.state == "working":
 		for o in GameState.field_orders:
 			if o.field == field_id:
-				_wrap(col, "Crew %s — %d day(s) left%s" % [
-					o.kind, o.days_left, "  (BROKEN DOWN — machine shed)" if o.get("paused", false) else ""],
-					13, ScreenBase.WARN if o.get("paused", false) else ScreenBase.INFO)
+				if o.get("paused", false):
+					# The field is where you noticed it, so the field is where
+					# you deal with it (playtest fix 2026-07-06)
+					_wrap(col, "Crew %s stopped — the machine quit." % o.kind, 13, ScreenBase.WARN)
+					var pb: Dictionary = GameState.pending_breakdown
+					if not pb.is_empty() and pb.get("order", {}) == o:
+						var prof2: Dictionary = DataLoader.equipment_meta.get("breakdown_profile", {}).get(pb.get("severity", "mid"), {})
+						col.add_child(HSeparator.new())
+						_add_breakdown_actions(col, prof2)
+				else:
+					_wrap(col, "Crew %s — %d day(s) left" % [o.kind, o.days_left], 13, ScreenBase.INFO)
 	elif f.state == "cover":
 		_wrap(col, "Cover crop's in. It pays next season, not this one.", 13, ScreenBase.MUTED)
 
@@ -414,6 +478,36 @@ func _recommend(f: Dictionary, stage: String) -> String:
 
 func _open_farmhouse() -> void:
 	var col := _open_side_panel("FARMHOUSE")
+	# The note (Director ruling 2026-07-06): the debt used to be un-payable — it
+	# only ever grew. Now you can put cash against it. Every dollar down is
+	# interest you never pay again. [Prose wants a Director voice pass.]
+	if GameState.debt > 0:
+		_wrap(col, "THE NOTE", 13, ACCENT)
+		_wrap(col, "Earl's note: $%d.   Cash on hand: $%d." % [GameState.debt, GameState.cash], 13)
+		_wrap(col, "Net worth: $%d. That's the number that tells the story of a run." % GameState.net_worth(),
+			12, ScreenBase.MUTED)
+		var pay := func(amount: int):
+			GameState.pay_debt(amount)
+			_close_detail()
+			_open_farmhouse()
+		var offered := false
+		for amt in [500, 1000, 2500]:
+			if GameState.cash >= amt and GameState.debt >= amt:
+				_action(col, "Pay down $%d against the note" % amt, true, pay.bind(amt))
+				offered = true
+		var spare: int = mini(GameState.cash, GameState.debt)
+		if spare > 0 and spare < 2500:
+			_action(col, "Pay all you can spare — $%d" % spare, true, pay.bind(spare))
+			offered = true
+		elif spare >= 2500:
+			_action(col, "Pay the note down to what you can't cover — $%d" % spare, true, pay.bind(spare))
+			offered = true
+		if not offered:
+			_wrap(col, "Nothing to put against it right now.", 12, ScreenBase.MUTED)
+		col.add_child(HSeparator.new())
+	else:
+		_wrap(col, "The note's clear. That's a first around here.", 13, ScreenBase.GOOD)
+		col.add_child(HSeparator.new())
 	_action(col, "Sleep → Next Day", true, func():
 		_close_detail()
 		CalendarManager.advance_day())
@@ -446,27 +540,107 @@ func _open_shed() -> void:
 		for i in range(GameState.salvage_projects.size()):
 			add_salvage_project_block(col, i, 360, _open_shed)
 		col.add_child(HSeparator.new())
-	for eq_id in DataLoader.equipment.keys():
-		var eq: Dictionary = DataLoader.equipment[eq_id]
-		_wrap(col, eq.name, 14)
+	for eq_id in GameState.equipment_owned.keys():
+		var eq: Dictionary = DataLoader.equipment.get(eq_id, {})
+		var state := GameState.equipment_summary_state(eq_id)
+		_wrap(col, "%s — %s" % [eq.get("name", eq_id), state], 14,
+			ScreenBase.WARN if state in ["rough", "failing"] else CREAM)
 		if GameState.interface_flag("equipment_subsystems", false):
-			var cond: Dictionary = eq.get("condition", {})
+			var cond: Dictionary = GameState.equipment_owned[eq_id].get("condition", {})
 			for sub in DataLoader.equipment_meta.get("subsystems", []):
-				if int(cond.get(sub, 0)) > 0:
-					_wrap(col, "   %s: %d%%" % [sub, cond[sub]], 12,
+				if cond.has(sub):
+					_wrap(col, "   %s: %d%%" % [sub, int(cond[sub])], 12,
 						ScreenBase.WARN if int(cond[sub]) < 35 else ScreenBase.GOOD)
 	if not GameState.pending_breakdown.is_empty():
-		_wrap(col, "⚠ Machine down in the field — Roy's shop is on the line.", 13, ScreenBase.WARN)
-		_action(col, "Take the call", true, func():
-			_close_detail()
-			EventBus.dialogue_started.emit("breakdown_choice"))
+		_wrap(col, "⚠ Something's down in the field.", 13, ScreenBase.WARN)
+		_action(col, "See to it", true, _open_breakdown_panel)
+
+
+func _open_breakdown_panel() -> void:
+	# The Director's ask: the machine tells you it broke, and you choose right
+	# there — keep running, call the dealer, or fix it yourself. Not a Roy call.
+	# [Prose wants a Director voice pass — dry, from the field.]
+	var pb: Dictionary = GameState.pending_breakdown
+	if pb.is_empty():
+		return
+	var eq_id: String = pb.get("equipment", "tractor_old")
+	var sev: String = pb.get("severity", "mid")
+	var sub: String = pb.get("subsystem", "")
+	var eq_name: String = DataLoader.equipment.get(eq_id, {}).get("name", "The machine")
+	var prof: Dictionary = DataLoader.equipment_meta.get("breakdown_profile", {}).get(sev, {})
+	var col := _open_side_panel("⚠ BREAKDOWN", "breakdown")
+	_wrap(col, "%s quit in the field." % eq_name, 15, ScreenBase.WARN)
+	if sub != "":
+		_wrap(col, "It's the %s — a %s job." % [sub, sev], 13)
+	_wrap(col, "Every day it sits is a day the work doesn't move. Downtime is awful.", 12, ScreenBase.MUTED)
+	col.add_child(HSeparator.new())
+	_wrap(col, "What now?", 13, ACCENT)
+	_add_breakdown_actions(col, prof)
+
+
+func _add_breakdown_actions(col: VBoxContainer, prof: Dictionary) -> void:
+	# Shared by the breakdown panel and the field inspector — one source of
+	# truth for the choice buttons, so they can't drift apart.
+	var sub: String = GameState.pending_breakdown.get("subsystem", "")
+	var downtime := int(prof.get("downtime_days", 2))
+	var after := func():
+		_close_detail()
+		_refresh()
+
+	# Keep running — free now, compounds later.
+	_action(col, "Keep running it — push through now, it'll cost you later", true, func():
+		GameState.resolve_breakdown("keep_running")
+		after.call())
+
+	# Call the dealer — most expensive, made right, running today.
+	var dcost := int(prof.get("cost_dealer", 160))
+	_action(col, "Call Roy's shop — $%d, back running today" % dcost,
+		GameState.cash >= dcost, func():
+			GameState.resolve_breakdown("dealer")
+			after.call())
+
+	# Fix it yourself — Mechanic identity (cheaper parts, your labor).
+	if GameState.background_id == "mechanic":
+		var scost := int(prof.get("cost_self_parts", 65))
+		_action(col, "Fix it yourself — $%d in parts" % scost,
+			GameState.cash >= scost, func():
+				GameState.resolve_breakdown("self")
+				after.call())
+		if sub != "" and GameState.has_salvaged_parts(sub):
+			_action(col, "Use a salvaged %s part — near-free, but no warranty" % sub, true, func():
+				GameState.resolve_breakdown("salvage")
+				after.call())
+	else:
+		_wrap(col, "Fixing it yourself is a Mechanic's game.", 12, ScreenBase.MUTED)
+
+	# Let it sit.
+	_action(col, "Leave it — lose %d day(s)" % downtime, true, func():
+		GameState.resolve_breakdown("wait")
+		after.call())
+
+
+func _open_morning_report() -> void:
+	# The legibility keystone (playtest fix 2026-07-06): every morning, the day
+	# tells you its story — money that moved, crops that grew, iron that wore,
+	# what needs deciding. Every invisible system becomes visible here.
+	var col := _open_side_panel("MORNING — Day %d (%s)" % [CalendarManager.day, CalendarManager.weekday_name()], "morning")
+	var tones := {
+		"good": ScreenBase.GOOD, "warn": ScreenBase.WARN,
+		"info": CREAM, "muted": ScreenBase.MUTED,
+	}
+	for line in GameState.morning_report:
+		_wrap(col, str(line.get("text", "")), 13, tones.get(line.get("tone", "info"), CREAM))
+	col.add_child(HSeparator.new())
+	_action(col, "Get to it", true, func():
+		_close_detail()
+		_refresh())
 
 
 # ---------- suggestion + playtest (unchanged logic) ----------
 
 func _suggestion() -> String:
 	if not GameState.pending_breakdown.is_empty():
-		return "Machine's down in the field. Roy's shop is on the line — deal with it."
+		return "Something let go in the field — see to it before the day gets away."
 	for c in GameState.contracts_active:
 		if GameState.inventory.get(c.get("commodity", ""), 0) >= int(c.get("units", 0)) and c.get("type", "") != "repair":
 			return "You can fill Marge's contract — deliver at the Co-op before %s (Day %d)." % [

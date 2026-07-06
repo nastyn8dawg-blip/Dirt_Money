@@ -42,3 +42,29 @@
   (field-damage register; "cost is" reads like software).
 - 2026-07-04 — Process ruling: tiny sessions skip the full five-file update — NEXT_ACTIONS
   only on priority change, DECISION_LOG only on real rulings (now in CLAUDE.md protocol).
+- 2026-07-06 — SCOPE FREEZE LIFTED (deliberate, this feedback pass = the freeze-lift event
+  NEXT_ACTIONS #5 anticipated). Director greenlit the ambitious depth pass "if it maintains
+  the vision and runs with it."
+- 2026-07-06 — AI usage ruling: AI is a BUILD-TIME authoring tool only. Hard law #1 STANDS —
+  the shipped game makes zero runtime AI/network calls; stays offline + deterministic. Hard
+  law #6 relaxed for authoring: AI may draft player-facing prose, baked into /data as static
+  content, gated by a Director voice/canon curation pass. No live AI for the end user, ever.
+- 2026-07-06 — Root diagnosis (Opus review): the debt was mechanically UN-PAYABLE (only grew);
+  it isn't even the win condition (endings key off reputation/cash/contracts, never debt);
+  and outcomes were flat (~$4k every run = the bot's spreadsheet target). Through-line for the
+  pass: every feature must create meaningful outcome variance; progress on the note must be felt.
+- 2026-07-06 — pay_debt() shipped: cash→note bridge, reduces future interest. net_worth() is the
+  honest trajectory number (starts -6800); surfaced on HUD + report card. Verdict framed as the
+  win, note as pressure (not a scoreboard).
+- 2026-07-06 — Equipment now MATTERS: condition drives breakdown odds + severity, field yield, and
+  work cost (single source of truth: order_cost()). Daily wear on machines actually used. The
+  hidden good/bad gradient in the 3 owned items finally has teeth. Numbers PLACEHOLDER → Phase 5.
+- 2026-07-06 — Breakdown redesigned per Director: arrives as an immediate popup FROM THE MACHINE
+  (auto-opening farm_hud panel), not a Roy phone call. Choices: Keep Running / Call Dealer / Fix
+  It Yourself (+ salvaged part). Multiple severity tiers (cheap/mid/expensive). "Keep running"
+  compounds damage + neglect_streak; 3 ignores force an expensive failure. Downtime is real.
+  IMPLEMENTATION NOTE: built as an in-HUD side panel (reuses proven UI) rather than the separate
+  breakdown_modal.gd the plan specced — lower risk given no Godot on the Mac dev box.
+- 2026-07-06 — Salvage yard given a purpose: a RESTORED-but-unsold project can be stripped for a
+  cheap repair part (yields_parts_for) — sell-for-cash vs. keep-for-parts tension. Ties salvage ↔
+  equipment ↔ breakdowns into one loop (the dead baler is the Mechanic's project).

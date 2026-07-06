@@ -102,6 +102,7 @@ func load_all() -> void:
 	equipment_meta = {
 		"subsystems": d.get("subsystems", []),
 		"summary_thresholds": d.get("summary_thresholds", {}),
+		"breakdown_profile": d.get("breakdown_profile", {}),
 	}
 	for e in d.get("equipment", []):
 		equipment[e.id] = e

@@ -1,4 +1,23 @@
-# CURRENT STATE — 2026-07-04 (update at end of every session)
+# CURRENT STATE — 2026-07-06 (update at end of every session)
+
+## NEW: Depth/stakes pass (2026-07-06 — freeze lifted; PARSE-CLEAN, NOT YET RUN on Windows)
+Branch `feedback-depth-stakes-life`. Addresses the Director's six-part playtest feedback. All files
+gdtoolkit-parse-clean + logic-reviewed on the Mac (no Godot here) — **must be run on Windows before
+trusting** (see KNOWN_BUGS top).
+- **Debt is fightable now.** `pay_debt()` bridges cash→note (was un-payable — only ever grew);
+  paying reduces future interest. `net_worth()` (starts −6800) surfaced on HUD status + report card;
+  verdict reframed as the win, note as pressure. Farmhouse panel = "pay down the note" UI.
+- **Equipment finally matters.** Condition (mutable `equipment_owned`, seeded each run) drives:
+  breakdown odds + severity, field yield (`field_yield_units`), and work cost (single source
+  `order_cost()` — HUD + charge can't drift). Daily `tick_equipment_wear()` on machines used.
+- **Breakdowns are a popup from the machine** (auto-opening farm_hud panel, NOT a Roy call):
+  Keep Running / Call Dealer / Fix It Yourself (+ salvaged part). Cheap/mid/expensive tiers with
+  distinct cost+downtime+damage. "Keep running" compounds damage + `neglect_streak`; 3 ignores →
+  forced expensive failure. (Built in-HUD, not the separate modal the plan specced — risk call.)
+- **Salvage has a purpose:** restored-but-unsold project → strip for a cheap repair part
+  (`yields_parts_for`, `has/consume_salvaged_part`), sell-vs-parts tension; the dead baler loop.
+- Harness (`autoplay.gd`) updated: net worth + debt-paid reporting, bot pays down note when flush,
+  bot resolves breakdowns via new dealer/wait modes. Numbers still PLACEHOLDER (Phase 5 re-derive).
 
 ## Shipped and working (all tests green, pushed to main)
 - Farm view: clickable parcels (stage-colored) + farmhouse/barn/coop/shed + road/diner/Hollis

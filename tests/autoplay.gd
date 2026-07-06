@@ -14,7 +14,7 @@ const SPREADSHEET_TARGETS := {
 const MISSING_SYSTEMS := {
 	"old_school": "legacy contract premium rarely reachable by bot (Marge >= 40); weather intuition has no mechanical value yet",
 	"it_nephew": "market-timing edge (model prices 1.15x), automation perks, trust questline, incompetence costs beyond labor mult",
-	"mechanic": "cheaper self-repair on own equipment; repair contracts + salvage flip BOTH LIVE as of 2026-07-03 - identity complete",
+	"mechanic": "bot calls the dealer for breakdowns; cheaper self-fix + salvaged-part repair path is LIVE (2026-07-06) but unused by the bot; repair contracts + salvage flip live",
 }
 const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
 const COST_KEYS := ["order_seed_fuel", "labor_premium", "greenhorn_costs", "repair_costs", "penalties", "travel_fuel", "salvage_purchase_cost", "parts_cost"]
@@ -38,9 +38,9 @@ func _ready() -> void:
 			failures += 1
 		var target: int = SPREADSHEET_TARGETS[bg]
 		print("")
-		print("=== %-12s  end cash %d | model %d | drift %d%% | debt %d | handshakes %d/%d | \"%s\"" % [
+		print("=== %-12s  end cash %d | model %d | drift %d%% | note %d | NET %d | handshakes %d/%d | \"%s\"" % [
 			bg, r.cash, target, int(round(100.0 * (r.cash - target) / target)),
-			r.debt, r.kept, r.kept + r.missed, r.verdict,
+			r.debt, r.cash - r.debt, r.kept, r.kept + r.missed, r.verdict,
 		])
 		var led: Dictionary = r.ledger
 		var income_bits: Array[String] = []
@@ -53,7 +53,8 @@ func _ready() -> void:
 				cost_bits.append("%s $%d" % [k, -int(led[k])])
 		print("  income:   " + (" | ".join(income_bits) if not income_bits.is_empty() else "none"))
 		print("  costs:    " + (" | ".join(cost_bits) if not cost_bits.is_empty() else "none"))
-		print("  interest accrued (debt, not cash): $%d | downtime days: %d" % [-int(led.get("interest_accrued", 0)), r.downtime])
+		print("  interest accrued (debt): $%d | paid down: $%d | downtime days: %d" % [
+			-int(led.get("interest_accrued", 0)), -int(led.get("debt_paid", 0)), r.downtime])
 		var harvest_bits: Array[String] = []
 		for crop in r.harvests.keys():
 			harvest_bits.append("%s %d" % [crop, r.harvests[crop]])
@@ -115,33 +116,31 @@ func _run_sim(bg: String) -> Dictionary:
 
 
 func _bot_act() -> void:
-	# Breakdown on the line: pay if flush, wait if broke (mirrors a cautious player)
+	# Breakdown popup: a cautious player calls the shop when flush, lets it sit
+	# when broke. Severity-aware resolve applies its own cost/downtime now.
+	# (Mechanic self-fix + salvaged-part path is cheaper — noted in MISSING SYSTEMS.)
 	if not GameState.pending_breakdown.is_empty():
 		if GameState.cash >= 300:
-			ReputationLedger.apply_effects([
-				{"op": "cash_delta", "value": -150, "category": "repair_costs"},
-				{"op": "flag_set", "flag": "breakdown_paid_shop"},
-				{"op": "rep_delta", "npc": "roy", "value": 2},
-				{"op": "breakdown_resolve", "value": "resume"},
-			])
+			GameState.resolve_breakdown("dealer")
 		else:
-			ReputationLedger.apply_effects([
-				{"op": "flag_set", "flag": "breakdown_waited"},
-				{"op": "breakdown_resolve", "value": "wait"},
-			])
-	# Field care: a competent player scouts, treats, and repairs
+			GameState.resolve_breakdown("wait")
+	# Field care: a competent player scouts, treats, fertilizes, repairs —
+	# on the note when the wallet's thin (input financing, 2026-07-06)
 	for field_id in GameState.fields.keys():
 		var f: Dictionary = GameState.fields[field_id]
 		if f.state == "growing":
 			if int(f.get("weeds", 0)) > 45:
-				GameState.field_action(field_id, "treat")
+				GameState.field_action(field_id, "treat", GameState.cash < 60)
 			if f.get("stressed", false):
-				GameState.field_action(field_id, "repair_field")
-	# Harvest anything ready
+				GameState.field_action(field_id, "repair_field", GameState.cash < 20)
+			if not f.get("fertilized", false):
+				GameState.field_action(field_id, "fertilize", GameState.cash < 80)
+	# Harvest anything ready (financed when short)
 	for field_id in GameState.fields.keys():
 		var f: Dictionary = GameState.fields[field_id]
 		if f.state == "ready":
-			GameState.issue_field_order(field_id, f.crop, "harvest")
+			GameState.issue_field_order(field_id, f.crop, "harvest",
+				GameState.cash < GameState.order_cost(f.crop, "harvest"))
 	# Plant fallow fields per background strategy (mirrors the spreadsheet)
 	var plan: Dictionary
 	match _current_bg:
@@ -154,7 +153,8 @@ func _bot_act() -> void:
 	for field_id in plan.keys():
 		var crop: String = plan[field_id]
 		if crop != "" and GameState.fields[field_id].state == "fallow":
-			GameState.issue_field_order(field_id, crop, "plant")
+			GameState.issue_field_order(field_id, crop, "plant",
+				GameState.cash < GameState.order_cost(crop, "plant"))
 	# Contracts: shake on the corn delivery when eligible, deliver when stocked
 	if GameState.active_contract("corn_delivery_t1").is_empty() and _current_bg != "mechanic":
 		GameState.accept_contract("corn_delivery_t1")
@@ -191,6 +191,10 @@ func _bot_act() -> void:
 				_timing_value += (EconomyManager.prices.get(commodity, 0.0) - float(_hold_anchor[commodity])) * units
 				_hold_anchor.erase(commodity)
 		EconomyManager.sell(commodity, units)
+	# Put surplus against the note when truly flush (exercises pay_debt). Only
+	# from cash above a working buffer, so it never tanks its own verdict.
+	if GameState.debt > 0 and GameState.cash > 3000:
+		GameState.pay_debt(GameState.cash - 3000)
 
 
 func _bot_handle_event(ev: Dictionary) -> void:

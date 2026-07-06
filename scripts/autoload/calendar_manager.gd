@@ -36,9 +36,11 @@ func spend_block() -> void:
 
 
 func advance_day() -> void:
-	# 1. Crops in the ground grow, then field orders progress
-	# (growth first so a plant completing today doesn't also grow today)
+	# 1. Crops in the ground grow, then iron wears from the day's work, then
+	# field orders progress (growth first so a plant completing today doesn't
+	# also grow today; wear before the breakdown roll so today's work counts).
 	GameState.tick_growth()
+	GameState.tick_equipment_wear()
 	GameState.progress_field_orders()
 	# 2. Market tick
 	EconomyManager.tick()
@@ -61,6 +63,10 @@ func advance_day() -> void:
 	# (full perk trees are sprint 8; this is the unlocks-dialogue proof)
 	if day == 8:
 		GameState.grant_perk(GameState.background().get("proof_perk", ""))
+	# Morning report: diff yesterday's snapshot into today's story, then
+	# re-baseline for tomorrow (legibility keystone, 2026-07-06)
+	GameState.build_morning_report()
+	GameState.snapshot_day()
 	EventBus.day_advanced.emit(day)
 	EventBus.time_block_changed.emit(block)
 	if day > RUN_LENGTH_DAYS:
@@ -68,9 +74,10 @@ func advance_day() -> void:
 
 
 func _schedule_event() -> void:
-	# A machine down in your own field outranks everything.
-	if not GameState.pending_breakdown.is_empty() and DataLoader.dialogue_trees.has("breakdown_choice"):
-		EventBus.event_triggered.emit({"id": "breakdown", "dialogue_tree": "breakdown_choice"})
+	# A machine down in your own field outranks everything — but it now arrives
+	# as an immediate popup from the machine (farm_hud auto-opens the breakdown
+	# panel on refresh), not a Roy phone call routed through the event system.
+	if not GameState.pending_breakdown.is_empty():
 		return
 	# Higher priority wins the day's single interrupt slot (a storm arriving
 	# tomorrow outranks a baler that can wait).

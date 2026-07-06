@@ -1,6 +1,18 @@
 {
-  "_schema": "Player-facing UI strings. Director-authored, verbatim (CLAUDE.md law 6). weather_today = Old School's observation of the CURRENT weather, picked by day. weather_cues = his gut about TOMORROW — only exists for weather worth sensing; empty means the gut is quiet, which is information too.",
-  "_status": "director_approved",
+  "_schema": "Player-facing UI strings. weather_today = Old School's observation of the CURRENT weather, picked by day. weather_cues = his gut about TOMORROW — only exists for weather worth sensing; empty means the gut is quiet, which is information too. field_stress = cause-specific damage language (label shows on the field button, detail in the inspector, fix is the repair button's verb).",
+  "_status": "director_approved (weather blocks); field_stress is ai_draft_needs_director_curation (2026-07-06)",
+  "field_stress": {
+    "storm": {
+      "label": "storm-lodged",
+      "detail": "Wind laid the rows over and washed a gully through the low end.",
+      "fix": "Stand the rows back up"
+    },
+    "drought": {
+      "label": "heat-bitten",
+      "detail": "Leaves curled by noon. The low spots are giving up first.",
+      "fix": "Rig water to the dry rows"
+    }
+  },
   "weather_today": {
     "clear": [
       "Sky's wide open today.",

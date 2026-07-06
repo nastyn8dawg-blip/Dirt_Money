@@ -24,7 +24,12 @@ func _ready() -> void:
 	make_label(box, "%s — Day %d" % [bg_name, summary.day], 20)
 	box.add_child(HSeparator.new())
 
-	make_label(box, "Cash: $%d   |   Debt: $%d" % [summary.cash, summary.debt], 18)
+	# The money story: net worth is the honest trajectory (started at -6800).
+	# Debt is pressure, not the verdict — the county's word below is the verdict.
+	var net: int = int(summary.get("net_worth", summary.cash - summary.debt))
+	make_label(box, "Cash: $%d   |   Note still owed: $%d" % [summary.cash, summary.debt], 18)
+	make_label(box, "Net worth: $%d   (you started at -$%d)" % [net, GameState.STARTING_DEBT - GameState.STARTING_CASH],
+		16, ScreenBase.GOOD if net > -(GameState.STARTING_DEBT - GameState.STARTING_CASH) else ScreenBase.WARN)
 	make_label(box, "Handshakes kept: %d   |   Handshakes missed: %d" % [
 		summary.contracts_completed, summary.contracts_missed,
 	], 18, ScreenBase.GOOD if summary.contracts_missed == 0 else Color(0.72, 0.58, 0.32))
@@ -68,8 +73,9 @@ func _ready() -> void:
 		make_label(box, "PREVIOUS RUNS THROUGH ASH CREEK", 16, ACCENT)
 		for prev in history.slice(max(0, history.size() - 4), history.size()):
 			var bg_label: String = DataLoader.get_background(prev.get("background", "")).get("name", "?")
-			var line := make_label(box, "%s — \"%s\" — $%d cash, %d/%d handshakes, county %d — %s" % [
-				bg_label, prev.get("ending_title", "?"), int(prev.get("cash", 0)),
+			var prev_net: int = int(prev.get("net_worth", int(prev.get("cash", 0)) - int(prev.get("debt", 0))))
+			var line := make_label(box, "%s — \"%s\" — net $%d, %d/%d handshakes, county %d — %s" % [
+				bg_label, prev.get("ending_title", "?"), prev_net,
 				int(prev.get("contracts_completed", 0)),
 				int(prev.get("contracts_completed", 0)) + int(prev.get("contracts_missed", 0)),
 				int(prev.get("reputation", {}).get("county", 0)),

@@ -1,7 +1,13 @@
 {
-  "_schema": "Equipment. 6 condition subsystems (0-100). Mechanic sees all six; other backgrounds see summary_state derived from the worst subsystem (fine >60, worn >35, rough >15, failing <=15). Numbers PLACEHOLDER.",
+  "_schema": "Equipment. 6 condition subsystems (0-100). Mechanic sees all six; other backgrounds see summary_state derived from the worst subsystem (fine >60, worn >35, rough >15, failing <=15). Condition now DRIVES gameplay: breakdown odds (worse iron quits more), breakdown severity, field yield, and work cost. breakdown_profile weights the failure tier and its consequences. ALL NUMBERS PLACEHOLDER — Phase 5 economy re-derivation locks them (2026-07-06 freeze lift).",
   "subsystems": ["engine", "hydraulics", "transmission", "tires", "electrical", "attachments"],
   "summary_thresholds": { "fine": 60, "worn": 35, "rough": 15 },
+  "breakdown_profile": {
+    "_note": "Shared severity table. weight picks the tier at breakdown; worse condition biases the pick toward the costly end (code). 'keep running' amplifies condition_hit and, after 3 ignores, forces the next failure to expensive. cost_dealer = Roy fixes it today; cost_self_parts = Mechanic self-fix; downtime_days = cost of letting it sit.",
+    "cheap":     { "weight": 60, "cost_dealer": 45,  "cost_self_parts": 15,  "downtime_days": 1, "condition_hit": 6 },
+    "mid":       { "weight": 30, "cost_dealer": 160, "cost_self_parts": 65,  "downtime_days": 2, "condition_hit": 16 },
+    "expensive": { "weight": 10, "cost_dealer": 420, "cost_self_parts": 180, "downtime_days": 4, "condition_hit": 34 }
+  },
   "equipment": [
     {
       "id": "tractor_old", "name": "The 2010 (inherited Harvestall)",

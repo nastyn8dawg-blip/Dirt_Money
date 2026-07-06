@@ -17,6 +17,11 @@ var contracts_missed: int = 0
 var perks: Array = []
 var pending_breakdown: Dictionary = {}   # {order} — one open breakdown at a time
 var _breakdown_rng := RandomNumberGenerator.new()
+# Equipment is owned, mutable state now — not just read-only content. Seeded from
+# DataLoader.equipment each run; condition actually changes (wear, breakdowns,
+# repairs) and feeds breakdown odds, yield, and work cost. neglect_streak tracks
+# "keep running" abuse so ignoring a failure compounds.
+var equipment_owned: Dictionary = {}     # eq_id -> {condition:{subsystem->0-100}, neglect_streak:int}
 
 # Diagnostic ledger: every cash movement is categorized at the source so the
 # balance harness can separate bad balance from incomplete identity.
@@ -27,7 +32,7 @@ var downtime_days: int = 0               # working days lost to breakdowns
 # Salvage flip loop (Director ruling: judgment, not guaranteed profit)
 var salvage_offers: Array = []           # {deal_id, hold_until_day}
 var salvage_projects: Array = []         # {deal_id, blocks_done, parts_paid, hidden_hit, extra_blocks}
-var salvage_stats := {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
+var salvage_stats := {"bought": 0, "parts": 0, "sold": 0, "blocks": 0, "parts_harvested": 0}
 var greenhorn_count: int = 0
 var run_recorded: bool = false
 var event_last: Dictionary = {}          # event_id -> last day fired (cooldowns)
@@ -63,13 +68,20 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	contracts_missed = 0
 	perks = []
 	pending_breakdown = {}
+	equipment_owned = {}
+	for eq_id in DataLoader.equipment.keys():
+		var tmpl: Dictionary = DataLoader.equipment[eq_id]
+		equipment_owned[eq_id] = {
+			"condition": (tmpl.get("condition", {}) as Dictionary).duplicate(true),
+			"neglect_streak": 0,
+		}
 	_breakdown_rng.seed = run_seed + 7
 	ledger = {}
 	harvest_log = {}
 	downtime_days = 0
 	salvage_offers = []
 	salvage_projects = []
-	salvage_stats = {"bought": 0, "parts": 0, "sold": 0, "blocks": 0}
+	salvage_stats = {"bought": 0, "parts": 0, "sold": 0, "blocks": 0, "parts_harvested": 0}
 	greenhorn_count = 0
 	run_recorded = false
 	event_last = {}
@@ -78,6 +90,8 @@ func new_run(bg_id: String, seed_value: int = 0) -> void:
 	CalendarManager.reset()
 	WeatherManager.reset(run_seed)
 	EconomyManager.reset(run_seed)
+	morning_report = []
+	snapshot_day()
 	EventBus.game_started.emit(bg_id)
 	EventBus.money_changed.emit(cash, debt)
 
@@ -108,6 +122,29 @@ func has_flag(flag: String) -> bool:
 	return flags.get(flag, false)
 
 
+func can_finish_by_season(crop_id: String, start_day: int) -> bool:
+	# Honest calendar (playtest fix 2026-07-06): plant + grow + harvest must all
+	# fit before the run ends, or the work is never offered in the first place.
+	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
+	var need := int(crop.get("plant_order", {}).get("days", 1)) \
+		+ int(crop.get("grow_days", 1)) \
+		+ int(crop.get("harvest_order", {}).get("days", 1))
+	return start_day + need <= CalendarManager.RUN_LENGTH_DAYS
+
+
+func order_cost(crop_id: String, kind: String) -> int:
+	# Single source of truth for what a plant/harvest order costs: the data
+	# cost, times the background labor multiplier, times the equipment-condition
+	# surcharge. The HUD and the charge must read this same number or the
+	# affordability gate drifts from reality (the labor-mult bug, again).
+	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
+	var order_info: Dictionary = crop.get(kind + "_order", {})
+	var eq_id := _equipment_for_field_kind(crop_id, kind)
+	return int(round(float(order_info.get("cost", 0))
+		* float(background().get("labor_cost_mult", 1.0))
+		* _equipment_work_cost_mult(eq_id)))
+
+
 func issue_field_order(field: String, crop_id: String, kind: String, on_credit: bool = false) -> bool:
 	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
 	if crop.is_empty() or not fields.has(field):
@@ -118,16 +155,20 @@ func issue_field_order(field: String, crop_id: String, kind: String, on_credit: 
 	# Missing the window is a strategic consequence, not a bug.
 	if kind == "plant" and CalendarManager.day > int(crop.get("plant_by_day", 30)):
 		return false
+	# Futility guard (playtest fix 2026-07-06): a plant that can't reach harvest
+	# before the season ends is refused, not silently doomed.
+	if kind == "plant" and not can_finish_by_season(crop_id, CalendarManager.day):
+		return false
 	if kind == "harvest" and fields[field].state != "ready":
 		return false
 	var order_info: Dictionary = crop.get(kind + "_order", {})
-	# IT Nephew hires the labor he can't do himself (backgrounds.json mult)
-	var cost := int(round(float(order_info.get("cost", 0)) * float(background().get("labor_cost_mult", 1.0))))
-	# Harvest can go on Earl's note (Director ruling 2026-07-04): work that
-	# directly creates revenue is never hard-blocked by a thin wallet unless
-	# credit has truly collapsed. Planting stays cash-only — that's a gamble,
-	# not a rescue.
-	var financed := on_credit and kind == "harvest" and can_finance(cost)
+	# IT Nephew hires the labor he can't do himself; rough iron adds a surcharge.
+	var cost := order_cost(crop_id, kind)
+	# Production inputs go on Earl's note (Director ruling 2026-07-06, reversing
+	# 2026-07-04's planting-stays-cash): seed, crew, and harvest are all the
+	# operating loan's job — that's what an operating note IS. Speculation
+	# (salvage, upgrades, comforts) stays cash.
+	var financed := on_credit and kind in ["plant", "harvest"] and can_finance(cost)
 	if cash < cost and not financed:
 		return false
 	var base_cost := int(order_info.get("cost", 0))
@@ -165,13 +206,16 @@ func progress_field_orders() -> void:
 		# Breakdown roll: the old tractor working in bad weather is how the
 		# interruption-as-conversation design earns its keep.
 		if pending_breakdown.is_empty():
-			var eq: Dictionary = DataLoader.equipment.get("tractor_old", {})
-			var chance := float(eq.get("breakdown_base_chance", 0.0))
+			var eq_id := _equipment_for_field_kind(order.get("crop", ""), order.get("kind", ""))
+			var chance := _breakdown_chance(eq_id)
 			if WeatherManager.current in ["storm", "rain_light"]:
-				chance *= 2.0
+				chance = minf(1.0, chance * 2.0)
 			if _breakdown_rng.randf() < chance:
+				var sev := _roll_breakdown_severity(eq_id)
+				var sub: String = _equipment_worst_subsystem(eq_id)[0]
 				order.paused = true
-				pending_breakdown = {"order": order}
+				pending_breakdown = {"order": order, "equipment": eq_id, "severity": sev, "subsystem": sub}
+				EventBus.breakdown_triggered.emit(eq_id, sev)
 				continue
 		order.days_left -= 1
 		if order.days_left <= 0:
@@ -203,7 +247,12 @@ func progress_field_orders() -> void:
 			add_inventory(order.crop, units)
 			harvest_log[order.crop] = int(harvest_log.get(order.crop, 0)) + units
 			var cuts := int(f.get("cuts", 0)) + 1
-			if crop.get("multi_cut", false) and cuts < int(crop.get("max_harvests", 1)):
+			# Regrow only if the next cut can actually finish (playtest fix
+			# 2026-07-06: no more "6 days to ready" on day 26 that can never
+			# be harvested — the season's end is honest now).
+			var regrow_days := int(crop.get("grow_days", 1)) + int(crop.get("harvest_order", {}).get("days", 1))
+			var regrow_fits: bool = CalendarManager.day + regrow_days <= CalendarManager.RUN_LENGTH_DAYS
+			if crop.get("multi_cut", false) and cuts < int(crop.get("max_harvests", 1)) and regrow_fits:
 				# Hay regrows for another cutting — capped per season; field
 				# care resets between cuts, fertility/lime persist
 				f.state = "growing"
@@ -229,6 +278,10 @@ func tick_growth() -> void:
 			f.weeds = mini(100, int(f.get("weeds", 0)) + _breakdown_rng.randi_range(4, 8))
 			if WeatherManager.current in ["storm", "drought"]:
 				f.stressed = true
+				# Remember WHAT hit it — storm and drought read differently
+				# in the field (playtest fix: "storm damage" was all one note)
+				if not f.has("stress_cause") or f.get("stress_cause", "") == "":
+					f.stress_cause = WeatherManager.current
 			if f.days_to_ready <= 0:
 				f.state = "ready"
 
@@ -241,6 +294,9 @@ func _fresh_field() -> Dictionary:
 		"fertilized": false, "limed": false,
 	}
 
+
+# Production inputs Earl's note will carry (Director ruling 2026-07-06)
+const FINANCEABLE_ACTIONS := ["fertilize", "treat", "repair_field"]
 
 const FIELD_ACTIONS := {
 	# action: [cost, allowed_states]
@@ -262,10 +318,10 @@ func field_action(field_id: String, action: String, on_credit: bool = false) -> 
 	var f: Dictionary = fields[field_id]
 	var spec: Array = FIELD_ACTIONS[action]
 	var cost := int(spec[0])
-	# Financeable ruling (Director 2026-07-04): emergency repair protecting an
-	# active crop can go on the note. Optional care and prep stay cash-only —
-	# credit rescues production in motion, it doesn't fund gambles.
-	var financed := on_credit and action == "repair_field" and can_finance(cost)
+	# Financeable ruling (Director 2026-07-06, widening 2026-07-04): production
+	# inputs — fertilizer, treatment, emergency repair — all go on the note.
+	# "No situation where farmers are not fertilizing." Prep/speculation stays cash.
+	var financed := on_credit and action in FINANCEABLE_ACTIONS and can_finance(cost)
 	if not f.state in spec[1] or (cash < cost and not financed):
 		return false
 	if cost > 0:
@@ -286,7 +342,7 @@ func field_action(field_id: String, action: String, on_credit: bool = false) -> 
 		"scout": f.scouted = true
 		"fertilize": f.fertilized = true
 		"treat": f.weeds = 0; f.scouted = true
-		"repair_field": f.stressed = false
+		"repair_field": f.stressed = false; f.stress_cause = ""
 	return true
 
 
@@ -316,7 +372,180 @@ func field_yield_units(f: Dictionary) -> int:
 		units *= 0.80
 	if f.get("stressed", false):
 		units *= 0.90
+	units *= _equipment_condition_factor(_equipment_for_field_kind(f.get("crop", ""), "harvest"))
 	return int(round(units))
+
+
+# --- Equipment condition: the good/better/best gradient made real ---
+# These map owned-equipment condition to gameplay. All curves are PLACEHOLDER
+# until the Phase 5 economy re-derivation; the shapes are the point, not the
+# exact coefficients.
+
+func _equipment_avg_condition(eq_id: String) -> float:
+	var owned: Dictionary = equipment_owned.get(eq_id, {})
+	var cond: Dictionary = owned.get("condition", {})
+	if cond.is_empty():
+		return 100.0
+	var total := 0.0
+	for v in cond.values():
+		total += float(v)
+	return total / float(cond.size())
+
+
+func _equipment_worst_subsystem(eq_id: String) -> Array:
+	# Returns [subsystem_name, value] of the worst-off subsystem (drives the
+	# summary label and which part is most likely to fail next).
+	var owned: Dictionary = equipment_owned.get(eq_id, {})
+	var cond: Dictionary = owned.get("condition", {})
+	var worst := ""
+	var worst_v := 101.0
+	for k in cond.keys():
+		if float(cond[k]) < worst_v:
+			worst_v = float(cond[k])
+			worst = k
+	return [worst, int(worst_v)] if worst != "" else ["", 100]
+
+
+func equipment_summary_state(eq_id: String) -> String:
+	# fine/worn/rough/failing off the worst subsystem, per equipment_meta.
+	var worst: int = _equipment_worst_subsystem(eq_id)[1]
+	var t: Dictionary = DataLoader.equipment_meta.get("summary_thresholds", {})
+	if worst > int(t.get("fine", 60)):
+		return "fine"
+	if worst > int(t.get("worn", 35)):
+		return "worn"
+	if worst > int(t.get("rough", 15)):
+		return "rough"
+	return "failing"
+
+
+func _equipment_condition_factor(eq_id: String) -> float:
+	# Overall wear drag on yield and work cost. Good iron pays a little back;
+	# worn iron drags. Catastrophic single-subsystem failure is the breakdown
+	# system's job, not this smooth curve. PLACEHOLDER coefficients.
+	if eq_id == "" or not equipment_owned.has(eq_id):
+		return 1.0
+	var avg := _equipment_avg_condition(eq_id)
+	# avg 100 -> ~1.15 (capped), 60 -> ~1.0, 30 -> ~0.85, 0 -> 0.70
+	return clampf(0.70 + avg * 0.005, 0.60, 1.15)
+
+
+func _equipment_for_field_kind(crop_id: String, kind: String) -> String:
+	# Which machine services this field work. Hay baling leans on the baler;
+	# everything else runs off the old tractor. (Truck earns on hauling, wired
+	# when hauling contracts land.)
+	var crop: Dictionary = DataLoader.crops.get(crop_id, {})
+	if kind == "harvest" and crop.get("multi_cut", false):
+		return "baler_rusty"
+	return "tractor_old"
+
+
+func _equipment_work_cost_mult(eq_id: String) -> float:
+	# Rough iron costs more to run — fuel, babying, extra passes. Roughly the
+	# inverse of the yield factor. PLACEHOLDER.
+	var f := _equipment_condition_factor(eq_id)   # ~0.60..1.15
+	return clampf(2.0 - f, 0.85, 1.40)            # good iron ~0.85x, junk ~1.40x
+
+
+func _breakdown_chance(eq_id: String) -> float:
+	# Worse condition breaks down more; ignoring failures ("keep running")
+	# compounds it. Three ignores and the machine picks the moment for you.
+	if not equipment_owned.has(eq_id):
+		return 0.0
+	var eq: Dictionary = DataLoader.equipment.get(eq_id, {})
+	var base := float(eq.get("breakdown_base_chance", 0.0))
+	var neglect: int = int(equipment_owned[eq_id].get("neglect_streak", 0))
+	if neglect >= 3:
+		return 1.0   # forced-failure ceiling — you earned this one
+	var worst: int = _equipment_worst_subsystem(eq_id)[1]
+	var cond_mult := 1.0 + (100.0 - float(worst)) * 0.02   # worst 100 ->1.0, 0 ->3.0
+	var neglect_mult := 1.0 + 0.35 * float(neglect)
+	return clampf(base * cond_mult * neglect_mult, 0.0, 0.9)
+
+
+func _roll_breakdown_severity(eq_id: String) -> String:
+	# Weighted tier pick; worse condition biases toward the costly end, and a
+	# neglected machine's forced failure is always the expensive one.
+	var neglect: int = int(equipment_owned.get(eq_id, {}).get("neglect_streak", 0))
+	if neglect >= 3:
+		return "expensive"
+	var worst: int = _equipment_worst_subsystem(eq_id)[1]
+	var prof: Dictionary = DataLoader.equipment_meta.get("breakdown_profile", {})
+	var cheap_w := float(prof.get("cheap", {}).get("weight", 60))
+	var mid_w := float(prof.get("mid", {}).get("weight", 30))
+	var exp_w := float(prof.get("expensive", {}).get("weight", 10))
+	var bias := clampf((60.0 - float(worst)) * 0.02, 0.0, 2.0)
+	exp_w *= (1.0 + bias)
+	mid_w *= (1.0 + bias * 0.5)
+	var total := cheap_w + mid_w + exp_w
+	var r := _breakdown_rng.randf() * total
+	if r < cheap_w:
+		return "cheap"
+	if r < cheap_w + mid_w:
+		return "mid"
+	return "expensive"
+
+
+func _repair_subsystem(eq_id: String, sub: String, to_value: int) -> void:
+	# Bring a failed part back up. to_value >= 999 means a full, proper fix.
+	if sub == "" or not equipment_owned.has(eq_id):
+		return
+	var cond: Dictionary = equipment_owned[eq_id].get("condition", {})
+	if cond.has(sub):
+		cond[sub] = 100 if to_value >= 999 else mini(100, maxi(int(cond[sub]), to_value))
+		EventBus.equipment_condition_changed.emit(eq_id, sub, int(cond[sub]))
+
+
+func _damage_subsystem(eq_id: String, sub: String, amount: int) -> void:
+	if sub == "" or not equipment_owned.has(eq_id):
+		return
+	var cond: Dictionary = equipment_owned[eq_id].get("condition", {})
+	if cond.has(sub):
+		cond[sub] = maxi(0, int(cond[sub]) - amount)
+		EventBus.equipment_condition_changed.emit(eq_id, sub, int(cond[sub]))
+
+
+func tick_equipment_wear() -> void:
+	# Work wears iron. Only machines actually running an order today decay, so
+	# idle equipment doesn't rot and the player's own usage drives the curve.
+	var used := {}
+	for order in field_orders:
+		if order.get("paused", false):
+			continue
+		used[_equipment_for_field_kind(order.get("crop", ""), order.get("kind", ""))] = true
+	for eq_id in used.keys():
+		if not equipment_owned.has(eq_id):
+			continue
+		var cond: Dictionary = equipment_owned[eq_id].get("condition", {})
+		var subs: Array = cond.keys()
+		if subs.is_empty():
+			continue
+		var sub: String = subs[_breakdown_rng.randi_range(0, subs.size() - 1)]
+		cond[sub] = maxi(0, int(cond[sub]) - 1)
+		EventBus.equipment_condition_changed.emit(eq_id, sub, int(cond[sub]))
+
+
+func has_salvaged_parts(subsystem: String) -> bool:
+	# A restored-but-unsold salvage project can donate a cheap part.
+	for i in range(salvage_projects.size()):
+		if salvage_ready_to_sell(i):
+			var deal := salvage_deal(salvage_projects[i].deal_id)
+			if subsystem in deal.get("yields_parts_for", []):
+				return true
+	return false
+
+
+func consume_salvaged_part(subsystem: String) -> bool:
+	# Strip a restored project for the part instead of selling it — the
+	# sell-for-cash vs. keep-for-parts tension the salvage yard was missing.
+	for i in range(salvage_projects.size()):
+		if salvage_ready_to_sell(i):
+			var deal := salvage_deal(salvage_projects[i].deal_id)
+			if subsystem in deal.get("yields_parts_for", []):
+				salvage_projects.remove_at(i)
+				salvage_stats["parts_harvested"] = int(salvage_stats.get("parts_harvested", 0)) + 1
+				return true
+	return false
 
 
 func event_roll() -> float:
@@ -354,19 +583,228 @@ func tick_debt() -> void:
 		EventBus.money_changed.emit(cash, debt)
 
 
+func pay_debt(amount: int) -> int:
+	# The missing bridge between cash and debt. Until now the note only grew —
+	# you could pile up cash and still "maintain your 8k." This is progress you
+	# can feel: every dollar down is interest you never pay again. You can only
+	# pay what you have, and only what you owe.
+	if amount <= 0 or cash <= 0 or debt <= 0:
+		return 0
+	var paid := mini(amount, mini(cash, debt))
+	if paid <= 0:
+		return 0
+	cash -= paid
+	debt -= paid
+	# Debt-side ledger key (like orders_financed / interest_accrued): deleveraging,
+	# not an operating cost — kept out of the harness COST_KEYS.
+	ledger["debt_paid"] = int(ledger.get("debt_paid", 0)) - paid
+	# Milestone flags: the county notices a note getting smaller (gossip banks
+	# and Earl's greeting key off these)
+	if debt < 6000:
+		set_flag("note_under_6000")
+	if debt < 4000:
+		set_flag("note_under_4000")
+	if debt <= 0:
+		set_flag("note_cleared")
+	EventBus.money_changed.emit(cash, debt)
+	return paid
+
+
+func net_worth() -> int:
+	# The number that actually tells the story of a run: cash minus what you
+	# still owe. Starts at -6800. A great season should claw toward zero.
+	return cash - debt
+
+
+# ---------- Morning report: the day tells you its story ----------
+# (Playtest fix 2026-07-06: pay_debt worked and the Director never noticed.
+# Every invisible system gets a voice here, once a day, skimmable.)
+
+var day_snapshot: Dictionary = {}
+var morning_report: Array = []   # [{text, tone}] — tone: good/warn/info/muted
+
+# Ledger keys → plain speech for the report. [AI prose — Director curation]
+const _LEDGER_SPEECH := {
+	"crop_revenue": "Sold crops",
+	"livestock_revenue": "Egg money",
+	"contract_revenue": "Contract paid out",
+	"repair_salvage_revenue": "Shop money in",
+	"job_wages": "Day wages",
+	"order_seed_fuel": "Seed and fuel",
+	"labor_premium": "Hired labor",
+	"field_care": "Field work",
+	"repair_costs": "Repairs",
+	"maintenance_costs": "Shop upkeep",
+	"greenhorn_costs": "Greenhorn mistakes",
+	"penalties": "Penalties",
+	"travel_fuel": "Road fuel",
+	"salvage_purchase_cost": "Salvage bought",
+	"parts_cost": "Parts",
+	"item_costs": "Supplies",
+	"equipment_purchase": "Iron bought",
+	"equipment_trade_in": "Trade-in credit",
+}
+
+
+func snapshot_day() -> void:
+	var eq_states := {}
+	for eq_id in equipment_owned.keys():
+		eq_states[eq_id] = equipment_summary_state(eq_id)
+	day_snapshot = {
+		"ledger": ledger.duplicate(true),
+		"cash": cash,
+		"debt": debt,
+		"eq_states": eq_states,
+	}
+
+
+func build_morning_report() -> void:
+	morning_report = []
+	if day_snapshot.is_empty():
+		return
+	var prev_ledger: Dictionary = day_snapshot.get("ledger", {})
+	# Money that moved yesterday, in plain speech
+	for k in _LEDGER_SPEECH.keys():
+		var delta: int = int(ledger.get(k, 0)) - int(prev_ledger.get(k, 0))
+		if delta == 0:
+			continue
+		if delta > 0:
+			morning_report.append({"text": "%s — +$%d" % [_LEDGER_SPEECH[k], delta], "tone": "good"})
+		else:
+			morning_report.append({"text": "%s — $%d" % [_LEDGER_SPEECH[k], delta], "tone": "info"})
+	var financed_delta: int = int(ledger.get("orders_financed", 0)) - int(prev_ledger.get("orders_financed", 0))
+	if financed_delta < 0:
+		morning_report.append({"text": "Put on the note — $%d" % -financed_delta, "tone": "warn"})
+	var interest: int = int(ledger.get("interest_accrued", 0)) - int(prev_ledger.get("interest_accrued", 0))
+	if interest < 0:
+		morning_report.append({"text": "Interest crept — $%d onto the note" % -interest, "tone": "muted"})
+	var paid: int = int(ledger.get("debt_paid", 0)) - int(prev_ledger.get("debt_paid", 0))
+	if paid < 0:
+		morning_report.append({"text": "Note paid down — $%d. It shows." % -paid, "tone": "good"})
+	# The fields, one line each
+	for field_id in fields.keys():
+		var f: Dictionary = fields[field_id]
+		match f.get("state", ""):
+			"ready":
+				morning_report.append({"text": "%s %s is READY." % [field_id.to_upper(), f.get("crop", "")], "tone": "good"})
+			"growing":
+				if f.get("stressed", false):
+					var cause: String = f.get("stress_cause", "storm")
+					var label: String = DataLoader.strings.get("field_stress", {}).get(cause, {}).get("label", "weather-hit")
+					morning_report.append({"text": "%s field is %s — it's costing yield." % [field_id.capitalize(), label], "tone": "warn"})
+				else:
+					morning_report.append({"text": "%s %s — %d day(s) out." % [field_id.capitalize(), f.get("crop", ""), int(f.get("days_to_ready", 0))], "tone": "muted"})
+	# Iron that changed for the worse (or better)
+	var prev_eq: Dictionary = day_snapshot.get("eq_states", {})
+	for eq_id in equipment_owned.keys():
+		var now := equipment_summary_state(eq_id)
+		var before: String = prev_eq.get(eq_id, now)
+		if now != before:
+			var eq_name: String = DataLoader.equipment.get(eq_id, {}).get("name", eq_id)
+			morning_report.append({"text": "%s slipped from %s to %s." % [eq_name, before, now],
+				"tone": "warn" if now in ["rough", "failing"] else "info"})
+	# Warnings worth waking up to
+	for c in contracts_active:
+		var days_left: int = int(c.get("deadline_day", 99)) - CalendarManager.day
+		if days_left >= 0 and days_left <= 2:
+			morning_report.append({"text": "Contract due %s (Day %d) — %d %s to Marge's window." % [
+				CalendarManager.weekday_of(int(c.deadline_day)), int(c.deadline_day),
+				days_left, "day" if days_left == 1 else "days"], "tone": "warn"})
+	for crop_id in DataLoader.crops.keys():
+		var crop: Dictionary = DataLoader.crops[crop_id]
+		var window_left: int = int(crop.get("plant_by_day", 30)) - CalendarManager.day
+		if window_left >= 0 and window_left <= 2 and can_finish_by_season(crop_id, CalendarManager.day):
+			for field_id in fields.keys():
+				if fields[field_id].get("state", "") == "fallow":
+					morning_report.append({"text": "%s window closes Day %d — you've got ground open." % [
+						str(crop.get("name", crop_id)).capitalize(), int(crop.get("plant_by_day", 30))], "tone": "warn"})
+					break
+	if credit_tight():
+		morning_report.append({"text": "Credit's tight — Earl's watching the county ledger.", "tone": "warn"})
+	if morning_report.is_empty():
+		morning_report.append({"text": "Quiet morning. They don't come often — use it.", "tone": "muted"})
+
+
 func resolve_breakdown(mode: String) -> void:
+	# The breakdown popup's choices land here. Severity (cheap/mid/expensive)
+	# sets the cost, downtime, and condition damage; the player's choice sets
+	# who pays and how much it compounds. "resume" stays for the legacy Roy
+	# dialogue path (a fix already paid for elsewhere).
 	var order: Dictionary = pending_breakdown.get("order", {})
-	if not order.is_empty():
-		match mode:
-			"resume":
+	var eq_id: String = pending_breakdown.get("equipment", "tractor_old")
+	var sev_name: String = pending_breakdown.get("severity", "mid")
+	var sub: String = pending_breakdown.get("subsystem", "")
+	var prof: Dictionary = DataLoader.equipment_meta.get("breakdown_profile", {}).get(sev_name, {})
+	var hit := int(prof.get("condition_hit", 10))
+	var downtime := int(prof.get("downtime_days", 2))
+	match mode:
+		"resume":
+			# Legacy path: a fix was already handled — get moving, part restored.
+			_repair_subsystem(eq_id, sub, 999)
+			_reset_neglect(eq_id)
+			if not order.is_empty():
 				order.paused = false
-			"wait":
-				# It sits: the machine gets looked at eventually, the work
-				# loses two days, and the weather keeps its opinions.
+		"dealer":
+			# Call Roy's shop. Costs the most, but it's made right and running today.
+			add_cash(-int(prof.get("cost_dealer", 160)), "repair_costs")
+			_repair_subsystem(eq_id, sub, 999)
+			_reset_neglect(eq_id)
+			if not order.is_empty():
 				order.paused = false
-				order.days_left = int(order.days_left) + 2
-				downtime_days += 2
+			ReputationLedger.apply_effects([
+				{"op": "rep_delta", "npc": "roy", "value": 1},
+				{"op": "flag_set", "flag": "breakdown_paid_shop"},
+			])
+		"self":
+			# Fix it yourself (Mechanic). Cheaper, good-enough field fix.
+			add_cash(-int(prof.get("cost_self_parts", 65)), "repair_costs")
+			_repair_subsystem(eq_id, sub, 72)
+			_reset_neglect(eq_id)
+			if not order.is_empty():
+				order.paused = false
+			ReputationLedger.apply_effects([
+				{"op": "rep_delta", "npc": "gus", "value": 1},
+				{"op": "flag_set", "flag": "breakdown_fixed_self"},
+			])
+		"salvage":
+			# Strip a restored salvage project for the part. Near-free, no warranty.
+			if sub != "" and consume_salvaged_part(sub):
+				var iffy := _breakdown_rng.randf() < 0.35
+				_repair_subsystem(eq_id, sub, 48 if iffy else 66)
+				_reset_neglect(eq_id)
+				set_flag("salvage_parts_used")
+				if iffy:
+					set_flag("salvage_part_iffy")
+				if not order.is_empty():
+					order.paused = false
+			elif not order.is_empty():
+				# No usable part after all — it sits.
+				_damage_subsystem(eq_id, sub, hit)
+				order.paused = false
+				order.days_left = int(order.days_left) + downtime
+				downtime_days += downtime
+		"keep_running":
+			# Push it. Work continues now, but the damage compounds and the next
+			# failure comes sooner and harder (neglect_streak).
+			_damage_subsystem(eq_id, sub, int(round(hit * 1.5)))
+			equipment_owned[eq_id]["neglect_streak"] = int(equipment_owned[eq_id].get("neglect_streak", 0)) + 1
+			set_flag("breakdown_kept_running")
+			if not order.is_empty():
+				order.paused = false
+		"wait", _:
+			# It sits: lose the tier's downtime, and the strain takes some wear.
+			_damage_subsystem(eq_id, sub, hit)
+			if not order.is_empty():
+				order.paused = false
+				order.days_left = int(order.days_left) + downtime
+				downtime_days += downtime
+			set_flag("breakdown_waited")
 	pending_breakdown = {}
+
+
+func _reset_neglect(eq_id: String) -> void:
+	if equipment_owned.has(eq_id):
+		equipment_owned[eq_id]["neglect_streak"] = 0
 
 
 func salvage_deal(deal_id: String) -> Dictionary:
@@ -653,6 +1091,7 @@ func run_summary() -> Dictionary:
 		"day": CalendarManager.day,
 		"cash": cash,
 		"debt": debt,
+		"net_worth": net_worth(),
 		"contracts_completed": contracts_completed,
 		"contracts_missed": contracts_missed,
 		"reputation": ReputationLedger.snapshot(),

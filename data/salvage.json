@@ -1,5 +1,5 @@
 {
-  "_schema": "Salvage deals (Director ruling 2026-07-03): profit comes from judgment, time, parts control, reputation, and knowing when to walk away. condition_reads = what anyone sees (Director canon phrases). mechanic_read = what the wrench-eye reveals. true_parts/hidden_* stay invisible until the work starts. hold expires Friday after the offer. ONE core opportunity + one trap for the slice - not infinitely repeatable.",
+  "_schema": "Salvage deals (Director ruling 2026-07-03): profit comes from judgment, time, parts control, reputation, and knowing when to walk away. condition_reads = what anyone sees (Director canon phrases). mechanic_read = what the wrench-eye reveals. true_parts/hidden_* stay invisible until the work starts. hold expires Friday after the offer. ONE core opportunity + one trap for the slice - not infinitely repeatable. yields_parts_for (2026-07-06): subsystems a RESTORED-but-unsold project can donate a cheap repair part for — the tension of sell-for-cash vs. strip-for-parts. Subsystem names match equipment.json.",
   "_status": "director_approved (structure + canon condition reads)",
   "deals": [
     {
@@ -12,7 +12,8 @@
       "hidden_damage_chance": 0.15,
       "hidden_damage_cost": 120,
       "restore_blocks": 4,
-      "base_sale_value": 1400
+      "base_sale_value": 1400,
+      "yields_parts_for": ["attachments", "hydraulics"]
     },
     {
       "id": "disc_mower",
@@ -24,7 +25,8 @@
       "hidden_damage_chance": 0.8,
       "hidden_damage_cost": 220,
       "restore_blocks": 5,
-      "base_sale_value": 900
+      "base_sale_value": 900,
+      "yields_parts_for": ["attachments", "engine", "transmission"]
     }
   ]
 }
