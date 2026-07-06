@@ -55,6 +55,33 @@ func setup(_payload: Dictionary) -> void:
 	pass
 
 
+# ---------- motion helpers (2026-07-06: "animation last" finally arrived) ----------
+# Tween-only, gl_compatibility-safe, bound to their nodes (die on queue_free).
+
+static func fade_in(node: CanvasItem, dur := 0.18) -> void:
+	node.modulate.a = 0.0
+	var tw := node.create_tween()
+	tw.tween_property(node, "modulate:a", 1.0, dur).set_ease(Tween.EASE_OUT)
+
+
+static func slide_in_right(panel: Control, dist := 40.0, dur := 0.16) -> void:
+	# For the side inspector: arrives from the right edge, settles fast.
+	panel.modulate.a = 0.0
+	var target := panel.position.x
+	panel.position.x = target + dist
+	var tw := panel.create_tween().set_parallel(true)
+	tw.tween_property(panel, "position:x", target, dur).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate:a", 1.0, dur)
+
+
+static func punch(node: Control, dur := 0.10) -> void:
+	# Small press feedback: dip and return.
+	node.pivot_offset = node.size / 2.0
+	node.scale = Vector2(0.97, 0.97)
+	var tw := node.create_tween()
+	tw.tween_property(node, "scale", Vector2.ONE, dur).set_ease(Tween.EASE_OUT)
+
+
 func add_background() -> void:
 	var bg := ColorRect.new()
 	bg.color = BG_COLOR
@@ -88,6 +115,7 @@ func make_button(parent: Control, text: String, callback: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.pressed.connect(callback)
+	b.button_down.connect(func(): ScreenBase.punch(b))
 	parent.add_child(b)
 	return b
 

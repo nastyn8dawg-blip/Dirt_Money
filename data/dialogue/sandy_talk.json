@@ -1,17 +1,42 @@
 {
-  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "6-beat structure per CLAUDE.md law 5. Prose drafted from placeholders; land_read text preserved verbatim (Director canon).",
+  "_status": "ai_draft_needs_director_curation (2026-07-06) — all prose except land_read is AI draft",
   "id": "sandy_talk",
   "npc": "sandy",
   "start": "intro",
+  "entry": [
+    { "if_rep_below": { "npc": "sandy", "value": 0 }, "goto": "intro_cold" },
+    { "if_rep_at_least": { "npc": "sandy", "value": 40 }, "goto": "intro_trusted" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_cold": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "Scale's open.\n\nGet in line.",
+      "variants": [
+        "Weigh in or move the truck.",
+        "Ticket window's around the side."
+      ],
+      "options": [
+        { "text": "(Get in line)", "goto": "_end" }
+      ]
+    },
     "intro": {
       "speaker": "sandy",
       "emotion": "neutral",
-      "text": "[Situation — Sandy at the scale window, tired, logbook open. Trucks idle behind you.]",
+      "text": "Line's been steady.\n\nYou hauling or asking?",
+      "variants": [
+        "Scale's running true.\n\nChecked it myself this morning, same as every morning.",
+        "If you're here to argue moisture numbers, the machine wins.\n\nIt always wins.",
+        "Morning.\n\nDock's clear for about twenty minutes. That's a fact, not an invitation."
+      ],
+      "text_rules": [
+        { "if_flag": "worked_for_sandy", "text": "You're the one helped me clear that Tuesday backup.\n\nGo ahead of the grain trucks — they're all waiting on moisture tests anyway." }
+      ],
       "options": [
         {
-          "text": "[IT option — offer her your delivery-timing model in exchange for dock priority.]",
+          "text": "\"Give me a week with your intake times. I can shorten this line.\"",
           "label": "[IT Nephew]",
           "requires": { "background": "it_nephew" },
           "check": { "skill": "analysis", "difficulty": 40, "odds": 0.55 },
@@ -25,14 +50,26 @@
           "goto": "land_read",
           "effects": [{ "op": "rep_delta", "npc": "sandy", "value": 3 }, { "op": "flag_set", "flag": "perk_land_read_used" }]
         },
-        { "text": "[Ask how the line's been running.]", "goto": "chat" },
-        { "text": "[Leave.]", "goto": "_end" }
+        { "text": "\"How's the line been running?\"", "goto": "chat" },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
+    "intro_trusted": {
+      "speaker": "sandy",
+      "emotion": "neutral",
+      "text": "Slow morning.\n\nFirst one this month, so I'm suspicious of it.\n\nBeans been coming in wetter than folks want to admit, and the dryer's been running since Friday.\n\nHow's your ground holding up?",
+      "variants": [
+        "Pull around, you know where.\n\nDryer's been going since Friday — beans coming in wet and nobody admitting it.\n\nHollis weighed in Tuesday, asked after you.\n\nSort of. In his way."
+      ],
+      "options": [
+        { "text": "\"Holding. Ask me again after the next rain.\"", "goto": "chat" },
+        { "text": "(Leave)", "goto": "_end" }
       ]
     },
     "timing_success": {
       "speaker": "sandy",
       "emotion": "neutral",
-      "text": "[Result — she tries your schedule for a week and it works. You unload first from now on. She won't say thank you twice.]",
+      "text": "Ran your schedule for a week.\n\nLine moved.\n\nYou unload first from now on — don't make a speech about it.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "sandy", "value": 3 },
@@ -42,7 +79,7 @@
     "timing_failure": {
       "speaker": "sandy",
       "emotion": "angry",
-      "text": "[Good failure — your model jammed her Tuesday line for two hours. Every farmer in that line knows whose idea it was.]",
+      "text": "Your model backed my Tuesday line up two hours.\n\nEvery farmer sitting in it knows whose idea that was.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "sandy", "value": -3 },
@@ -59,7 +96,13 @@
     "chat": {
       "speaker": "sandy",
       "emotion": "neutral",
-      "text": "[Flavor — one dry observation about who's hauling what. This is Old School's market signal, so it should hint at price direction.]",
+      "text": "Corn's moving through here faster than it did in June.\n\nMake of that what you want.",
+      "variants": [
+        "Three guys hauled beans early this week.\n\nEither they know something or they need cash.\n\nUsually it's cash.",
+        "Dryer's been running since Friday.\n\nWet grain, soft prices. That's not advice, it's arithmetic.",
+        "Nobody's hauling.\n\nWhen nobody's hauling, somebody's waiting on a number.",
+        "Same trucks, same order, all week.\n\nCounty's in a holding pattern."
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     }
   }

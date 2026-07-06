@@ -6,6 +6,10 @@ extends Node
 ## or ends before Day 30. Sprint 10's balance pass reconciles the drift.
 
 const SEED := 20260703
+const EXTRA_SEEDS := [20260707, 20260711]   # spread run: min/median/max NET
+# STALE: targets pre-date input financing + equipment-matters + jobs
+# (2026-07-06). Kept for drift context only — the flat ~$4k they encode was
+# the Director's complaint, not a goal. Re-derive in the economy pass.
 const SPREADSHEET_TARGETS := {
 	"old_school": 4670,
 	"it_nephew": 3832,
@@ -14,10 +18,10 @@ const SPREADSHEET_TARGETS := {
 const MISSING_SYSTEMS := {
 	"old_school": "legacy contract premium rarely reachable by bot (Marge >= 40); weather intuition has no mechanical value yet",
 	"it_nephew": "market-timing edge (model prices 1.15x), automation perks, trust questline, incompetence costs beyond labor mult",
-	"mechanic": "bot calls the dealer for breakdowns; cheaper self-fix + salvaged-part repair path is LIVE (2026-07-06) but unused by the bot; repair contracts + salvage flip live",
+	"mechanic": "self-fix + salvaged-part repair used when broke; dealer purchase exercised when flush",
 }
-const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "misc"]
-const COST_KEYS := ["order_seed_fuel", "labor_premium", "greenhorn_costs", "repair_costs", "penalties", "travel_fuel", "salvage_purchase_cost", "parts_cost"]
+const INCOME_KEYS := ["crop_revenue", "contract_revenue", "livestock_revenue", "repair_salvage_revenue", "job_wages", "equipment_trade_in", "misc"]
+const COST_KEYS := ["order_seed_fuel", "labor_premium", "greenhorn_costs", "repair_costs", "maintenance_costs", "penalties", "travel_fuel", "salvage_purchase_cost", "parts_cost", "field_care", "item_costs", "equipment_purchase"]
 
 var _current_bg := ""
 var _hold_anchor: Dictionary = {}   # commodity -> price when IT first held
@@ -33,8 +37,8 @@ func _ready() -> void:
 	print("DIRT MONEY BALANCE HARNESS — seed %d — DIAGNOSTIC ONLY (Director: do not balance yet)" % SEED)
 	print("Old School is the reference run. Equal cash is NOT the goal; distinct fair paths are.")
 	for bg in ["old_school", "it_nephew", "mechanic"]:
-		var r := _run_sim(bg)
-		if r.day < 31:
+		var r := _run_sim(bg, SEED)
+		if r.day < 31 or r.get("stuck_breakdown", false):
 			failures += 1
 		var target: int = SPREADSHEET_TARGETS[bg]
 		print("")
@@ -81,21 +85,45 @@ func _ready() -> void:
 					repair_income, int(s.get("sold", 0)) - int(s.get("bought", 0)) - int(s.get("parts", 0)), s.get("blocks", 0),
 				])
 		print("  MISSING SYSTEMS: " + MISSING_SYSTEMS.get(bg, ""))
+	# Outcome SPREAD (2026-07-06): the point is that choices move the number.
+	# 3 seeds per background; watch min/median/max NET, not a single target.
+	print("")
+	print("--- SPREAD (3 seeds/background, end NET = cash - note) ---")
+	for bg in ["old_school", "it_nephew", "mechanic"]:
+		var nets: Array = []
+		for s in [SEED] + EXTRA_SEEDS:
+			var rr := _run_sim(bg, s)
+			if rr.day < 31 or rr.get("stuck_breakdown", false):
+				failures += 1
+			nets.append(int(rr.cash) - int(rr.debt))
+		nets.sort()
+		print("  %-12s NET min %d | median %d | max %d" % [bg, nets[0], nets[1], nets[2]])
 	print("")
 	get_tree().quit(failures)
 
 
-func _run_sim(bg: String) -> Dictionary:
+func _run_sim(bg: String, seed_value: int) -> Dictionary:
 	_current_bg = bg
 	_hold_anchor = {}
 	_timing_seen = 0
 	_timing_used = 0
 	_timing_value = 0.0
-	GameState.new_run(bg, SEED)
+	GameState.new_run(bg, seed_value)
+	var stuck_days := 0
+	var stuck := false
 	while CalendarManager.day <= 30:
 		_bot_act()
+		# Watchdog: a breakdown nobody resolves for 5+ days means the interrupt
+		# loop is broken — that's a harness FAILURE, not a balance note.
+		if not GameState.pending_breakdown.is_empty():
+			stuck_days += 1
+			if stuck_days >= 5:
+				stuck = true
+		else:
+			stuck_days = 0
 		CalendarManager.advance_day()
 	return {
+		"stuck_breakdown": stuck,
 		"day": CalendarManager.day,
 		"cash": GameState.cash,
 		"debt": GameState.debt,
@@ -116,14 +144,41 @@ func _run_sim(bg: String) -> Dictionary:
 
 
 func _bot_act() -> void:
-	# Breakdown popup: a cautious player calls the shop when flush, lets it sit
-	# when broke. Severity-aware resolve applies its own cost/downtime now.
-	# (Mechanic self-fix + salvaged-part path is cheaper — noted in MISSING SYSTEMS.)
+	# Breakdown popup, played like a sensible farmer: Mechanic strips a
+	# salvaged part or self-fixes; everyone else calls the shop when flush
+	# and lets it sit when broke.
 	if not GameState.pending_breakdown.is_empty():
-		if GameState.cash >= 300:
+		var sub: String = GameState.pending_breakdown.get("subsystem", "")
+		if _current_bg == "mechanic" and sub != "" and GameState.has_salvaged_parts(sub):
+			GameState.resolve_breakdown("salvage")
+		elif _current_bg == "mechanic" and GameState.cash >= 200:
+			GameState.resolve_breakdown("self")
+		elif GameState.cash >= 300:
 			GameState.resolve_breakdown("dealer")
 		else:
 			GameState.resolve_breakdown("wait")
+	# Upkeep: service the worst machine when it's gone rough (habit loop)
+	for eq_id in GameState.equipment_owned.keys():
+		if GameState.equipment_summary_state(eq_id) in ["rough", "failing"] and GameState.cash >= 100:
+			GameState.service_equipment(eq_id)
+			break
+	# Better iron when flush: the mechanic trades the 2010 on the 2014
+	if _current_bg == "mechanic" and GameState.cash > 3200 and not GameState.has_flag("bought_better_iron"):
+		GameState.buy_equipment("tractor_used_2014", false)
+	# IT reads the forecast and tarps ahead of a storm (items loop)
+	if _current_bg == "it_nephew" and WeatherManager.forecast(1)[0] in ["storm", "drought"]:
+		for field_id in GameState.fields.keys():
+			var ff: Dictionary = GameState.fields[field_id]
+			if ff.state == "growing" and not ff.get("tarped", false):
+				if int(GameState.items_owned.get("row_tarps", 0)) == 0 and GameState.cash >= 35:
+					GameState.buy_item("row_tarps")
+				GameState.use_item_on_field("row_tarps", field_id)
+				break
+	# Grange: an idle-ish day earns a wage (one job per bot-day)
+	if GameState.cash < 3000:
+		var jobs := GameState.available_jobs()
+		if not jobs.is_empty():
+			GameState.work_job(jobs[0].get("id", ""))
 	# Field care: a competent player scouts, treats, fertilizes, repairs —
 	# on the note when the wallet's thin (input financing, 2026-07-06)
 	for field_id in GameState.fields.keys():

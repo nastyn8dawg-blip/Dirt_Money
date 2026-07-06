@@ -1,17 +1,49 @@
 {
-  "_schema": "6-beat structure per CLAUDE.md law 5. ALL text below is scratch placeholder awaiting Director wording (law 6).",
-  "_status": "placeholder_awaiting_director",
+  "_schema": "6-beat structure per CLAUDE.md law 5. Prose drafted from placeholders; status_tight text preserved verbatim (Director canon).",
+  "_status": "ai_draft_needs_director_curation (2026-07-06) — all prose except status_tight is AI draft",
   "id": "earl_talk",
   "npc": "earl",
   "start": "intro",
+  "entry": [
+    { "if_flag": "note_cleared", "goto": "intro_cleared" },
+    { "if_rep_below": { "npc": "earl", "value": 0 }, "goto": "intro_cold" },
+    { "goto": "intro" }
+  ],
   "nodes": {
+    "intro_cold": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "State your business.\n\nThe file already told me most of it.",
+      "variants": [
+        "Bank's open nine to noon Saturdays.\n\nWhat do you need.",
+        "Sit if you want.\n\nIt won't change the balance."
+      ],
+      "options": [
+        {
+          "text": "\"Where do I stand on the note?\"",
+          "goto_rules": [
+            { "if_county_below": -2, "goto": "status_tight" },
+            { "goto": "status" }
+          ]
+        },
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
     "intro": {
       "speaker": "earl",
       "emotion": "neutral",
-      "text": "[Situation — Earl behind the desk, dry and deliberate. Your family's debt file is already open in front of him.]",
+      "text": "Morning.\n\nThe note's where you left it.\n\nWhat can the bank do for you.",
+      "variants": [
+        "Have a seat.\n\nCalendar says we're closer to the fifth than you'd like.",
+        "You're here in person.\n\nThat's either good news or a request.",
+        "Coffee's for account holders.\n\nYou qualify, barely."
+      ],
+      "text_rules": [
+        { "if_flag": "note_under_6000", "text": "You've been chipping at that note.\n\nI keep a short list of people who do that without being asked.\n\nSit down." }
+      ],
       "options": [
         {
-          "text": "[IT option — argue the rate with amortization math.]",
+          "text": "\"Your rate's built on old numbers. I ran the amortization twice.\"",
           "label": "[IT Nephew]",
           "requires": { "background": "it_nephew" },
           "check": { "skill": "analysis", "difficulty": 50, "odds": 0.5 },
@@ -19,7 +51,7 @@
           "failure": "rate_failure"
         },
         {
-          "text": "[Old School option — invoke the family history with this bank.]",
+          "text": "\"My father banked here forty years. I'm asking for the room he'd have gotten.\"",
           "label": "[Old School]",
           "requires": { "background": "old_school" },
           "check": { "skill": "reputation", "difficulty": 40, "odds": 0.6 },
@@ -27,19 +59,31 @@
           "failure": "history_failure"
         },
         {
-          "text": "[Ask about your loan standing, straight.]",
+          "text": "\"Where do I stand on the note?\"",
           "goto_rules": [
             { "if_county_below": -2, "goto": "status_tight" },
             { "goto": "status" }
           ]
         },
-        { "text": "[Leave.]", "goto": "_end" }
+        { "text": "(Leave)", "goto": "_end" }
+      ]
+    },
+    "intro_cleared": {
+      "speaker": "earl",
+      "emotion": "neutral",
+      "text": "That note is closed.\n\nTwenty-two years at this desk and I can count on one hand the working farms that walked out of here owing nothing.\n\nWhatever you need from this bank going forward, you start at the front of the line.\n\nDon't tell Roy I said that.",
+      "variants": [
+        "Paid in full.\n\nI stamped it myself and I don't mind saying I checked the arithmetic twice, hoping it was wrong in your favor.\n\nIt wasn't.\n\nIt was just right."
+      ],
+      "options": [
+        { "text": "\"Feels lighter already.\"", "goto": "status" },
+        { "text": "(Leave)", "goto": "_end" }
       ]
     },
     "rate_success": {
       "speaker": "earl",
       "emotion": "neutral",
-      "text": "[Result — he can't fault the math and shaves the rate. Doesn't mean he likes you.]",
+      "text": "The math holds.\n\nI'll adjust the rate at the next statement.\n\nDon't confuse this with friendship.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "earl", "value": 4 },
@@ -49,7 +93,7 @@
     "rate_failure": {
       "speaker": "earl",
       "emotion": "angry",
-      "text": "[Good failure — you lectured a banker on banking and got a term wrong. He's colder now; word reaches the dealer.]",
+      "text": "You rolled the balloon into the principal.\n\nRoy will enjoy hearing a banker had to explain that.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "earl", "value": -4 },
@@ -60,7 +104,7 @@
     "history_success": {
       "speaker": "earl",
       "emotion": "sad",
-      "text": "[Result — your father's name still means something in this office. A small mercy on terms, quietly done.]",
+      "text": "I remember your father.\n\nLate twice in thirty years, and he called first both times.\n\nI can give you the same room I gave him.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "earl", "value": 5 },
@@ -70,7 +114,7 @@
     "history_failure": {
       "speaker": "earl",
       "emotion": "neutral",
-      "text": "[Good failure — he remembers the family debt differently than you tell it. Awkward. The diner hears you traded on a dead man's name.]",
+      "text": "I remember that debt differently than you're telling it.\n\nSo will the diner, by supper.",
       "options": [{ "text": "(Leave)", "goto": "_end" }],
       "on_enter_effects": [
         { "op": "rep_delta", "npc": "earl", "value": -3 },
@@ -80,7 +124,11 @@
     "status": {
       "speaker": "earl",
       "emotion": "neutral",
-      "text": "[Flavor — states the debt, the daily interest, and the day of the month, plainly. The calendar should sting a little.]",
+      "text": "Balance, interest, and the fifth of the month.\n\nThose are the three facts of your life right now.\n\nWeather changes. Those don't.",
+      "text_rules": [
+        { "if_flag": "note_cleared", "text": "You stand on your own two feet.\n\nEnjoy it. Most don't get to." },
+        { "if_flag": "note_under_6000", "text": "Balance is coming down.\n\nKeep it pointed that way and the fifth of the month stops being a weather event." }
+      ],
       "options": [{ "text": "(Leave)", "goto": "_end" }]
     },
     "status_tight": {

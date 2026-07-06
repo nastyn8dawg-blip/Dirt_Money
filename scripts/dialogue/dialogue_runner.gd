@@ -180,6 +180,15 @@ func _resolve_text(node: Dictionary) -> String:
 		var lead := DataLoader.pick_lead()
 		if lead != "":
 			return lead
+	# Inline conditional text (2026-07-06, closes a KNOWN_BUGS gap): one node
+	# can reference recent history without authoring parallel nodes. First
+	# matching rule wins; falls through to text/variants when none match.
+	for rule in node.get("text_rules", []):
+		if rule.has("if_flag") and not GameState.has_flag(rule.if_flag):
+			continue
+		if rule.has("if_not_flag") and GameState.has_flag(rule.if_not_flag):
+			continue
+		return str(rule.get("text", ""))
 	# Director-provided variants rotate randomly so replays don't loop.
 	var texts: Array = [node.get("text", "")]
 	texts.append_array(node.get("variants", []))

@@ -175,6 +175,14 @@ func _parcel(field_id: String, rect: Rect2) -> void:
 	b.position = rect.position
 	b.size = rect.size
 	b.pressed.connect(_open_field_detail.bind(field_id))
+	# Hover grow: the land leans toward you a little (UI juice, 2026-07-06)
+	b.pivot_offset = rect.size / 2.0
+	b.mouse_entered.connect(func():
+		var tw := b.create_tween()
+		tw.tween_property(b, "scale", Vector2(1.02, 1.02), 0.08))
+	b.mouse_exited.connect(func():
+		var tw := b.create_tween()
+		tw.tween_property(b, "scale", Vector2.ONE, 0.08))
 	_canvas.add_child(b)
 
 
@@ -237,6 +245,7 @@ func _open_side_panel(title: String, kind: String = "") -> VBoxContainer:
 	_close_detail()
 	_detail_kind = kind
 	_detail = make_panel(self)
+	ScreenBase.fade_in(_detail)
 	_detail.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
 	_detail.offset_left = -420
 	_detail.offset_right = -12
@@ -306,6 +315,7 @@ func _action(parent: Control, text: String, enabled: bool, cb: Callable) -> Butt
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(cb)
+	b.button_down.connect(func(): ScreenBase.punch(b))
 	parent.add_child(b)
 	return b
 
