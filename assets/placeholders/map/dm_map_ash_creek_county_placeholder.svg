@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700" role="img" aria-labelledby="title desc">
+  <title id="title">Ash Creek County map placeholder</title>
+  <desc id="desc">Worn paper county map with roads, creek, fields, and hand-marked location nodes.</desc>
+  <rect width="1100" height="700" fill="#E8D8B8"/>
+  <rect x="24" y="24" width="1052" height="652" rx="16" fill="#D9C59C" stroke="#8A6A35" stroke-width="8"/>
+  <path d="M30 510 C190 420 290 470 430 350 C610 195 760 260 1068 120" fill="none" stroke="#6F8794" stroke-width="18" opacity=".42"/>
+  <path d="M105 105 C250 235 395 305 560 360 C710 410 820 510 1000 600" fill="none" stroke="#4A3321" stroke-width="18" opacity=".55"/>
+  <path d="M118 598 C305 500 462 452 650 330 C790 238 900 165 1018 102" fill="none" stroke="#4A3321" stroke-width="12" opacity=".45"/>
+  <path d="M126 184 H968M180 96 V616M358 88 V640M548 88 V642M742 80 V618M932 90 V604" stroke="#8A6A35" stroke-opacity=".18" stroke-width="3"/>
+  <g fill="#7FA36A" opacity=".35">
+    <rect x="70" y="265" width="185" height="116" rx="12"/><rect x="790" y="355" width="205" height="128" rx="12"/><rect x="416" y="110" width="180" height="115" rx="12"/>
+  </g>
+  <g fill="#A64A35" stroke="#15110C" stroke-width="6">
+    <circle cx="210" cy="464" r="18"/><circle cx="418" cy="308" r="18"/><circle cx="560" cy="360" r="18"/><circle cx="700" cy="285" r="18"/>
+    <circle cx="823" cy="420" r="18"/><circle cx="930" cy="170" r="18"/><circle cx="300" cy="170" r="18"/><circle cx="645" cy="548" r="18"/><circle cx="898" cy="570" r="18"/>
+  </g>
+  <rect x="54" y="54" width="992" height="592" fill="none" stroke="#15110C" stroke-width="3" opacity=".28"/>
+</svg>
