@@ -93,6 +93,13 @@ export function locationArtFor(locationId) {
   return resolveArtAsset(`location.${locationId}`);
 }
 
-export function characterArtFor(id) {
+export function characterArtFor(id, warmth = null) {
+  // Portraits react to how the county sees you. "steady" is the base portrait;
+  // watched and trusted are separate paintings of the same person. Any missing
+  // variant falls back to the base, so partial art never breaks a screen.
+  if (warmth && warmth !== "steady") {
+    const variant = resolveArtAsset(`character.${id}_${warmth}`);
+    if (!variant.isPlaceholder && variant.type !== "missing") return variant;
+  }
   return resolveArtAsset(`character.${id}`);
 }

@@ -22,6 +22,7 @@ import {
   getProgressionCost,
   getRepairEstimate,
   getWeedTreatmentCost,
+  npcWarmthTier,
   preparednessText,
   getWorkSlotCost,
   rotationOutlook,
@@ -76,8 +77,8 @@ function artImage(art, alt, className = "scene-image") {
   return `<span class="art-frame" data-art-id="${escapeHtml(asset.id)}" data-art-status="${escapeHtml(asset.status)}"><img class="${className}" src="${escapeHtml(asset.src)}" alt="${escapeHtml(alt)}"${fallback} />${label}</span>`;
 }
 
-function portrait(id, name, className = "portrait-image") {
-  return artImage(characterArtFor(id), `${name} portrait placeholder`, className);
+function portrait(id, name, className = "portrait-image", warmth = null) {
+  return artImage(characterArtFor(id, warmth), `${name} portrait placeholder`, className);
 }
 
 function shell(app, content) {
@@ -1013,9 +1014,11 @@ function renderLocation(app) {
               ? location.npcIds
                   .map((id) => {
                     const npc = NPCS[id];
+                    // The face matches the greeting: same warmth tier the
+                    // spoken line is drawn from.
                     return `
                       <article class="dialogue-card">
-                        ${portrait(id, npc.name)}
+                        ${portrait(id, npc.name, "portrait-image", npcWarmthTier(state, id))}
                         <div class="dialogue-copy">
                           <div class="card-title"><h4>${escapeHtml(npc.name)}</h4><span>Relationship ${state.relationships[id] ?? 0}</span></div>
                           <p class="muted">${escapeHtml(npc.role)}</p>

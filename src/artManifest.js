@@ -101,15 +101,14 @@ const finalFieldIds = new Set([
 // Final painted county portraits, same Style D treatment as the fields.
 // Painted to this game's roles (Roy the mechanic, Dee the elevator clerk,
 // Sandy the Grange organizer) while keeping the canon people.
+const COUNTY_NPC_IDS = ["earl", "marge", "hollis", "roy", "gus", "patti", "dee", "sandy"];
+
+// Base portrait plus a watched (cold) and trusted (warm) painting of the same
+// person, so the face the player meets matches how the county sees them.
 const finalCharacterSlugs = new Set([
-  "earl",
-  "marge",
-  "hollis",
-  "roy",
-  "gus",
-  "patti",
-  "dee",
-  "sandy"
+  ...COUNTY_NPC_IDS,
+  ...COUNTY_NPC_IDS.map((id) => `${id}_watched`),
+  ...COUNTY_NPC_IDS.map((id) => `${id}_trusted`)
 ]);
 
 const importedFieldOverlayConceptIds = new Set([
@@ -278,7 +277,8 @@ export const ART_MANIFEST = {
     roy: character("roy", "Roy", "dm_character_roy_portrait_placeholder.svg"),
     gus: character("gus", "Gus", "dm_character_gus_portrait_placeholder.svg"),
     dee: character("dee", "Dee", "dm_character_dee_portrait_placeholder.svg"),
-    sandy: character("sandy", "Sandy", "dm_character_sandy_portrait_placeholder.svg")
+    sandy: character("sandy", "Sandy", "dm_character_sandy_portrait_placeholder.svg"),
+    ...characterWarmthVariants()
   },
   fields: {
     rough: field("rough", "Rough Field", "dm_field_rough_placeholder.svg"),
@@ -343,6 +343,23 @@ function location(id, displayName, placeholderFile, { conceptSlug = id, expected
       ? "Imported generated location concept art. Keep functional names and labels rendered by the UI."
       : "Location concept art not imported yet. Uses placeholder fallback until generated art is available."
   });
+}
+
+function characterWarmthVariants() {
+  // One manifest entry per NPC per warmth tier. Each keeps the base portrait's
+  // placeholder SVG as its fallback, so a missing variant degrades quietly.
+  const entries = {};
+  for (const id of COUNTY_NPC_IDS) {
+    for (const warmth of ["watched", "trusted"]) {
+      entries[`${id}_${warmth}`] = character(
+        `${id}_${warmth}`,
+        `${id[0].toUpperCase()}${id.slice(1)} (${warmth})`,
+        `dm_character_${id}_portrait_placeholder.svg`,
+        { conceptSlug: id, expectedSlug: `${id}_${warmth}` }
+      );
+    }
+  }
+  return entries;
 }
 
 function character(id, displayName, placeholderFile, { conceptSlug = id, expectedSlug = conceptSlug } = {}) {

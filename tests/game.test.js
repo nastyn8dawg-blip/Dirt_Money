@@ -16,6 +16,7 @@ import {
   continueToNextYear,
   contractNextStep,
   createNewGame,
+  npcWarmthTier,
   drawCredit,
   expectedYield,
   fertilizeField,
@@ -2936,4 +2937,36 @@ test("every NPC has a full dialogue bank within voice budgets", () => {
       for (const line of bank[tier]) assert.equal(line.includes("!"), false, `exclamation in ${id} ${tier}`);
     }
   }
+});
+
+test("portrait warmth follows the same tier the spoken line comes from", () => {
+  // The whole point of the warmth variants: the face must never contradict the
+  // greeting. Both read npcWarmthTier, so this pins them together.
+  const cold = createNewGame("old_school", 5150);
+  cold.reputation = 10;
+  cold.relationships.earl = 0;
+  assert.equal(npcWarmthTier(cold, "earl"), "watched");
+  assert.match(characterArtFor("earl", npcWarmthTier(cold, "earl")).src, /earl_watched_portrait\.png/);
+
+  const warm = createNewGame("old_school", 5150);
+  warm.reputation = 80;
+  warm.relationships.earl = 30;
+  assert.equal(npcWarmthTier(warm, "earl"), "trusted");
+  assert.match(characterArtFor("earl", npcWarmthTier(warm, "earl")).src, /earl_trusted_portrait\.png/);
+
+  // Middle standing uses the base portrait, not a variant.
+  const steady = createNewGame("old_school", 5150);
+  steady.reputation = 50;
+  steady.relationships.earl = 0;
+  assert.equal(npcWarmthTier(steady, "earl"), "steady");
+  assert.match(characterArtFor("earl", "steady").src, /dm_character_earl_portrait\.png/);
+
+  // A relationship bumps you up a tier even at middling county standing.
+  const bumped = createNewGame("old_school", 5150);
+  bumped.reputation = 50;
+  bumped.relationships.hollis = 25;
+  assert.equal(npcWarmthTier(bumped, "hollis"), "trusted");
+
+  // Unknown warmth or a character without variants falls back to the base.
+  assert.match(characterArtFor("earl", "nonsense").src, /dm_character_earl_portrait\.png/);
 });

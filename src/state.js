@@ -2610,6 +2610,18 @@ function npcContextMatches(state, when) {
   return false;
 }
 
+export function npcWarmthTier(state, npcId) {
+  // Single source of truth for how warm an NPC is toward the player: county
+  // standing, bumped one tier by a personal relationship. Both the spoken line
+  // and the portrait read this, so a warm greeting can never appear under a
+  // cold face.
+  const standingLabel = reputationStanding(state.reputation).label;
+  let tier = standingLabel === "Watched" ? 0 : standingLabel === "Trusted" ? 2 : 1;
+  const relationship = state.relationships?.[npcId] ?? 0;
+  if (relationship >= 20 && tier < 2) tier += 1;
+  return ["watched", "steady", "trusted"][tier];
+}
+
 export function pickNpcDialogueLine(state, npcId) {
   const npc = NPCS[npcId];
   const bank = DIALOGUE_BANKS[npcId];
@@ -2618,11 +2630,7 @@ export function pickNpcDialogueLine(state, npcId) {
   for (const entry of bank.context ?? []) {
     if (npcContextMatches(state, entry.when)) return entry.line;
   }
-  const standingLabel = reputationStanding(state.reputation).label;
-  let tier = standingLabel === "Watched" ? 0 : standingLabel === "Trusted" ? 2 : 1;
-  const relationship = state.relationships?.[npcId] ?? 0;
-  if (relationship >= 20 && tier < 2) tier += 1;
-  const lines = bank[["watched", "steady", "trusted"][tier]];
+  const lines = bank[npcWarmthTier(state, npcId)];
   if (!lines || lines.length === 0) return npc.dialogue;
   const roll = noise(state.seed + state.time.week, NPC_DIALOGUE_SALTS[npcId] ?? 400);
   return lines[Math.floor(roll * lines.length) % lines.length];
