@@ -35,6 +35,11 @@
   .thumbs img { width: 100%; aspect-ratio: 16/9; object-fit: cover;
                 border: 1px solid rgba(138,106,53,.4); border-radius: 4px; }
   .thumbs figcaption { font-size: .7rem; color: #9a8d75; text-align: center; margin-top: .3rem; }
+  .portraits { grid-template-columns: repeat(4, 1fr); }
+  .portrait-image { aspect-ratio: 3/4; width: 100%; max-height: 15rem; object-fit: cover;
+                    object-position: center top; border: 1px solid rgba(138,106,53,.75);
+                    border-radius: 6px; background: var(--coffee-black); display: block;
+                    margin-bottom: .6rem; }
   .chrome { max-width: 640px; width: 100%; border-radius: 6px; display: block; }
   figure { margin: 0; }
 </style>
@@ -145,6 +150,18 @@
     <figure><img src="./assets/final/fields/dm_field_prepped.png" alt=""><figcaption>prepped</figcaption></figure>
     <figure><img src="./assets/final/fields/dm_field_fallow.png" alt=""><figcaption>fallow</figcaption></figure>
     <figure><img src="./assets/final/fields/dm_field_rough.png" alt=""><figcaption>rough</figcaption></figure>
+  </div>
+
+  <h2>County portraits — card size (3:4)</h2>
+  <div class="grid portraits">
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_earl_portrait.png" alt=""><div class="label">Earl</div><div class="state">loan officer</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_marge_portrait.png" alt=""><div class="label">Marge Kowalski</div><div class="state">co-op</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_hollis_portrait.png" alt=""><div class="label">Hollis Vann</div><div class="state">neighbor</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_roy_portrait.png" alt=""><div class="label">Roy Carver</div><div class="state">mechanic</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_gus_portrait.png" alt=""><div class="label">Gus Weaver</div><div class="state">salvage</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_patti_portrait.png" alt=""><div class="label">Patti Lund</div><div class="state">diner</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_dee_portrait.png" alt=""><div class="label">Dee Tran</div><div class="state">elevator</div></div>
+    <div class="card"><img class="portrait-image" src="./assets/final/characters/dm_character_sandy_portrait.png" alt=""><div class="label">Sandy Alvarez</div><div class="state">Grange</div></div>
   </div>
 
   <h2>Style B — ledger chrome</h2>

@@ -2614,7 +2614,7 @@ test("visual world layer renders farm, field, map, location, and portrait assets
   const dinerGame = { ...game, currentLocationId: "pattis_diner" };
   const location = renderApp({ ...baseApp, game: dinerGame, screen: "location" });
   assert.match(location, /dm_location_pattis_diner_v01_concept\.png/);
-  assert.match(location, /dm_character_patti_portrait_v01_concept\.png/);
+  assert.match(location, /assets\/final\/characters\/dm_character_patti_portrait\.png/);
   assert.match(location, /dialogue-card/);
 
   const settings = renderApp({ ...baseApp, screen: "settings", settings: { fontScale: "normal", reduceMotion: false, soundMuted: false, soundVolume: 0.35 } });
@@ -2708,6 +2708,15 @@ test("non-field concept art resolves through manifest and runtime aliases", () =
     const asset = resolveArtAsset(artId);
     const conceptPath = asset.conceptPath.replace(/^\.\//, "");
 
+    // Portraits promoted to final painted art serve expectedPath; everything
+    // still awaiting final art must serve its imported concept.
+    if (asset.status === "final") {
+      const finalPath = asset.expectedPath.replace(/^\.\//, "");
+      assert.equal(asset.src, asset.expectedPath, `${asset.id} should resolve to final art`);
+      assert.equal(existsSync(finalPath), true, `Missing final art: ${finalPath}`);
+      continue;
+    }
+
     assert.equal(asset.status, "concept", `${asset.id} should use imported concept art`);
     assert.equal(asset.src, asset.conceptPath, `${asset.id} should resolve to concept art`);
     assert.equal(existsSync(conceptPath), true, `Missing imported non-field concept art: ${conceptPath}`);
@@ -2731,10 +2740,9 @@ test("missing non-field concept art stays placeholder-safe", () => {
     "location.home_farm",
     "location.roys_place",
     "location.hollis_place",
-    "location.grange_hall",
-    "character.hollis",
-    "character.marge",
-    "character.earl"
+    "location.grange_hall"
+    // Hollis, Marge and Earl moved to final painted portraits (2026-07-27);
+    // locations and farm art are still awaiting theirs.
   ]) {
     const asset = resolveArtAsset(artId);
     const fallbackPath = asset.fallbackPath.replace(/^\.\//, "");
@@ -2742,6 +2750,23 @@ test("missing non-field concept art stays placeholder-safe", () => {
     assert.notEqual(asset.type, "missing", `${artId} should be present in the manifest`);
     assert.equal(asset.status, "placeholder", `${asset.id} should remain placeholder until concept art is imported`);
     assert.equal(existsSync(fallbackPath), true, `Missing fallback art: ${fallbackPath}`);
+  }
+
+  // Every county portrait now ships final painted art with its fallback intact.
+  for (const artId of [
+    "character.earl",
+    "character.marge",
+    "character.hollis",
+    "character.roy",
+    "character.gus",
+    "character.patti",
+    "character.dee",
+    "character.sandy"
+  ]) {
+    const asset = resolveArtAsset(artId);
+    assert.equal(asset.status, "final", `${asset.id} should ship final painted art`);
+    assert.equal(existsSync(asset.expectedPath.replace(/^\.\//, "")), true, `Missing portrait: ${asset.expectedPath}`);
+    assert.equal(existsSync(asset.fallbackPath.replace(/^\.\//, "")), true, `Missing portrait fallback: ${asset.fallbackPath}`);
   }
 });
 

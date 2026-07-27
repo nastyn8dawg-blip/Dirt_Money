@@ -98,6 +98,20 @@ const finalFieldIds = new Set([
   "rough"
 ]);
 
+// Final painted county portraits, same Style D treatment as the fields.
+// Painted to this game's roles (Roy the mechanic, Dee the elevator clerk,
+// Sandy the Grange organizer) while keeping the canon people.
+const finalCharacterSlugs = new Set([
+  "earl",
+  "marge",
+  "hollis",
+  "roy",
+  "gus",
+  "patti",
+  "dee",
+  "sandy"
+]);
+
 const importedFieldOverlayConceptIds = new Set([
   "weeds",
   "drought",
@@ -332,6 +346,7 @@ function location(id, displayName, placeholderFile, { conceptSlug = id, expected
 }
 
 function character(id, displayName, placeholderFile, { conceptSlug = id, expectedSlug = conceptSlug } = {}) {
+  const isFinal = finalCharacterSlugs.has(expectedSlug);
   const hasConcept = importedCharacterConceptSlugs.has(conceptSlug);
   return artAsset({
     id: `character.${id}`,
@@ -341,10 +356,12 @@ function character(id, displayName, placeholderFile, { conceptSlug = id, expecte
     conceptPath: `./assets/concept/characters/dm_character_${conceptSlug}_portrait_v01_concept.png`,
     fallbackPath: `./assets/placeholders/characters/${placeholderFile}`,
     dimensions: "768x1024",
-    status: hasConcept ? "concept" : "placeholder",
-    notes: hasConcept
-      ? "Imported generated portrait concept art. Use approved references later to avoid character drift."
-      : "Portrait concept art not imported yet. Uses placeholder fallback until generated art is available."
+    status: isFinal ? "final" : hasConcept ? "concept" : "placeholder",
+    notes: isFinal
+      ? "Final painted portrait (Style D, reference-locked). Fallback SVG stays wired if the image fails to load."
+      : hasConcept
+        ? "Imported generated portrait concept art. Use approved references later to avoid character drift."
+        : "Portrait concept art not imported yet. Uses placeholder fallback until generated art is available."
   });
 }
 
