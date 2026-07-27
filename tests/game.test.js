@@ -2598,7 +2598,8 @@ test("visual world layer renders farm, field, map, location, and portrait assets
   cornGame.fields[0].cropId = "corn";
   cornGame.fields[0].stageIndex = 2;
   const cornField = renderApp({ ...baseApp, game: cornGame, screen: "field" });
-  assert.match(cornField, /dm_field_corn_growing_v01_concept\.png/);
+  // Corn now ships final painted art (Style D), not the concept import.
+  assert.match(cornField, /assets\/final\/fields\/dm_field_corn_growing\.png/);
 
   const missingHayHarvestedGame = createNewGame("old_school");
   missingHayHarvestedGame.fields[0].lastAction = "Harvested Hay";
@@ -2775,6 +2776,15 @@ test("imported field concept entries point at existing files and missing entries
   for (const key of IMPORTED_FIELD_CONCEPT_KEYS) {
     const asset = resolveArtAsset(`field.${key}`);
     const conceptPath = asset.conceptPath.replace(/^\.\//, "");
+
+    // Field states promoted to final painted art (Style D) serve expectedPath;
+    // everything still awaiting final art must serve its imported concept.
+    if (asset.status === "final") {
+      const finalPath = asset.expectedPath.replace(/^\.\//, "");
+      assert.equal(asset.src, asset.expectedPath, `${asset.id} should resolve to final art`);
+      assert.equal(existsSync(finalPath), true, `Missing final art: ${finalPath}`);
+      continue;
+    }
 
     assert.equal(asset.status, "concept", `${asset.id} should use imported concept art`);
     assert.equal(asset.src, asset.conceptPath, `${asset.id} should resolve to concept art`);

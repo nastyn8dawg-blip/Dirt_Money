@@ -56,6 +56,19 @@ const importedFieldConceptIds = new Set([
   "cover_crop_terminated"
 ]);
 
+// Final painted art delivered into assets/final/fields/. Style: muted WPA-era
+// regionalist painting (Style D), reference-locked so every state shares one
+// palette, brushwork, and camera. Add ids here as art lands — status "final"
+// makes resolveArtAsset serve expectedPath instead of the placeholder SVG.
+const finalFieldIds = new Set([
+  "corn_planted",
+  "corn_emerged",
+  "corn_growing",
+  "corn_stressed",
+  "corn_ready",
+  "corn_harvested"
+]);
+
 const importedFieldOverlayConceptIds = new Set([
   "weeds",
   "drought",
@@ -307,6 +320,7 @@ function character(id, displayName, placeholderFile, { conceptSlug = id, expecte
 }
 
 function field(id, displayName, placeholderFile) {
+  const isFinal = finalFieldIds.has(id);
   const hasConcept = importedFieldConceptIds.has(id);
   return artAsset({
     id: `field.${id}`,
@@ -315,11 +329,13 @@ function field(id, displayName, placeholderFile) {
     expectedPath: `./assets/final/fields/dm_field_${id}.png`,
     conceptPath: `./assets/concept/fields/dm_field_${id}_v01_concept.png`,
     fallbackPath: `./assets/placeholders/fields/${placeholderFile}`,
-    dimensions: "1920x1080",
-    status: hasConcept ? "concept" : "placeholder",
-    notes: hasConcept
-      ? "Imported generated field concept art. Fallback SVG remains wired if the image fails to load."
-      : "Concept art not imported yet. Uses placeholder fallback until generated art is available."
+    dimensions: "1280x720",
+    status: isFinal ? "final" : hasConcept ? "concept" : "placeholder",
+    notes: isFinal
+      ? "Final painted art (Style D, reference-locked). Fallback SVG stays wired if the image fails to load."
+      : hasConcept
+        ? "Imported generated field concept art. Fallback SVG remains wired if the image fails to load."
+        : "Concept art not imported yet. Uses placeholder fallback until generated art is available."
   });
 }
 
