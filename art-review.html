@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Dirt Money — Art Review</title>
+<style>
+  :root {
+    --coffee-black: #15110C;
+    --cream: #E8DFC8;
+    --harvest-gold: #C9A227;
+    --brass: #8A6A35;
+  }
+  body {
+    margin: 0; padding: 2rem;
+    background: var(--coffee-black);
+    color: var(--cream);
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  h1 { color: var(--harvest-gold); margin: 0 0 .25rem; }
+  p.sub { color: #9a8d75; margin: 0 0 2rem; font-size: .95rem; }
+  h2 { color: var(--harvest-gold); font-size: 1.05rem; margin: 2.5rem 0 1rem;
+       border-bottom: 1px solid rgba(138,106,53,.5); padding-bottom: .4rem; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .card { background: #1d1811; border: 1px solid rgba(138,106,53,.45);
+          border-radius: 8px; padding: .9rem; }
+  /* Matches .field-card-art in src/styles.css exactly */
+  .field-card-art { aspect-ratio: 16/9; height: 9rem; width: 100%;
+                    object-fit: cover; margin-bottom: .8rem;
+                    border: 1px solid rgba(138,106,53,.58); border-radius: 6px;
+                    background: var(--coffee-black); display: block; }
+  .label { font-size: 1rem; color: var(--cream); }
+  .state { font-size: .8rem; color: var(--harvest-gold); text-transform: uppercase;
+           letter-spacing: .05em; }
+  .thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: .6rem; }
+  .thumbs img { width: 100%; aspect-ratio: 16/9; object-fit: cover;
+                border: 1px solid rgba(138,106,53,.4); border-radius: 4px; }
+  .thumbs figcaption { font-size: .7rem; color: #9a8d75; text-align: center; margin-top: .3rem; }
+  .chrome { max-width: 640px; width: 100%; border-radius: 6px; display: block; }
+  figure { margin: 0; }
+</style>
+</head>
+<body>
+  <h1>Dirt Money — Art Review</h1>
+  <p class="sub">Style D (muted regionalist painting) at true in-game card size · Style B chrome below</p>
+
+  <h2>Field cards — actual size in the Fields Overview (16:9, 9rem tall)</h2>
+  <div class="grid">
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_planted.png" alt="">
+      <div class="label">South 40</div><div class="state">Planted</div>
+    </div>
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_emerged.png" alt="">
+      <div class="label">South 40</div><div class="state">Emerged</div>
+    </div>
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_growing.png" alt="">
+      <div class="label">South 40</div><div class="state">Growing — healthy</div>
+    </div>
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_stressed.png" alt="">
+      <div class="label">South 40</div><div class="state">Stressed</div>
+    </div>
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_ready.png" alt="">
+      <div class="label">South 40</div><div class="state">Ready</div>
+    </div>
+    <div class="card">
+      <img class="field-card-art" src="./assets/final/fields/dm_field_corn_harvested.png" alt="">
+      <div class="label">South 40</div><div class="state">Harvested</div>
+    </div>
+  </div>
+
+  <h2>Thumbnail legibility check — can you tell the states apart small?</h2>
+  <div class="thumbs">
+    <figure><img src="./assets/final/fields/dm_field_corn_planted.png" alt=""><figcaption>planted</figcaption></figure>
+    <figure><img src="./assets/final/fields/dm_field_corn_emerged.png" alt=""><figcaption>emerged</figcaption></figure>
+    <figure><img src="./assets/final/fields/dm_field_corn_growing.png" alt=""><figcaption>growing</figcaption></figure>
+    <figure><img src="./assets/final/fields/dm_field_corn_stressed.png" alt=""><figcaption>stressed</figcaption></figure>
+    <figure><img src="./assets/final/fields/dm_field_corn_ready.png" alt=""><figcaption>ready</figcaption></figure>
+    <figure><img src="./assets/final/fields/dm_field_corn_harvested.png" alt=""><figcaption>harvested</figcaption></figure>
+  </div>
+
+  <h2>Style B — ledger chrome</h2>
+  <img class="chrome" src="./assets/final/ui/dm_ui_ledger_panel.png" alt="">
+</body>
+</html>
