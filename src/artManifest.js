@@ -66,7 +66,19 @@ const finalFieldIds = new Set([
   "corn_growing",
   "corn_stressed",
   "corn_ready",
-  "corn_harvested"
+  "corn_harvested",
+  "soybeans_planted",
+  "soybeans_emerged",
+  "soybeans_growing",
+  "soybeans_stressed",
+  "soybeans_ready",
+  "soybeans_harvested",
+  "hay_growing",
+  "hay_stressed",
+  "hay_ready_to_cut",
+  "hay_cut",
+  "hay_baled",
+  "hay_harvested"
 ]);
 
 const importedFieldOverlayConceptIds = new Set([

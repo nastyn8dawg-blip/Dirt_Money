@@ -2604,7 +2604,8 @@ test("visual world layer renders farm, field, map, location, and portrait assets
   const missingHayHarvestedGame = createNewGame("old_school");
   missingHayHarvestedGame.fields[0].lastAction = "Harvested Hay";
   const hayHarvestedField = renderApp({ ...baseApp, game: missingHayHarvestedGame, screen: "field" });
-  assert.match(hayHarvestedField, /dm_field_hay_harvested_v01_concept\.png/);
+  // Hay now ships final painted art (Style D), not the concept import.
+  assert.match(hayHarvestedField, /assets\/final\/fields\/dm_field_hay_harvested\.png/);
 
   const map = renderApp({ ...baseApp, screen: "map" });
   assert.match(map, /dm_map_ash_creek_county_v01_concept\.png/);
@@ -2820,7 +2821,7 @@ test("current field states map to crop-specific art where available", () => {
   assert.equal(fieldArtFor(fieldFixture({ cropId: "hay", stress: 70 })).id, "field.hay_stressed");
   assert.equal(fieldArtFor(fieldFixture({ cropId: "hay", ready: true })).id, "field.hay_ready_to_cut");
   assert.equal(fieldArtFor(fieldFixture({ lastAction: "Harvested Hay" })).id, "field.hay_harvested");
-  assert.match(fieldArtFor(fieldFixture({ lastAction: "Harvested Hay" })).src, /dm_field_hay_harvested_v01_concept\.png/);
+  assert.match(fieldArtFor(fieldFixture({ lastAction: "Harvested Hay" })).src, /assets\/final\/fields\/dm_field_hay_harvested\.png/);
 
   assert.equal(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 1 })).id, "field.cover_crop_emerged");
   assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 1 })).src, /dm_field_cover_crop_emerged_v01_concept\.png/);
