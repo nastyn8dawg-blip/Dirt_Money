@@ -770,6 +770,185 @@ export const NPCS = {
   }
 };
 
+// Dialogue banks: voice-locked to the Ash Creek canon. AI-drafted, needs Director curation pass.
+// Tiers follow the voice law sentence budgets: watched 1-2 sentences, steady 2-4, trusted 4-7
+// (Gus stays terse at every tier; trust shows as him volunteering one useful thing).
+// `context` entries fire before tier banks when their condition key matches the state.
+export const DIALOGUE_BANKS = {
+  patti: {
+    watched: [
+      "Sit anywhere. Coffee's a dollar.",
+      "County's been talking. Not all of it kind.",
+      "Menu's on the wall."
+    ],
+    steady: [
+      "Coffee's fresh. So's the gossip.",
+      "You want the special, or the speculation? One of them's free.",
+      "Ash Creek runs on coffee and speculation. You're keeping both in business.",
+      "Sit anywhere. News finds you either way."
+    ],
+    trusted: [
+      "There you are. Half the county's had your name in their mouth this month, and for once it's the good kind. Folks are starting to argue over who gets your Saturdays. I told them to get in line behind the pie counter. Coffee's on me, don't make a thing of it.",
+      "You keep giving people stories and I'll keep serving pie. Right now the story is you're one of the ones who shows up, and that story travels. Hollis said as much Tuesday, which for Hollis is practically a parade. Sit. Tell me something the radio doesn't know.",
+      "Diner's already heard about your week, so don't bother being modest. You can keep a secret in Ash Creek about as long as a milkshake lasts. Lucky for you the talk's been good. What else you got for me?"
+    ],
+    context: [
+      { when: "high_rep", line: "There's the name everybody keeps saying. Sit down before somebody buys your coffee out from under me." },
+      { when: "wet_week", line: "Whole counter's been griping about wet fields since six a.m. You're the fourth muddy set of boots today, so at least you're in company." }
+    ]
+  },
+  hollis: {
+    watched: [
+      "Morning.",
+      "Field's over there. Same as always.",
+      "Yep. Weather's doing what it does."
+    ],
+    steady: [
+      "That field is ready. Waiting longer is gambling with weather, and weather does not owe you manners.",
+      "Wind's got somewhere to be. I'd get after it before it changes its mind.",
+      "Clouds are hanging around but don't seem committed. That's the worst kind.",
+      "Second cutting's the one that pays. First one just pays the baler."
+    ],
+    trusted: [
+      "Morning. Walked your line fence on my way in, hope you don't mind. Ground's holding better than mine, which I'll deny saying at the diner. Your west end could use eyes this week — something's telling on itself before the leaves do. Come by if you want a second opinion. I keep score on these things. In a good way.",
+      "People remember who shows up. You've been showing up. My father used to say the county's built on favors more than money, and he died owed plenty of both. Anyhow. If you need a hand this week, you know where the place is.",
+      "Baler's still running, if that's what you're wondering. Every year I tell myself it's the last year for that machine, and every year it makes a liar of me. Sit a minute if you've got one. Fields can spare you longer than you think."
+    ],
+    context: [
+      { when: "wet_week", line: "Rain don't much care what we're hoping. Ground needs a few days before it'll forgive you for driving on it." }
+    ]
+  },
+  marge: {
+    watched: [
+      "Board's over there. If you take something, finish it.",
+      "Contracts haven't changed. Only expectations have.",
+      "Register's up front."
+    ],
+    steady: [
+      "Seed's going out, twine's coming back. Same as every spring, just two weeks compressed into one.",
+      "Fertilizer's on allocation again. Order early or order twice.",
+      "Board filled up Monday, emptied by Wednesday. That's what a dry forecast does around here.",
+      "Everybody wants delivery Saturday. Nobody wants to be the truck behind the truck."
+    ],
+    trusted: [
+      "Your last haul landed the day you said it would. I keep a second list for people like that, and it doesn't get posted on the board. Come see me before you commit to anything this month. Best timing I've got is yours first.",
+      "People are starting to put your name beside jobs instead of behind them. That took less time than I expected, and I don't say that often. What's the plan from here — staying small, or growing this thing?",
+      "Quiet week on the board. I don't trust it either. When it breaks, it'll break all at once, and the ones I call first are the ones who finish what they take. You're on that list. Don't fall off it."
+    ],
+    context: [
+      { when: "note_tight", line: "Heard the bank's got you on a short leash. Buy what feeds the crop, skip what feeds the catalog." }
+    ]
+  },
+  earl: {
+    watched: [
+      "State your business. The file already told me most of it.",
+      "Bank's open nine to noon Saturdays. What do you need.",
+      "Sit if you want. It won't change the balance."
+    ],
+    steady: [
+      "Morning. The note's where you left it. What can the bank do for you.",
+      "Balance, interest, and the fifth of the month. Those are the three facts of your life right now.",
+      "Weather changes. Payments don't. Plan around the second one.",
+      "You're here in person. That's either good news or a request."
+    ],
+    trusted: [
+      "You've been chipping at that note without being asked. I keep a short list of people who do that. Twenty-two years at this desk, and the list has never needed a second page. Keep it pointed that way and the fifth of the month stops being a weather event. Coffee's for account holders — you qualify.",
+      "Bank loves good years. Bank remembers bad ones. Yours are trending the right direction, which is the only compliment this office issues. If something's coming you can't cover, call first. Room gets made for people who call first.",
+      "I'll tell you what I tell nobody. The ledger's just arithmetic — it's the person across the desk I'm underwriting. You've made that part easy lately. Don't confuse this with friendship, but the door's open when you need it."
+    ],
+    context: [
+      { when: "note_tight", line: "That operating line is doing more operating than I'd like. Interest don't sleep, and neither do I when a note runs this hot." },
+      { when: "high_rep", line: "Bank doesn't lend to spreadsheets. We lend to people. People come with reputations, and right now yours is doing you favors." }
+    ]
+  },
+  roy: {
+    watched: [
+      "Shop's busy. Leave it or don't.",
+      "Parts counter's that way.",
+      "I bill by the hour, and the hour started."
+    ],
+    steady: [
+      "The part is ugly, not useless. There's a difference, and the difference is usually money.",
+      "No promises, but I've kept worse running.",
+      "It ain't personal. Equipment's got a mean streak.",
+      "Everything wears. The trick is knowing what wears first."
+    ],
+    trusted: [
+      "Kill it a second. I can hear where it's losing money. That's a bearing starting to think about retirement — not this week, but don't let it pick harvest to make the announcement. Bring it by and I'll get ahead of it. Friends-of-the-shop rate, which means I round down instead of up.",
+      "You take care of your iron, and iron notices. So do I. Half this county runs machines into the dirt and acts surprised at the bill. You're the other half. Anything on your place starts sounding wrong, I want to hear about it the same day.",
+      "Looks like we found the expensive problem first — which, believe it or not, is the good version. The cheap problem hides behind it and eats you slow. Yours is caught early. That's you listening to the machine, and I respect a person who listens."
+    ],
+    context: [
+      { when: "rough_iron", line: "That machine of yours is running on habit and prayer. Get it in here before it picks its own appointment." }
+    ]
+  },
+  gus: {
+    watched: [
+      "Yeah?",
+      "Gate was open.",
+      "Look all you want."
+    ],
+    steady: [
+      "Hm. Row three's new.",
+      "It'll run if you don't ask too many questions.",
+      "Take it or leave it. Price is the price.",
+      "Came in Tuesday. Runs. Mostly."
+    ],
+    trusted: [
+      "Mm. Combine came in Tuesday. Pump's good. Nobody else knows.",
+      "You again. Row five. Before Saturday.",
+      "Heard my parts are still running. Good.",
+      "Set one back for you. Don't tell Roy."
+    ],
+    context: [
+      { when: "rough_iron", line: "Your iron's coughing. Got parts. Row three." }
+    ]
+  },
+  dee: {
+    watched: [
+      "Sheet's posted. Same as everybody's.",
+      "Bid's the bid.",
+      "Window closes at four."
+    ],
+    steady: [
+      "The elevator bid moved against you overnight. Might come back. Might not.",
+      "Corn's moving. Beans are soft. Make of that what you want.",
+      "Wet grain, soft prices. That's not advice, it's arithmetic.",
+      "Nobody's hauling. When nobody's hauling, somebody's waiting on a number."
+    ],
+    trusted: [
+      "Three guys hauled beans early this week. Either they know something or they need cash — usually it's cash. You're not in that spot, so you can afford to let the number come to you. Might be worth waiting a few days. Might not. But I'd wait.",
+      "Sheet says one thing, phone says another. The buyers have been calling around before posting, which they only do when they're short. I shouldn't tell you that, so I didn't. Watch the Thursday bid.",
+      "Dryer's been running since Friday and half the county's pretending their grain came in dry. Yours is the ticket I don't double-check anymore. That saves us both time, and around here time is the only thing not for sale."
+    ],
+    context: [
+      { when: "wet_week", line: "Everything coming in this week is wet and everybody's arguing with the moisture tester. The machine wins. It always wins." }
+    ]
+  },
+  sandy: {
+    watched: [
+      "Hall's open. Sign the sheet if you're staying.",
+      "Folding chairs go back where you found them.",
+      "Notices are on the board."
+    ],
+    steady: [
+      "County trust is not a speech. It is showing up twice when the first time was inconvenient.",
+      "Board's full this week. Half of it's people needing hands, half of it's people needing patience.",
+      "Meeting ran long Tuesday. They always do when nobody's in charge of ending them.",
+      "People remember who shows up. That's the whole system, honestly."
+    ],
+    trusted: [
+      "Good, you're here. Your name came up at the meeting Tuesday — the useful way, where somebody needed a thing done and three people said ask you. That's the whole game in this county, being the name that comes up. Grab a chair, tell me how the season's actually going. And don't say fine.",
+      "I put your name forward for the fall committee before you could say no, which is why I'm telling you now instead of asking you then. It's two evenings and everyone brings food. The county keeps its books in favors, and yours are in the black.",
+      "Didn't take long for that story about you to get legs. Good legs, for once — most stories that move that fast are the other kind. Keep doing whatever it is you're doing. The board takes care of the rest."
+    ],
+    context: [
+      { when: "wet_week", line: "Half the notice board is rain complaints this week. Nobody's smarter than the weather, but everybody's got to say so out loud." },
+      { when: "high_rep", line: "Didn't take long for word to get around about you. Around here that's the bank that matters." }
+    ]
+  }
+};
+
 export const LOCATIONS = [
   {
     id: "home_farm",

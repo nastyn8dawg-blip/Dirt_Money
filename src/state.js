@@ -3,6 +3,7 @@ import {
   BALANCE,
   CONTRACT_TEMPLATES,
   CROP_TYPES,
+  DIALOGUE_BANKS,
   EQUIPMENT_TEMPLATES,
   EVENT_TEMPLATES,
   FIELD_TEMPLATES,
@@ -2587,6 +2588,46 @@ export function completeContract(state, contractId) {
   return finish(next, true, `${incomeText}${costNote} Reputation +${contract.reputation}.`);
 }
 
+const NPC_DIALOGUE_SALTS = {
+  patti: 411,
+  hollis: 412,
+  marge: 413,
+  earl: 414,
+  roy: 415,
+  gus: 416,
+  dee: 417,
+  sandy: 418
+};
+
+function npcContextMatches(state, when) {
+  if (when === "wet_week") return state.flags?.harvestDelayWeek === state.time.week;
+  if (when === "note_tight") {
+    const limit = state.financials?.creditLimit ?? 0;
+    return limit > 0 && (state.financials?.creditUsed ?? 0) / limit >= 0.7;
+  }
+  if (when === "rough_iron") return (state.equipment ?? []).some((item) => item.condition < 40);
+  if (when === "high_rep") return state.reputation >= 70;
+  return false;
+}
+
+export function pickNpcDialogueLine(state, npcId) {
+  const npc = NPCS[npcId];
+  const bank = DIALOGUE_BANKS[npcId];
+  if (!npc) return "";
+  if (!bank) return npc.dialogue;
+  for (const entry of bank.context ?? []) {
+    if (npcContextMatches(state, entry.when)) return entry.line;
+  }
+  const standingLabel = reputationStanding(state.reputation).label;
+  let tier = standingLabel === "Watched" ? 0 : standingLabel === "Trusted" ? 2 : 1;
+  const relationship = state.relationships?.[npcId] ?? 0;
+  if (relationship >= 20 && tier < 2) tier += 1;
+  const lines = bank[["watched", "steady", "trusted"][tier]];
+  if (!lines || lines.length === 0) return npc.dialogue;
+  const roll = noise(state.seed + state.time.week, NPC_DIALOGUE_SALTS[npcId] ?? 400);
+  return lines[Math.floor(roll * lines.length) % lines.length];
+}
+
 export function talkToNpc(state, npcId) {
   const next = cloneState(state);
   const npc = NPCS[npcId];
@@ -2594,14 +2635,15 @@ export function talkToNpc(state, npcId) {
   next.weeklyNpcInteractions = next.weeklyNpcInteractions ?? {};
   next.completedDialogueRewards = next.completedDialogueRewards ?? {};
   next.npcInteractionFlags = next.npcInteractionFlags ?? {};
+  const spokenLine = pickNpcDialogueLine(state, npcId) || npc.dialogue;
   const rewardKey = `${npcId}:year${next.time.year}:week${next.time.week}`;
   if (next.weeklyNpcInteractions[rewardKey]) {
-    return finish(next, true, `${npc.name}: "${npc.dialogue}" You already got this week's practical help here; talking again is free, not a second reward.`, "info");
+    return finish(next, true, `${npc.name}: "${spokenLine}" You already got this week's practical help here; talking again is free, not a second reward.`, "info");
   }
   next.weeklyNpcInteractions[rewardKey] = true;
   next.completedDialogueRewards[rewardKey] = true;
   next.relationships[npcId] = (next.relationships[npcId] ?? 0) + 2;
-  let result = npc.dialogue;
+  let result = spokenLine;
 
   if (npc.effect === "reputation") {
     next.reputation = clamp(next.reputation + 1);

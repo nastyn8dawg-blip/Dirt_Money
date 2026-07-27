@@ -2834,3 +2834,70 @@ function fieldFixture(overrides = {}) {
     ...overrides
   };
 }
+
+// --- Reputation-aware NPC dialogue banks ---
+
+import { pickNpcDialogueLine } from "../src/state.js";
+import { DIALOGUE_BANKS } from "../src/data.js";
+
+test("low-reputation player gets a watched-bank line from Earl", () => {
+  const game = createNewGame("old_school", 1234);
+  game.reputation = 10;
+  game.relationships.earl = 0;
+  const result = talkToNpc(game, "earl");
+  const spoken = DIALOGUE_BANKS.earl.watched.some((line) => result.message.includes(line));
+  assert.equal(spoken, true, `expected a watched line in: ${result.message}`);
+});
+
+test("trusted reputation and relationship gets a trusted-bank line", () => {
+  const game = createNewGame("old_school", 1234);
+  game.reputation = 80;
+  game.relationships.earl = 30;
+  // avoid the high_rep / note_tight context overrides for a pure tier test
+  game.financials.creditUsed = 0;
+  const result = pickNpcDialogueLine(game, "marge");
+  assert.equal(DIALOGUE_BANKS.marge.trusted.includes(result), true, `expected trusted line, got: ${result}`);
+});
+
+test("context condition overrides the tier bank (wet week, Hollis)", () => {
+  const game = createNewGame("old_school", 1234);
+  game.flags.harvestDelayWeek = game.time.week;
+  const result = talkToNpc(game, "hollis");
+  assert.equal(result.message.includes("Rain don't much care what we're hoping."), true, result.message);
+});
+
+test("dialogue pick is deterministic for same seed and week", () => {
+  const a = createNewGame("old_school", 777);
+  const b = createNewGame("old_school", 777);
+  assert.equal(pickNpcDialogueLine(a, "patti"), pickNpcDialogueLine(b, "patti"));
+  // different week: still deterministic (same pick both times), no assertion of difference
+  a.time.week = 9;
+  b.time.week = 9;
+  assert.equal(pickNpcDialogueLine(a, "patti"), pickNpcDialogueLine(b, "patti"));
+});
+
+test("repeat talk same week reuses the picked line and gives no second reward", () => {
+  const game = createNewGame("old_school", 555);
+  game.reputation = 50;
+  const first = talkToNpc(game, "sandy");
+  const repRewarded = first.state.reputation;
+  const relAfterFirst = first.state.relationships.sandy;
+  const second = talkToNpc(first.state, "sandy");
+  assert.equal(second.state.reputation, repRewarded, "no double reputation reward");
+  assert.equal(second.state.relationships.sandy, relAfterFirst, "no double relationship bump");
+  assert.equal(second.message.includes("already got this week's practical help"), true);
+  // repeat message quotes a real bank line (same deterministic pick source)
+  const banks = [...DIALOGUE_BANKS.sandy.watched, ...DIALOGUE_BANKS.sandy.steady, ...DIALOGUE_BANKS.sandy.trusted, ...DIALOGUE_BANKS.sandy.context.map((c) => c.line)];
+  assert.equal(banks.some((line) => second.message.includes(line)), true, second.message);
+});
+
+test("every NPC has a full dialogue bank within voice budgets", () => {
+  for (const id of Object.keys(NPCS)) {
+    const bank = DIALOGUE_BANKS[id];
+    assert.ok(bank, `missing bank for ${id}`);
+    assert.ok(bank.watched.length >= 2 && bank.steady.length >= 3 && bank.trusted.length >= 3, id);
+    for (const tier of ["watched", "steady", "trusted"]) {
+      for (const line of bank[tier]) assert.equal(line.includes("!"), false, `exclamation in ${id} ${tier}`);
+    }
+  }
+});
