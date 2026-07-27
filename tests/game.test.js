@@ -2824,13 +2824,13 @@ test("current field states map to crop-specific art where available", () => {
   assert.match(fieldArtFor(fieldFixture({ lastAction: "Harvested Hay" })).src, /assets\/final\/fields\/dm_field_hay_harvested\.png/);
 
   assert.equal(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 1 })).id, "field.cover_crop_emerged");
-  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 1 })).src, /dm_field_cover_crop_emerged_v01_concept\.png/);
+  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 1 })).src, /assets\/final\/fields\/dm_field_cover_crop_emerged\.png/);
   assert.equal(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 2 })).id, "field.cover_crop_growing");
-  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 2 })).src, /dm_field_cover_crop_growing_v01_concept\.png/);
+  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stageIndex: 2 })).src, /assets\/final\/fields\/dm_field_cover_crop_growing\.png/);
   assert.equal(fieldArtFor(fieldFixture({ cropId: "cover_crop", stress: 70 })).id, "field.cover_crop_stressed");
-  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stress: 70 })).src, /dm_field_cover_crop_stressed_v01_concept\.png/);
+  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", stress: 70 })).src, /assets\/final\/fields\/dm_field_cover_crop_stressed\.png/);
   assert.equal(fieldArtFor(fieldFixture({ cropId: "cover_crop", ready: true })).id, "field.cover_crop_terminated");
-  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", ready: true })).src, /dm_field_cover_crop_terminated_v01_concept\.png/);
+  assert.match(fieldArtFor(fieldFixture({ cropId: "cover_crop", ready: true })).src, /assets\/final\/fields\/dm_field_cover_crop_terminated\.png/);
 });
 
 function fieldFixture(overrides = {}) {

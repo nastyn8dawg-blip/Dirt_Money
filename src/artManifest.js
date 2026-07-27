@@ -78,7 +78,24 @@ const finalFieldIds = new Set([
   "hay_ready_to_cut",
   "hay_cut",
   "hay_baled",
-  "hay_harvested"
+  "hay_harvested",
+  "cover_crop_emerged",
+  "cover_crop_growing",
+  "cover_crop_stressed",
+  "cover_crop_terminated",
+  // Generic states double as winter wheat (worldArt maps winter_wheat to
+  // GENERIC_CROP_ART) and as the fallback for any crop without its own art.
+  "planted",
+  "emerged",
+  "growing",
+  "stressed",
+  "ready",
+  "harvested",
+  // Empty-ground states, differentiated by intent: prepped is tidy and
+  // expectant, fallow is deliberately resting, rough is neglected.
+  "prepped",
+  "fallow",
+  "rough"
 ]);
 
 const importedFieldOverlayConceptIds = new Set([
