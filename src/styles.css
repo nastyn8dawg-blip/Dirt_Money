@@ -447,23 +447,28 @@ strong {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.55rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .status-strip span {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  min-width: 0;
   min-height: 2.4rem;
   padding: 0.42rem 0.65rem;
   background: rgba(36, 26, 18, 0.92);
   border: 1px solid rgba(138, 106, 53, 0.58);
   border-radius: 6px;
   color: var(--dust-gray);
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .status-strip strong {
   color: var(--warm-cream);
+  overflow-wrap: anywhere;
 }
 
 .stat-icon {
@@ -720,6 +725,61 @@ dd {
   background: rgba(166, 74, 53, 0.16);
 }
 
+.result-card {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(214, 167, 58, 0.75);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(214, 167, 58, 0.12), rgba(21, 17, 12, 0.18)),
+    var(--panel-strong);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+}
+
+.result-card-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.result-card .dm-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  align-self: start;
+}
+
+.result-card p:last-child {
+  margin-bottom: 0;
+}
+
+.result-card.warning {
+  border-color: rgba(166, 74, 53, 0.86);
+}
+
+.soil-result-card,
+.soil-summary-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.soil-summary-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(7rem, 0.8fr) minmax(10rem, 1.4fr);
+  gap: 0.45rem 0.75rem;
+  align-items: start;
+  padding: 0.65rem;
+  border: 1px solid rgba(154, 144, 127, 0.25);
+  border-radius: 8px;
+  background: rgba(21, 17, 12, 0.18);
+}
+
+.soil-summary-row p {
+  grid-column: 1 / -1;
+}
+
 .warning-list p,
 .debt-warning p {
   margin-bottom: 0.4rem;
@@ -731,6 +791,115 @@ dd {
 
 .parts-line {
   color: var(--harvest-gold);
+}
+
+.priority-panel {
+  margin: 1rem 0 1.25rem;
+}
+
+.weekly-events,
+.batch-actions {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(138, 106, 53, 0.46);
+  border-radius: 8px;
+  background: rgba(21, 17, 12, 0.24);
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 0.75rem;
+}
+
+.section-title-row h3 {
+  margin-bottom: 0;
+}
+
+.section-title-row > span {
+  color: var(--harvest-gold);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.event-card {
+  border-color: rgba(111, 135, 148, 0.72);
+}
+
+.event-card.handled {
+  border-color: rgba(127, 163, 106, 0.72);
+}
+
+.event-card.expired {
+  opacity: 0.72;
+}
+
+.priority-panel .stack {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.priority.high {
+  border-color: rgba(166, 74, 53, 0.85);
+}
+
+.priority.medium {
+  border-color: rgba(214, 167, 58, 0.72);
+}
+
+.priority.low {
+  border-color: rgba(111, 135, 148, 0.72);
+}
+
+.field-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.field-overview-card.ready {
+  border-color: var(--harvest-gold);
+}
+
+.field-observation {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(214, 167, 58, 0.42);
+  border-radius: 6px;
+  background: rgba(214, 167, 58, 0.1);
+  color: #f3d99b;
+  font-weight: 700;
+}
+
+.stress-box {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border: 1px dashed rgba(166, 74, 53, 0.55);
+  border-radius: 6px;
+  background: rgba(166, 74, 53, 0.1);
+}
+
+.stress-box p {
+  margin-bottom: 0.35rem;
+}
+
+.stress-box p:last-child {
+  margin-bottom: 0;
+}
+
+.stress-box span,
+.stress-box strong {
+  color: #f0c98d;
+}
+
+.action-reasons {
+  margin-top: 0.85rem;
+  color: var(--dust-gray);
+  font-size: 0.92rem;
+}
+
+.action-reasons p {
+  margin-bottom: 0.25rem;
 }
 
 .salvage-card {
@@ -752,6 +921,11 @@ dd {
 
 .contract.failed {
   border-color: var(--barn-red);
+}
+
+.next-step {
+  border-left: 3px solid var(--harvest-gold);
+  padding-left: 0.75rem;
 }
 
 .compact-panel {
@@ -869,7 +1043,9 @@ dd {
 
   .card-grid.four,
   .card-grid.three,
-  .map-grid {
+  .map-grid,
+  .field-overview-grid,
+  .priority-panel .stack {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -903,6 +1079,8 @@ dd {
   .card-grid.three,
   .card-grid.four,
   .map-grid,
+  .field-overview-grid,
+  .priority-panel .stack,
   .split,
   .field-standard,
   .dialogue-card {
@@ -970,6 +1148,19 @@ dd {
   .button-grid .dm-button,
   .button-row .dm-button {
     flex: 1 1 100%;
+  }
+
+  .result-card,
+  .section-title-row {
+    display: grid;
+  }
+
+  .result-card .dm-button {
+    justify-self: start;
+  }
+
+  .soil-summary-row {
+    grid-template-columns: 1fr;
   }
 }
 

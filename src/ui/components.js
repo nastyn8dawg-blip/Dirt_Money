@@ -22,7 +22,8 @@ export function button(action, label, options = {}) {
   const data = {
     "data-action": action,
     class: `dm-button ${options.variant ?? ""}`.trim(),
-    disabled: options.disabled
+    disabled: options.disabled,
+    title: options.title
   };
   for (const [key, value] of Object.entries(options.data ?? {})) {
     data[`data-${dataAttributeName(key)}`] = value;

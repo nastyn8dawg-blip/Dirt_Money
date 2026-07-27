@@ -31,13 +31,18 @@ export const BALANCE = {
   fertilizerPerAcre: 5,
   weedTreatmentBase: 165,
   weedTreatmentPerAcre: 3,
+  scoutCost: 0,
   soilTestCost: 40,
+  soilTestValidityWeeks: 6,
+  readyYieldWeatherLossFloor: 0.74,
   repairCreditPremiumRate: 0.1,
   contractBoardTarget: 5,
   contractArchiveWeeks: 2,
   contractRefreshMinWeeks: 1,
   contractRefreshMaxWeeks: 3,
-  eventChance: 0.38
+  eventChance: 0.46,
+  defaultWorkSlots: 5,
+  preparednessBaseCap: 0
 };
 
 export const BACKGROUNDS = {
@@ -170,6 +175,24 @@ export const CROP_TYPES = {
       { name: "Ready to Cut", weeks: 99 }
     ],
     recommendation: "Hay is steady work and plays well with neighbor contracts."
+  },
+  cover_crop: {
+    id: "cover_crop",
+    name: "Cover Crop",
+    unit: "soil credit",
+    plantCost: 120,
+    harvestCost: 0,
+    baseYield: 0,
+    basePrice: 0,
+    marketable: false,
+    isCoverCrop: true,
+    stages: [
+      { name: "Seeded", weeks: 1 },
+      { name: "Emerged", weeks: 2 },
+      { name: "Soil Building", weeks: 3 },
+      { name: "Ready to Terminate", weeks: 99 }
+    ],
+    recommendation: "Cover crop costs cash now, but it repairs rotation pressure and tired ground."
   }
 };
 
@@ -304,6 +327,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 520,
     reputation: 4,
     requirementText: "Tractor condition 38% or better; $70 fuel.",
+    activeActionLabel: "Cut Hay",
+    activeActionText: "Cut Hollis's hay before weather gets another vote.",
+    actionText: "Cut Hollis's hay with a sound tractor, then settle the job after one week.",
+    nextStepText: "Keep the tractor above 38%, advance one week, then finish with Hollis.",
+    completionText: "Return to the Contract Board after the work week to settle the hay job.",
+    failureReason: "Hollis's hay sat too long or the tractor was not ready when the work was due.",
     requirements: { equipment: { tractor: 38 }, cashCost: 70 },
     wear: { tractor: 4 },
     risk: "Weather can take this away if you let it sit.",
@@ -322,6 +351,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 380,
     reputation: 3,
     requirementText: "Grain truck condition 45% or better; $45 fuel.",
+    activeActionLabel: "Haul Seed",
+    activeActionText: "Haul Marge's seed route with the grain truck.",
+    actionText: "Haul co-op seed with the grain truck before Marge's route deadline.",
+    nextStepText: "Click Haul Seed before the deadline, then advance one week and bring Marge the route ticket.",
+    completionText: "Bring the route ticket back to the Co-op board after the delivery week.",
+    failureReason: "Marge's seed route was not hauled before the deadline.",
     requirements: { equipment: { grain_truck: 45 }, cashCost: 45 },
     wear: { grain_truck: 5 },
     risk: "A rough truck can turn a simple favor into a missed route.",
@@ -340,6 +375,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 260,
     reputation: 4,
     requirementText: "2 salvage parts.",
+    activeActionLabel: "Deliver Parts",
+    activeActionText: "Deliver two usable salvage parts to Roy.",
+    actionText: "Spend two salvage parts helping Roy rebuild the drill press motor.",
+    nextStepText: "Have 2 salvage parts, advance one week, then finish the rebuild with Roy.",
+    completionText: "Bring the parts to Roy's Place and settle the favor on the board.",
+    failureReason: "Roy never got the parts he needed for the motor rebuild.",
     requirements: { parts: 2 },
     risk: "Low cash, good relationship value.",
     minReputation: 25,
@@ -357,6 +398,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 680,
     reputation: 5,
     requirementText: "Combine 42% and grain truck 40% or better; $90 fuel.",
+    activeActionLabel: "Start Harvest Help",
+    activeActionText: "Commit your combine and grain truck to the emergency harvest haul.",
+    actionText: "Use working harvest equipment for an emergency neighbor haul.",
+    nextStepText: "Keep combine above 42% and truck above 40%, advance one week, then collect at the elevator.",
+    completionText: "Return to Dee's elevator ticket after the emergency haul is ready.",
+    failureReason: "The emergency harvest help was not finished before the neighbor needed it.",
     requirements: { equipment: { combine: 42, grain_truck: 40 }, cashCost: 90 },
     wear: { combine: 5, grain_truck: 4 },
     risk: "Good pay, but it wears the machines you need for your own crop.",
@@ -376,6 +423,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 210,
     reputation: 6,
     requirementText: "1 salvage part or $80 cash.",
+    activeActionLabel: "Set Up Supper",
+    activeActionText: "Cover the Grange setup with one salvage part or $80 in supplies.",
+    actionText: "Cover supper setup with one salvage part or $80 in supplies.",
+    nextStepText: "Complete immediately if you can spare 1 part or $80.",
+    completionText: "Settle the supper setup now from the contract board.",
+    failureReason: "The Grange setup passed without your help.",
     requirements: { partsOrCash: { parts: 1, cash: 80 } },
     risk: "Small money, strong county standing.",
     minReputation: 0,
@@ -393,6 +446,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 300,
     reputation: 2,
     requirementText: "No equipment required; $35 fuel.",
+    activeActionLabel: "Haul Records",
+    activeActionText: "Haul and sort Earl's record boxes before audit week.",
+    actionText: "Haul and sort old lien records for Earl before audit week.",
+    nextStepText: "Advance one week, keep $35 fuel money available, then finish with Earl.",
+    completionText: "Return the sorted record boxes to Earl at the bank.",
+    failureReason: "Earl's audit records were not moved before he needed them.",
     requirements: { cashCost: 35 },
     risk: "Not glamorous, but it softens the bank conversation.",
     minReputation: 20,
@@ -410,6 +469,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 430,
     reputation: 5,
     requirementText: "Grain truck condition 42% or better; $75 fuel.",
+    activeActionLabel: "Run Water",
+    activeActionText: "Use the grain truck for Patti's neighbor water run.",
+    actionText: "Use the grain truck for a water run while drought pressure is high.",
+    nextStepText: "Keep the grain truck above 42%, advance one week, then settle the water run.",
+    completionText: "Check back after the water run to collect and hear who got helped.",
+    failureReason: "The water run was not made before the dry stretch bit harder.",
     requirements: { equipment: { grain_truck: 42 }, cashCost: 75 },
     wear: { grain_truck: 4 },
     risk: "Useful work when drought is already stressing fields.",
@@ -428,6 +493,12 @@ export const CONTRACT_TEMPLATES = [
     reward: 620,
     reputation: 2,
     requirementText: "3 salvage parts.",
+    activeActionLabel: "Visit Gus",
+    activeActionText: "Bring Gus three salvage parts for the buyer he lined up.",
+    actionText: "Bring Gus three useful salvage parts for a buyer he already lined up.",
+    nextStepText: "Acquire or strip salvage until you have 3 parts, advance one week, then finish with Gus.",
+    completionText: "Bring 3 parts back to Gus's Yard and settle the flip order.",
+    failureReason: "Gus's buyer moved on before you brought enough usable parts.",
     requirements: { parts: 3 },
     risk: "Good cash if you have parts; bad timing if the shed is empty.",
     minReputation: 25,
@@ -436,6 +507,39 @@ export const CONTRACT_TEMPLATES = [
 ];
 
 export const PROGRESSION_UPGRADES = [
+  {
+    id: "used_planter_upgrade",
+    title: "Used Planter Upgrade",
+    type: "Equipment upgrade",
+    locationId: "roys_place",
+    cost: 2600,
+    reputationRequired: 35,
+    financingAllowed: true,
+    description: "A tighter used planter Roy trusts enough to put his name near it.",
+    benefit: "Standing crops get a small yield potential bump from cleaner planting."
+  },
+  {
+    id: "better_sprayer",
+    title: "Better Pull-Type Sprayer",
+    type: "Equipment upgrade",
+    locationId: "farmers_coop",
+    cost: 2100,
+    reputationRequired: 30,
+    financingAllowed: true,
+    description: "A less tired sprayer with better nozzles and fewer missed strips.",
+    benefit: "Weed treatment costs 10% less and knocks down more weed pressure."
+  },
+  {
+    id: "harvest_upgrade",
+    title: "Used Combine Heads and Belts",
+    type: "Equipment upgrade",
+    locationId: "roys_place",
+    cost: 3400,
+    reputationRequired: 42,
+    financingAllowed: true,
+    description: "Not a new combine, but enough used harvest gear to stop bleeding easy bushels.",
+    benefit: "Harvest costs are 8% lower and ready-crop weather loss is softened."
+  },
   {
     id: "shop_tools",
     title: "Buy Better Shop Tools",
@@ -465,6 +569,26 @@ export const PROGRESSION_UPGRADES = [
     reputationRequired: 40,
     description: "Enough tight storage to stop selling every bushel the minute it hits the truck.",
     benefit: "Stored grain value gets a small basis bump in reports and planning."
+  },
+  {
+    id: "farm_office",
+    title: "Farm Office Planning Board",
+    type: "Farm improvement",
+    locationId: "home_farm",
+    cost: 1600,
+    reputationRequired: 32,
+    description: "A wall calendar, job board, and enough order to keep one quiet afternoon from disappearing.",
+    benefit: "Can bank up to 1 unused work slot as preparedness for the next week."
+  },
+  {
+    id: "organized_operation",
+    title: "Organized Operation",
+    type: "Farm improvement",
+    locationId: "home_farm",
+    cost: 4200,
+    reputationRequired: 55,
+    description: "Parts bins, field notes, and job planning tight enough that good weeks start before breakfast.",
+    benefit: "Raises preparedness banking to 2 unused work slots."
   },
   {
     id: "lease_back_20",
@@ -523,6 +647,43 @@ export const EVENT_TEMPLATES = [
     minWeek: 5,
     note: "Earl wants the operating note kept honest before it gets away from you.",
     effect: "bank_pressure"
+  },
+  {
+    id: "tornado_warning",
+    title: "Tornado Warning",
+    type: "weather",
+    weatherIds: ["storm_line"],
+    minWeek: 8,
+    rare: true,
+    note: "Sirens ran west of town. The county is checking sheds, bins, and neighbors.",
+    effect: "severe_community"
+  },
+  {
+    id: "coop_discount",
+    title: "Co-op Input Discount",
+    type: "county",
+    weatherIds: ["fair", "cool_snap"],
+    minWeek: 2,
+    note: "Marge got a short fertilizer and chemical discount. Good for this week only.",
+    effect: "input_discount"
+  },
+  {
+    id: "roy_equipment_warning",
+    title: "Roy's Equipment Warning",
+    type: "county",
+    weatherIds: ["fair", "hot_wind", "soaking_rain"],
+    minWeek: 3,
+    note: "Roy heard your iron laboring from the road and says the weakest machine needs attention.",
+    effect: "equipment_warning"
+  },
+  {
+    id: "market_rumor",
+    title: "Patti's Market Rumor",
+    type: "county",
+    weatherIds: ["fair", "cool_snap", "hot_wind"],
+    minWeek: 4,
+    note: "Patti says elevator talk has one bid leaning better than the sheet admits.",
+    effect: "market_rumor"
   }
 ];
 
