@@ -1829,7 +1829,10 @@ test("preparedness cap banks limited unused work and prevents stockpiling", () =
 });
 
 test("banked preparedness can be spent next week and survives save/load", () => {
-  let game = createNewGame("it_nephew");
+  // Fixed seed: advanceWeek rolls weather/events off the seed, and a random
+  // wet week (flags.harvestDelayWeek) blocked the harvest intermittently when
+  // seeding came from Date.now(). Deterministic seed makes green mean green.
+  let game = createNewGame("it_nephew", 424242);
   assert.equal(preparednessCap(game), 1);
   game.financials.cash = 20000;
   game.work.remaining = 1;

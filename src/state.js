@@ -583,9 +583,11 @@ function earn(state, amount, label) {
   return `${label}: +${dollars(rounded)}.`;
 }
 
-export function createNewGame(backgroundId = "old_school") {
+export function createNewGame(backgroundId = "old_school", seedOverride = null) {
   const bg = BACKGROUNDS[backgroundId] ?? BACKGROUNDS.old_school;
-  const seed = Math.floor(Date.now() % 1000000);
+  // Optional fixed seed keeps tests and replays deterministic; normal play
+  // still varies run to run off the clock.
+  const seed = Number.isInteger(seedOverride) ? seedOverride : Math.floor(Date.now() % 1000000);
   const state = {
     version: 1,
     player: {
