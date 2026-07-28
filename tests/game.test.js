@@ -2581,13 +2581,13 @@ test("visual world layer renders farm, field, map, location, and portrait assets
   };
 
   const dashboard = renderApp(baseApp);
-  assert.match(dashboard, /dm_farm_home_overview_v01_concept\.png/);
+  assert.match(dashboard, /assets\/final\/farm\/dm_farm_dashboard_hero\.png/);
   assert.match(dashboard, /Walk the Fields/);
 
   const backgroundSelect = renderApp({ ...baseApp, game: null, screen: "backgrounds" });
-  assert.match(backgroundSelect, /dm_character_old_school_farmer_portrait_v01_concept\.png/);
-  assert.match(backgroundSelect, /dm_character_it_nephew_portrait_v01_concept\.png/);
-  assert.match(backgroundSelect, /dm_character_mechanic_portrait_v01_concept\.png/);
+  assert.match(backgroundSelect, /assets\/final\/characters\/dm_character_old_school_farmer_portrait\.png/);
+  assert.match(backgroundSelect, /assets\/final\/characters\/dm_character_it_nephew_portrait\.png/);
+  assert.match(backgroundSelect, /assets\/final\/characters\/dm_character_mechanic_portrait\.png/);
 
   const field = renderApp({ ...baseApp, screen: "field" });
   assert.match(field, /dm_field_/);
@@ -2723,29 +2723,40 @@ test("non-field concept art resolves through manifest and runtime aliases", () =
     assert.equal(existsSync(conceptPath), true, `Missing imported non-field concept art: ${conceptPath}`);
   }
 
-  assert.equal(FARM_OVERVIEW_ART.id, "farm.home_overview");
-  assert.match(FARM_OVERVIEW_ART.src, /dm_farm_home_overview_v01_concept\.png/);
+  // The dashboard hero now ships final art, so it wins the preferred-art
+  // resolution over the generic home overview.
+  assert.equal(FARM_OVERVIEW_ART.id, "farm.dashboard_hero");
+  assert.match(FARM_OVERVIEW_ART.src, /assets\/final\/farm\/dm_farm_dashboard_hero\.png/);
   assert.equal(COUNTY_MAP_ART.id, "map.ash_creek_county");
   assert.match(COUNTY_MAP_ART.src, /assets\/final\/map\/dm_map_ash_creek_county\.png/);
 
   assert.match(locationArtFor("farmers_coop").src, /assets\/final\/locations\/dm_location_ash_creek_coop\.png/);
   assert.match(locationArtFor("guss_yard").src, /assets\/final\/locations\/dm_location_gus_yard\.png/);
   assert.match(locationArtFor("bank").src, /assets\/final\/locations\/dm_location_ash_creek_bank\.png/);
-  assert.match(characterArtFor("old_school").src, /dm_character_old_school_farmer_portrait_v01_concept\.png/);
+  assert.match(characterArtFor("old_school").src, /assets\/final\/characters\/dm_character_old_school_farmer_portrait\.png/);
 });
 
-test("missing non-field concept art stays placeholder-safe", () => {
+test("every non-field art slot ships a real file and keeps a working fallback", () => {
+  // Farm, location, map and portrait art are all final now, so the useful
+  // invariant is no longer "which are still placeholders" but "does every
+  // slot resolve to a file that exists, with its fallback SVG intact".
   for (const artId of [
-    // Farm detail art is the last family still awaiting final paintings.
-    // Portraits, county locations and the map have all shipped final.
     "farm.dashboard_hero",
-    "farm.machine_shed"
+    "farm.home_overview",
+    "farm.farmhouse",
+    "farm.barn",
+    "farm.machine_shed",
+    "farm.driveway_road",
+    "farm.field_overview",
+    "map.ash_creek_county",
+    "location.machine_shed"
   ]) {
     const asset = resolveArtAsset(artId);
     const fallbackPath = asset.fallbackPath.replace(/^\.\//, "");
 
     assert.notEqual(asset.type, "missing", `${artId} should be present in the manifest`);
-    assert.equal(asset.status, "placeholder", `${asset.id} should remain placeholder until concept art is imported`);
+    assert.equal(asset.status, "final", `${asset.id} should ship final art`);
+    assert.equal(existsSync(asset.src.replace(/^\.\//, "")), true, `Missing final art: ${asset.src}`);
     assert.equal(existsSync(fallbackPath), true, `Missing fallback art: ${fallbackPath}`);
   }
 

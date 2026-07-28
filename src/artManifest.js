@@ -112,7 +112,16 @@ const finalLocationSlugs = new Set([
   "gus_yard",
   "hollis_place",
   "ash_creek_bank",
-  "grange_hall"
+  "grange_hall",
+  "machine_shed"
+]);
+
+// Player-background portraits shown on character select. old_school uses the
+// old_school_farmer slug; the other two match their ids.
+const finalBackgroundSlugs = new Set([
+  "old_school_farmer",
+  "it_nephew",
+  "mechanic"
 ]);
 
 const COUNTY_NPC_IDS = ["earl", "marge", "hollis", "roy", "gus", "patti", "dee", "sandy"];
@@ -162,10 +171,10 @@ export const ART_MANIFEST = {
       displayName: "Home Farm Overview",
       type: "farm_hero",
       expectedPath: "./assets/final/farm/dm_farm_home_overview.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_home_overview_v01_concept.png",
       fallbackPath: farmFallback,
       dimensions: "1920x1080",
-      status: importedFarmConceptIds.has("home_overview") ? "concept" : "placeholder",
       notes: "Imported generated home farm concept art. Fallback SVG remains wired if the image fails to load."
     }),
     dashboardHero: artAsset({
@@ -173,6 +182,7 @@ export const ART_MANIFEST = {
       displayName: "Farm Dashboard Hero",
       type: "farm_hero",
       expectedPath: "./assets/final/farm/dm_farm_dashboard_hero.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_dashboard_hero_v01_concept.png",
       fallbackPath: farmFallback,
       dimensions: "1920x1080",
@@ -183,6 +193,7 @@ export const ART_MANIFEST = {
       displayName: "Farmhouse",
       type: "farm_detail",
       expectedPath: "./assets/final/farm/dm_farm_farmhouse.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_farmhouse.png",
       fallbackPath: farmFallback,
       dimensions: "1024x768",
@@ -193,6 +204,7 @@ export const ART_MANIFEST = {
       displayName: "Barn",
       type: "farm_detail",
       expectedPath: "./assets/final/farm/dm_farm_barn.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_barn.png",
       fallbackPath: farmFallback,
       dimensions: "1024x768",
@@ -203,6 +215,7 @@ export const ART_MANIFEST = {
       displayName: "Machine Shed",
       type: "farm_detail",
       expectedPath: "./assets/final/farm/dm_farm_machine_shed.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_machine_shed_v01_concept.png",
       fallbackPath: "./assets/placeholders/locations/dm_location_machine_shed_placeholder.svg",
       dimensions: "1920x1080",
@@ -213,6 +226,7 @@ export const ART_MANIFEST = {
       displayName: "Driveway and Road",
       type: "farm_detail",
       expectedPath: "./assets/final/farm/dm_farm_driveway_road.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_driveway_road.png",
       fallbackPath: farmFallback,
       dimensions: "1280x720",
@@ -223,6 +237,7 @@ export const ART_MANIFEST = {
       displayName: "Field Overview",
       type: "farm_detail",
       expectedPath: "./assets/final/farm/dm_farm_field_overview.png",
+      status: "final",
       conceptPath: "./assets/concept/farm/dm_farm_field_overview.png",
       fallbackPath: farmFallback,
       dimensions: "1280x720",
@@ -380,7 +395,7 @@ function characterWarmthVariants() {
 }
 
 function character(id, displayName, placeholderFile, { conceptSlug = id, expectedSlug = conceptSlug } = {}) {
-  const isFinal = finalCharacterSlugs.has(expectedSlug);
+  const isFinal = finalCharacterSlugs.has(expectedSlug) || finalBackgroundSlugs.has(expectedSlug);
   const hasConcept = importedCharacterConceptSlugs.has(conceptSlug);
   return artAsset({
     id: `character.${id}`,

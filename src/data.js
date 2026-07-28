@@ -770,7 +770,7 @@ export const NPCS = {
   }
 };
 
-// Dialogue banks: voice-locked to the Ash Creek canon. AI-drafted, needs Director curation pass.
+// Dialogue banks: voice-locked to the Ash Creek canon. AI-authored, Director-approved 2026-07-28.
 // Tiers follow the voice law sentence budgets: watched 1-2 sentences, steady 2-4, trusted 4-7
 // (Gus stays terse at every tier; trust shows as him volunteering one useful thing).
 // `context` entries fire before tier banks when their condition key matches the state.
