@@ -1344,3 +1344,79 @@ dd {
   .title-board--hero .button-row { flex-direction: column; }
   .title-board--hero .button-row .dm-button { width: 100%; }
 }
+
+/* --- Touch and small-screen affordances -----------------------------------
+   Two things the desktop layout gets away with and a phone does not.
+
+   1. Tap targets. .dm-button sizes itself from padding, which lands a
+      single-line button around 41px — under the 44px that reads as
+      comfortable under a thumb. `pointer: coarse` is the honest signal, but
+      it cannot be verified here (Chrome's device emulation does not report
+      it, and setEmulatedMedia will not override it), so the width
+      breakpoint is what actually carries this and is set wide enough to
+      cover tablets. A desktop window under 1024px picking up 3px of button
+      height is a cheaper mistake than a phone that doesn't.
+   2. The calendar chip. "Year 1 - Week 1 - Early Spring" is far longer than
+      any other status value, and sharing a row with Standing it wrapped to
+      four lines and dragged the whole row's height with it. On narrow
+      screens the strip becomes a real two-column grid and the calendar
+      spans both, so it gets the width it actually needs. */
+@media (pointer: coarse), (max-width: 1024px) {
+  /* .button-grid.compact wins on specificity and pins 38px, so it has to be
+     named here explicitly — a bare .dm-button rule loses to it. */
+  .dm-button,
+  .hero-actions .dm-button,
+  .button-grid.compact .dm-button {
+    min-height: 44px;
+  }
+
+  .button-grid.compact .dm-button {
+    padding: 0.5rem 0.62rem;
+  }
+
+  /* Map nodes sit absolutely over the county painting at 26px tall, which is
+     fine to click and awful to thumb. They carry their own min-height: 0.
+     Growing them to 44px makes nine labels collide on a short map, so the
+     map gets taller (positions are percentages, so more height means more
+     pixels between rows) and the labels get narrower to buy back the width.
+     34rem left three colliding pairs, 40rem gets back to the two this map
+     already had at desktop sizes; past that it plateaus, because those two
+     are close together in the node coordinates and no amount of height
+     separates them. Worth fixing in the data someday, not here. */
+  .map-node {
+    width: 7.4rem;
+    min-height: 44px;
+    padding: 0.5rem 0.4rem 0.5rem 1.15rem;
+    font-size: 0.78rem;
+  }
+
+  .map-node strong {
+    font-size: 0.74rem;
+  }
+
+  .county-map-art {
+    min-height: 40rem;
+  }
+
+  .check-row input {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .status-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .status-strip span {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .status-strip .status-chip--wide {
+    grid-column: 1 / -1;
+  }
+}

@@ -111,7 +111,7 @@ function shell(app, content) {
           <span>${icon("equipment")} Work <strong>${derived.work.remaining}/${derived.work.slotsPerWeek}</strong></span>
           ${derived.work.bankedCap || derived.work.banked ? `<span>${icon("weather")} Preparedness <strong>+${derived.work.banked}/${derived.work.bankedCap}</strong></span>` : ""}
           <span>${icon("reputation")} Standing <strong>${derived.standing.label} ${state.reputation}/100</strong></span>
-          <span>${icon("weather")} Calendar <strong>${escapeHtml(derived.calendarLabel)}</strong></span>
+          <span class="status-chip--wide">${icon("weather")} Calendar <strong>${escapeHtml(derived.calendarLabel)}</strong></span>
         </div>
       </header>
       <div class="layout">
