@@ -2977,3 +2977,54 @@ test("portrait warmth follows the same tier the spoken line comes from", () => {
   // Unknown warmth or a character without variants falls back to the base.
   assert.match(characterArtFor("earl", "nonsense").src, /dm_character_earl_portrait\.png/);
 });
+
+test("finished contract work pays out instead of expiring unclicked", () => {
+  // The scenario a playtester hit: accept a contract, do its active step (which
+  // consumes work slots and costs), then never press Complete. The job was done
+  // and paid for, so it must settle rather than fail at the deadline.
+  let game = createNewGame("old_school", 9090);
+  game.financials.cash = 20000;
+  const target = game.contracts.find((c) => c.status === "available");
+  assert.ok(target, "a contract should be on the board");
+
+  game = acceptContract(game, target.id).state;
+  const worked = performContractAction(game, target.id);
+  assert.equal(worked.ok, true, worked.message);
+  game = worked.state;
+  const paidWork = game.contracts.find((c) => c.id === target.id);
+  assert.equal(paidWork.workCostPaid, true, "the active step should have charged the player");
+
+  const cashBefore = game.financials.cash;
+  const repBefore = game.reputation;
+
+  // Never touch it again — just let the weeks run past its deadline.
+  for (let i = 0; i < (target.deadlineWeeks ?? 3) + 3; i += 1) {
+    game = advanceWeek(game).state;
+  }
+
+  const settled = game.contracts.find((c) => c.id === target.id);
+  // It may have since been archived off the board; either way it must not have failed.
+  assert.ok(["completed", "archived"].includes(settled.status), `finished work should settle, not fail (got ${settled.status})`);
+  assert.equal(settled.completedWeek > 0, true, "it should carry a completion week");
+  assert.equal(game.stats?.contractsCompleted ?? 0, 1, "the completion should be recorded");
+  assert.ok(game.financials.cash > cashBefore, "settling should pay the reward");
+  assert.ok(game.reputation >= repBefore, "settling should not cost reputation");
+  assert.equal(game.stats?.contractsFailed ?? 0, 0, "no failure should be recorded");
+});
+
+test("a contract whose active step was never worked still fails at its deadline", () => {
+  // The other half of the rule: accepting alone is not doing the work.
+  let game = createNewGame("old_school", 9091);
+  const target = game.contracts.find((c) => c.status === "available");
+  game = acceptContract(game, target.id).state;
+
+  for (let i = 0; i < (target.deadlineWeeks ?? 3) + 2; i += 1) {
+    game = advanceWeek(game).state;
+  }
+
+  const lapsed = game.contracts.find((c) => c.id === target.id);
+  assert.ok(["failed", "archived"].includes(lapsed.status), `unworked contracts should still lapse (got ${lapsed.status})`);
+  assert.equal(lapsed.failedWeek > 0, true, "it should carry a failure week");
+  assert.equal(game.stats?.contractsFailed ?? 0, 1, "the failure should be recorded");
+  assert.equal(game.stats?.contractsCompleted ?? 0, 0, "it must not have paid out");
+});

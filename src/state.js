@@ -2577,15 +2577,21 @@ export function completeContract(state, contractId) {
     costNote = costs.costNote;
   }
 
-  contract.status = "completed";
-  contract.completedWeek = next.time.week;
-  const reward = Math.round(contract.reward * reputationStanding(next.reputation).rewardMultiplier);
-  next.reputation = clamp(next.reputation + contract.reputation, 0, 100);
-  next.relationships[contract.npcId] = (next.relationships[contract.npcId] ?? 0) + 3;
-  next.stats = next.stats ?? {};
-  next.stats.contractsCompleted = (next.stats.contractsCompleted ?? 0) + 1;
-  const incomeText = earn(next, reward, contract.title);
+  const incomeText = settleContract(next, contract);
   return finish(next, true, `${incomeText}${costNote} Reputation +${contract.reputation}.`);
+}
+
+// Pay out a finished contract. Shared by the manual "complete" button and the
+// automatic settle in progressContracts, so both routes reward identically.
+function settleContract(state, contract) {
+  contract.status = "completed";
+  contract.completedWeek = state.time.week;
+  const reward = Math.round(contract.reward * reputationStanding(state.reputation).rewardMultiplier);
+  state.reputation = clamp(state.reputation + contract.reputation, 0, 100);
+  state.relationships[contract.npcId] = (state.relationships[contract.npcId] ?? 0) + 3;
+  state.stats = state.stats ?? {};
+  state.stats.contractsCompleted = (state.stats.contractsCompleted ?? 0) + 1;
+  return earn(state, reward, contract.title);
 }
 
 const NPC_DIALOGUE_SALTS = {
@@ -4221,6 +4227,16 @@ function refreshContracts(state, entries) {
 function progressContracts(state, entries) {
   for (const contract of state.contracts) {
     if (!["accepted", "in_progress", "ready_to_complete"].includes(contract.status)) continue;
+
+    // Work that is finished pays out on its own. Once the active step is done
+    // the only thing left is collecting, which is not a decision — failing a
+    // job the player already paid for and completed punishes a button press.
+    // (Contracts whose step was never worked can still fail below.)
+    if (contract.status === "ready_to_complete" && contract.workCostPaid) {
+      const incomeText = settleContract(state, contract);
+      entries.push(`${contract.title} settled up. ${incomeText} Reputation +${contract.reputation}.`);
+      continue;
+    }
 
     if (contract.deadlineWeek && state.time.week >= contract.deadlineWeek && contract.status !== "completed") {
       contract.status = "failed";
