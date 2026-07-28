@@ -278,10 +278,11 @@ function renderBackgroundSelect() {
                   <p class="muted background-choice__subtitle">${escapeHtml(bg.subtitle)}</p>
                   <p class="background-choice__body">${escapeHtml(bg.description)}</p>
                   <p class="rule-text background-choice__perk">${escapeHtml(bg.perkText)}</p>
-                  ${button("choose-background", `Start as ${bg.name}`, {
+                  ${button("choose-background", "Start Run", {
                     variant: "gold",
                     data: { backgroundId: bg.id },
-                    className: "background-choice__start"
+                    className: "background-choice__start",
+                    ariaLabel: `Start as ${bg.name}`
                   })}
                 </article>
               `

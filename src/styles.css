@@ -1241,15 +1241,18 @@ dd {
   text-align: left;
 }
 
-/* margin-top:auto eats the leftover height in each flex column, so all three
-   Start buttons land on the same line however the copy above them wraps. */
+/* margin-top:auto bottom-aligns the buttons in each flex column. They also
+   need to be the SAME HEIGHT: a label long enough to wrap made one button
+   taller than the others, which read as misalignment even though their
+   bottoms matched. Short label + fixed height keeps all three identical. */
 .background-choice__start {
   width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
   margin-top: auto;
-  padding-top: 0.65rem;
-  padding-bottom: 0.65rem;
+  min-height: 46px;
+  height: 46px;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 900px) {

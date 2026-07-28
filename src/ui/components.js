@@ -23,7 +23,10 @@ export function button(action, label, options = {}) {
     "data-action": action,
     class: `dm-button ${options.variant ?? ""} ${options.className ?? ""}`.replace(/\s+/g, " ").trim(),
     disabled: options.disabled,
-    title: options.title
+    title: options.title,
+    // Lets a short visible label keep a full, unambiguous name for screen
+    // readers — three buttons reading "Start Run" need context out loud.
+    "aria-label": options.ariaLabel
   };
   for (const [key, value] of Object.entries(options.data ?? {})) {
     data[`data-${dataAttributeName(key)}`] = value;
