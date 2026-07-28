@@ -1,2 +1,5 @@
 .DS_Store
 node_modules/
+
+# itch.io build output (regenerate with tools/build-itch.sh)
+build/

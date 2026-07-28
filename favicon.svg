@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#15110C"/>
+  <!-- horizon and a furrowed field, in the game's harvest gold -->
+  <path d="M6 40h52v3H6z" fill="#8A6A35"/>
+  <path d="M8 47h48M10 53h44M13 59h38" stroke="#C9A227" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+  <circle cx="32" cy="24" r="9" fill="#C9A227" opacity=".9"/>
+</svg>
