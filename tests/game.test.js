@@ -2609,12 +2609,12 @@ test("visual world layer renders farm, field, map, location, and portrait assets
   assert.match(hayHarvestedField, /assets\/final\/fields\/dm_field_hay_harvested\.png/);
 
   const map = renderApp({ ...baseApp, screen: "map" });
-  assert.match(map, /dm_map_ash_creek_county_v01_concept\.png/);
+  assert.match(map, /assets\/final\/map\/dm_map_ash_creek_county\.png/);
   assert.match(map, /class="map-node/);
 
   const dinerGame = { ...game, currentLocationId: "pattis_diner" };
   const location = renderApp({ ...baseApp, game: dinerGame, screen: "location" });
-  assert.match(location, /dm_location_pattis_diner_v01_concept\.png/);
+  assert.match(location, /assets\/final\/locations\/dm_location_pattis_diner\.png/);
   assert.match(location, /assets\/final\/characters\/dm_character_patti_portrait\.png/);
   assert.match(location, /dialogue-card/);
 
@@ -2726,24 +2726,20 @@ test("non-field concept art resolves through manifest and runtime aliases", () =
   assert.equal(FARM_OVERVIEW_ART.id, "farm.home_overview");
   assert.match(FARM_OVERVIEW_ART.src, /dm_farm_home_overview_v01_concept\.png/);
   assert.equal(COUNTY_MAP_ART.id, "map.ash_creek_county");
-  assert.match(COUNTY_MAP_ART.src, /dm_map_ash_creek_county_v01_concept\.png/);
+  assert.match(COUNTY_MAP_ART.src, /assets\/final\/map\/dm_map_ash_creek_county\.png/);
 
-  assert.match(locationArtFor("farmers_coop").src, /dm_location_ash_creek_coop_v01_concept\.png/);
-  assert.match(locationArtFor("guss_yard").src, /dm_location_gus_yard_v01_concept\.png/);
-  assert.match(locationArtFor("bank").src, /dm_location_ash_creek_bank_v01_concept\.png/);
+  assert.match(locationArtFor("farmers_coop").src, /assets\/final\/locations\/dm_location_ash_creek_coop\.png/);
+  assert.match(locationArtFor("guss_yard").src, /assets\/final\/locations\/dm_location_gus_yard\.png/);
+  assert.match(locationArtFor("bank").src, /assets\/final\/locations\/dm_location_ash_creek_bank\.png/);
   assert.match(characterArtFor("old_school").src, /dm_character_old_school_farmer_portrait_v01_concept\.png/);
 });
 
 test("missing non-field concept art stays placeholder-safe", () => {
   for (const artId of [
+    // Farm detail art is the last family still awaiting final paintings.
+    // Portraits, county locations and the map have all shipped final.
     "farm.dashboard_hero",
-    "farm.machine_shed",
-    "location.home_farm",
-    "location.roys_place",
-    "location.hollis_place",
-    "location.grange_hall"
-    // Hollis, Marge and Earl moved to final painted portraits (2026-07-27);
-    // locations and farm art are still awaiting theirs.
+    "farm.machine_shed"
   ]) {
     const asset = resolveArtAsset(artId);
     const fallbackPath = asset.fallbackPath.replace(/^\.\//, "");

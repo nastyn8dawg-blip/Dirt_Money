@@ -101,6 +101,20 @@ const finalFieldIds = new Set([
 // Final painted county portraits, same Style D treatment as the fields.
 // Painted to this game's roles (Roy the mechanic, Dee the elevator clerk,
 // Sandy the Grange organizer) while keeping the canon people.
+// Final painted location heroes. Aliases (farmers_coop, guss_yard, bank) share
+// an expectedSlug with their primary id, so listing the slug covers both.
+const finalLocationSlugs = new Set([
+  "home_farm",
+  "pattis_diner",
+  "ash_creek_coop",
+  "grain_elevator",
+  "roys_place",
+  "gus_yard",
+  "hollis_place",
+  "ash_creek_bank",
+  "grange_hall"
+]);
+
 const COUNTY_NPC_IDS = ["earl", "marge", "hollis", "roy", "gus", "patti", "dee", "sandy"];
 
 // Base portrait plus a watched (cold) and trusted (warm) painting of the same
@@ -223,9 +237,9 @@ export const ART_MANIFEST = {
       expectedPath: "./assets/final/map/dm_map_ash_creek_county.png",
       conceptPath: "./assets/concept/map/dm_map_ash_creek_county_v01_concept.png",
       fallbackPath: "./assets/placeholders/map/dm_map_ash_creek_county_placeholder.svg",
-      dimensions: "1920x1080",
-      status: importedMapConceptIds.has("ash_creek_county") ? "concept" : "placeholder",
-      notes: "Imported generated Ash Creek County map concept art. UI-rendered location nodes remain layered on top."
+      dimensions: "1280x896",
+      status: "final",
+      notes: "Final painted county map (Style B aged-paper chrome): worn section-grid map with fold creases and a coffee ring, deliberately carrying no readable text so UI-rendered location nodes layer on top."
     }),
     markers: artAsset({
       id: "map.markers",
@@ -329,6 +343,7 @@ export const ART_MANIFEST = {
 };
 
 function location(id, displayName, placeholderFile, { conceptSlug = id, expectedSlug = conceptSlug } = {}) {
+  const isFinal = finalLocationSlugs.has(expectedSlug);
   const hasConcept = importedLocationConceptSlugs.has(conceptSlug);
   return artAsset({
     id: `location.${id}`,
@@ -337,11 +352,13 @@ function location(id, displayName, placeholderFile, { conceptSlug = id, expected
     expectedPath: `./assets/final/locations/dm_location_${expectedSlug}.png`,
     conceptPath: `./assets/concept/locations/dm_location_${conceptSlug}_v01_concept.png`,
     fallbackPath: `./assets/placeholders/locations/${placeholderFile}`,
-    dimensions: "1920x1080",
-    status: hasConcept ? "concept" : "placeholder",
-    notes: hasConcept
-      ? "Imported generated location concept art. Keep functional names and labels rendered by the UI."
-      : "Location concept art not imported yet. Uses placeholder fallback until generated art is available."
+    dimensions: isFinal ? "1280x720" : "1920x1080",
+    status: isFinal ? "final" : hasConcept ? "concept" : "placeholder",
+    notes: isFinal
+      ? "Final painted location (Style D). Names and labels stay UI-rendered - no baked-in text."
+      : hasConcept
+        ? "Imported generated location concept art. Keep functional names and labels rendered by the UI."
+        : "Location concept art not imported yet. Uses placeholder fallback until generated art is available."
   });
 }
 
