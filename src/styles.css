@@ -1180,3 +1180,164 @@ dd {
     transition: none;
   }
 }
+
+/* --- Character select -----------------------------------------------------
+   The three background cards carry different amounts of text, which used to
+   leave their Start buttons at different heights and the long "Start as Old
+   School Farmer" label overflowing its column. Each card is a flex column now
+   with the button pushed to the bottom, so the three read as one set however
+   the copy wraps. */
+.background-picker {
+  align-items: stretch;
+}
+
+/* The global .card-grid.three rule drops to two columns under 1100px, which
+   orphans the third background onto its own row. Comparing all three side by
+   side IS this page, so hold three columns until they genuinely stop fitting,
+   then stack cleanly. */
+.card-grid.background-picker {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.background-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.background-choice .portrait-image {
+  width: 100%;
+  /* Cap the height so the portrait, the copy and the Start button all fit on
+     one screen — the whole point of this page is comparing three options at
+     a glance, not scrolling between them. */
+  max-height: clamp(9rem, 22vh, 14rem);
+  object-fit: cover;
+  object-position: center 22%;
+  margin-inline: auto;
+}
+
+.background-choice h2 {
+  margin: 0.35rem 0 0;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.background-choice__subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  text-wrap: balance;
+}
+
+.background-choice__body {
+  margin: 0;
+  text-align: left;
+}
+
+.background-choice__perk {
+  margin: 0 0 0.35rem;
+  text-align: left;
+}
+
+/* margin-top:auto eats the leftover height in each flex column, so all three
+   Start buttons land on the same line however the copy above them wraps. */
+.background-choice__start {
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-top: auto;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+@media (max-width: 900px) {
+  .card-grid.background-picker {
+    grid-template-columns: 1fr;
+  }
+  .background-choice .portrait-image {
+    max-height: 16rem;
+  }
+}
+
+/* --- Title screen ---------------------------------------------------------
+   The dawn farm hero runs full-bleed behind the wordmark: buildings small
+   under a huge sky, one kitchen window lit. A scrim keeps the type readable
+   over whatever part of the painting the viewport lands on. */
+.title-screen--hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.title-hero {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.title-hero .art-frame,
+.title-hero .art-frame img,
+.title-hero__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* Darken toward the bottom so the board and buttons stay legible, and keep a
+   little of the sky bright at the top where nothing sits. */
+.title-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(21, 17, 12, 0.05) 0%, rgba(21, 17, 12, 0.12) 42%, rgba(21, 17, 12, 0.62) 78%, rgba(21, 17, 12, 0.88) 100%);
+}
+
+.title-board--hero {
+  background: linear-gradient(180deg, rgba(21, 17, 12, 0.55), rgba(21, 17, 12, 0.78));
+  border-color: rgba(138, 106, 53, 0.5);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(232, 216, 184, 0.1);
+  backdrop-filter: blur(3px);
+  text-align: center;
+  width: min(720px, 100%);
+}
+
+/* Sit the board in the lower third so the dawn sky has room to read. */
+.title-screen--hero {
+  align-content: end;
+  padding-bottom: clamp(2rem, 12vh, 7rem);
+}
+
+.title-wordmark {
+  margin: 0.1rem 0 0.35rem;
+  font-size: clamp(3rem, 11vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-shadow: 0 3px 22px rgba(0, 0, 0, 0.75);
+}
+
+.title-board--hero .lead {
+  max-width: 46ch;
+  margin-inline: auto;
+}
+
+.title-board--hero .button-row {
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
+.title-footnote {
+  margin: 1.15rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(232, 216, 184, 0.55);
+  font-style: italic;
+}
+
+@media (max-width: 620px) {
+  .title-board--hero .button-row { flex-direction: column; }
+  .title-board--hero .button-row .dm-button { width: 100%; }
+}

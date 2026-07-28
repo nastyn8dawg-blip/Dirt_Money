@@ -227,16 +227,20 @@ export function renderApp(app) {
 
 function renderTitle(app) {
   return `
-    <div class="title-screen">
-      <section class="title-board">
+    <div class="title-screen title-screen--hero">
+      <div class="title-hero" aria-hidden="true">
+        ${artImage(FARM_OVERVIEW_ART, "", "title-hero__art")}
+      </div>
+      <section class="title-board title-board--hero">
         <p class="eyebrow">Ash Creek County Farm Ledger</p>
-        <h1>Dirt Money</h1>
+        <h1 class="title-wordmark">Dirt Money</h1>
         <p class="lead">Fields, debt, salvage, weather, and county trust. Make practical calls and keep the farm alive.</p>
         <div class="button-row">
           ${button("new-game", "New Game", { variant: "gold" })}
           ${button("load-game", "Load Saved Farm", { disabled: !app.hasSave })}
           ${button("standalone-settings", "Settings", { variant: "ghost" })}
         </div>
+        <p class="title-footnote">A season is thirty-six weeks. The note comes due either way.</p>
       </section>
     </div>
   `;
@@ -264,19 +268,20 @@ function renderBackgroundSelect() {
       <section class="title-board wide">
         <p class="eyebrow">New Game</p>
         <h1>Choose Your Background</h1>
-        <div class="card-grid three">
+        <div class="card-grid three background-picker">
           ${Object.values(BACKGROUNDS)
             .map(
               (bg) => `
-                <article class="ledger-card">
+                <article class="ledger-card background-choice">
                   ${portrait(bg.id, bg.name, "portrait-image portrait-large")}
                   <h2>${escapeHtml(bg.name)}</h2>
-                  <p class="muted">${escapeHtml(bg.subtitle)}</p>
-                  <p>${escapeHtml(bg.description)}</p>
-                  <p class="rule-text">${escapeHtml(bg.perkText)}</p>
+                  <p class="muted background-choice__subtitle">${escapeHtml(bg.subtitle)}</p>
+                  <p class="background-choice__body">${escapeHtml(bg.description)}</p>
+                  <p class="rule-text background-choice__perk">${escapeHtml(bg.perkText)}</p>
                   ${button("choose-background", `Start as ${bg.name}`, {
                     variant: "gold",
-                    data: { backgroundId: bg.id }
+                    data: { backgroundId: bg.id },
+                    className: "background-choice__start"
                   })}
                 </article>
               `

@@ -21,7 +21,7 @@ function dataAttributeName(key) {
 export function button(action, label, options = {}) {
   const data = {
     "data-action": action,
-    class: `dm-button ${options.variant ?? ""}`.trim(),
+    class: `dm-button ${options.variant ?? ""} ${options.className ?? ""}`.replace(/\s+/g, " ").trim(),
     disabled: options.disabled,
     title: options.title
   };
